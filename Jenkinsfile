@@ -47,10 +47,15 @@ pipeline {
         }
       }
     }
-    stage('Publish results') {
-      steps {
+  }
+  post {
+    always {
+      steps() {
         junit(allowEmptyResults: true, testResults: 'spec/reports/*.xml')
       }
+      
+      
     }
+    
   }
 }

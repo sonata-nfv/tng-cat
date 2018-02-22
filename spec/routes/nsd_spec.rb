@@ -141,6 +141,7 @@ RSpec.describe CatalogueV1 do
     end
   end
 
+ 
   describe 'DELETE /network-services/:uuid' do
     context 'with (UU)ID given' do
       before do

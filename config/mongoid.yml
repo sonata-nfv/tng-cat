@@ -1,0 +1,19 @@
+---
+development:
+  sessions:
+    default:
+      database: tng-cat
+      hosts:
+      - mongo:27017
+production:
+  sessions:
+    default:
+      database: tng-cat
+      hosts:
+      - mongo:27017
+test:
+  sessions:
+    default:
+      database: tng-cat
+      hosts:
+      - mongo:27017

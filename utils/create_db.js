@@ -39,13 +39,13 @@
  * remote database.
  */
 
-db = connect("mongo:27017/tng-cat");
+db = connect("mongo:27017/son-catalogue-repository");
 db.createCollection("nsd");
 db.createCollection("vnfd");
 db.createCollection("pd");
 
 /* Uncomment next lines if MongoDB installation will be done in localhost, and comment lines above */
-//db = connect("127.0.0.1:27017/tng-cat");
+//db = connect("127.0.0.1:27017/son-catalogue-repository");
 //db.createCollection("nsd");
 //db.createCollection("vnfd");
 //db.createCollection("pd");

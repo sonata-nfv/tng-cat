@@ -57,6 +57,10 @@ class Sonata < Sinatra::Application
     halt 200, api_routes.to_yaml
   end
 
+  get '/records' do
+    headers 'Content-Type' => 'text/plain; charset=utf8'
+    halt 200, api_routes.to_yaml
+  end
 end
 
 # @see SonCatalogue

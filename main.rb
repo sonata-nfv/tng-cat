@@ -177,6 +177,30 @@ unless ENV['SECOND_DB'].nil?
   end
 end
 
+# Configurations for Services Repository
+class SonataNsRepository < Sinatra::Application
+  register Sinatra::ConfigFile
+  # Load configurations
+  config_file 'config/config.yml'
+  if ENV['SECOND_DB'].nil?
+    Mongoid.load!('config/mongoid.yml')
+  else
+    Mongoid.load!('config/mongoid.yml', :production_secondary)
+  end
+end
+
+# Configurations for Functions Repository
+class SonataVnfRepository < Sinatra::Application
+  register Sinatra::ConfigFile
+  # Load configurations
+  config_file 'config/config.yml'
+  if ENV['SECOND_DB'].nil?
+    Mongoid.load!('config/mongoid.yml')
+  else
+    Mongoid.load!('config/mongoid.yml', :production_secondary)
+  end
+end
+
 # Configurations for Catalogues
 class SonataCatalogue < Sinatra::Application
   register Sinatra::ConfigFile

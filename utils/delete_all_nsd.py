@@ -1,7 +1,7 @@
 import requests
 import json
 
-URI = "http://sp.int3.sonata-nfv.eu:4011/catalogues/"
+URI = "http://sp.int3.sonata-nfv.eu:4002/catalogues/"
 #URI = "http://127.0.0.1:4011/catalogues/"
 
 services = "network-services"

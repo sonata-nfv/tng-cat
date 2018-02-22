@@ -25,5 +25,7 @@
 ## acknowledge the contributions of their colleagues of the SONATA
 ## partner consortium (www.sonata-nfv.eu).
 
+require_relative 'vnf'
+require_relative 'ns'
 require_relative 'catalogue_helpers'
 require_relative 'sonata'

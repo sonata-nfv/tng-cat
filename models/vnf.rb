@@ -25,6 +25,11 @@
 ## acknowledge the contributions of their colleagues of the SONATA
 ## partner consortium (www.sonata-nfv.eu).
 
-require_relative 'vnf'
-require_relative 'nsr'
-require_relative 'catalogue_models'
+class Vnfr
+  include Mongoid::Document
+  include Mongoid::Timestamps
+  include Mongoid::Pagination
+  include Mongoid::Attributes::Dynamic
+
+  store_in collection: 'vnf'
+end

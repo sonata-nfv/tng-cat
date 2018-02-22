@@ -81,6 +81,7 @@ namespace :init do
     tcpdump_sample = 'samples/sonata-demo/function-descriptor/tcpdump-vnfd.yml'
     nsd_sample = 'samples/sonata-demo/service-descriptor/sonata-demo.yml'
     pd_sample = 'samples/sonata-demo/package-descriptor/sonata-demo.yml'
+    vnfr_random_sample = 'samples/sonata-demo/function-record/random-vnfr.yml'
     vtc_sample = 'samples/sonata-demo-1/function-descriptor/vtc-vnfd.yml'
     nsd1_sample = 'samples/sonata-demo-1/service-descriptor/sonata-demo.yml'
 
@@ -91,5 +92,6 @@ namespace :init do
     sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ tcpdump_sample } --connect-timeout 30 http://#{ server }/catalogues/api/v2/vnfs"
     sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ nsd_sample } --connect-timeout 30 http://#{ server }/catalogues/api/v2/network-services"
     sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ pd_sample } --connect-timeout 30 http://#{ server }/catalogues/api/v2/packages"
+	  sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ vnfr_random_sample } --connect-timeout 30 http://#{ server }/records/vnfr/vnf-instances"
   end
 end

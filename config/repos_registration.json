@@ -1,11 +1,11 @@
 {
-  "clientId": "son-catalogue",
+  "clientId": "son-repositories",
   "surrogateAuthRequired": false,
   "enabled": true,
   "clientAuthenticatorType": "client-secret",
   "secret": "1234",
   "redirectUris": [
-    "/auth/catalogue"
+    "/auth/repos"
   ],
   "webOrigins": [],
   "notBefore": 0,

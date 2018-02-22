@@ -47,7 +47,7 @@ def get_method_v2
   filename = response.header['FILENAME']
   puts 'Filename is: ', filename
 
-  # File.open('/home/osboxes/sonata/tng-cat/samples/retrieved_package.zip', 'wb') do |f|
+  # File.open('/home/osboxes/sonata/son-catalogue-repos/samples/retrieved_package.zip', 'wb') do |f|
   #   puts 'Writing file...'
   #   f.write response.read_body
   #   f.close

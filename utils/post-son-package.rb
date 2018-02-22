@@ -3,7 +3,7 @@
 
 # Command line ruby script built
 #   to simulate the posting of a complete
-#   sonata package to tng-cat
+#   sonata package to son-catalogue-repos
 #   and check the intelligent deletion
 #   feature
 #

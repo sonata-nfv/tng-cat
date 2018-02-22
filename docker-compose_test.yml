@@ -1,13 +1,13 @@
-tng-cat:
-  image: registry.sonata-nfv.eu:5000/tng-cat
+son-catalogue-repos:
+  image: registry.sonata-nfv.eu:5000/son-catalogue-repos
   links:
    - mongo-catalogues:mongo
   ports:
     - "4002:4011"
   restart: always
 
-tng-cat-doc:
-  image: registry.sonata-nfv.eu:5000/tng-cat
+son-catalogue-repos-doc:
+  image: registry.sonata-nfv.eu:5000/son-catalogue-repos
   ports:
     - "8800:8808"
   command: [rake,yard]

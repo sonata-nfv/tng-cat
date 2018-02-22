@@ -1,8 +1,8 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "5GTANGO-CATALOGUE",
-    "description": "#### SP Catalogue Documentation\nThis is the documentation for the API implementation of the 5GTANGO-CATALOGUE on the 5GTANGO Service Platform (SP) for virtual network services, functions, packages and records.\nThe API allows different methods to access and operate with the different Catalogues and the Repositories.\nFeel free to make a path or an operation and use **Try Operation** to test it.\n",
+    "title": "SON-CATALOGUE-REPOS",
+    "description": "#### SP Catalogue - Repositories Documentation\nThis is the documentation for the API implementation of the SON-CATALOGUE-REPOS on the Sonata Service Platform (SP) for virtual network services, functions, packages and records.\nThe API allows different methods to access and operate with the different Catalogues and the Repositories.\nFeel free to make a path or an operation and use **Try Operation** to test it.\n",
     "version": "2.0.0",
     "license": {
       "name": "Apache 2.0",
@@ -973,6 +973,57 @@
         }
       }
     },
+    "/records": {
+      "get": {
+        "summary": "Records",
+        "tags": [
+          "Records"
+        ],
+        "responses": {
+          "200": {
+            "description": "Management method to get log of catalogue remotely."
+          }
+        }
+      }
+    },
+    "/records/nsr": {
+      "get": {
+        "summary": "Management",
+        "tags": [
+          "Records/NSR"
+        ],
+        "responses": {
+          "200": {
+            "description": "Management method to get log of catalogue remotely.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Nsr"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/records/vnfr": {
+      "get": {
+        "summary": "Management",
+        "tags": [
+          "Records/VNFR"
+        ],
+        "responses": {
+          "200": {
+            "description": "Management method to get log of catalogue remotely.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Vnfr"
+              }
+            }
+          }
+        }
+      }
+    }
   },
   "definitions": {
     "Error": {
@@ -1011,7 +1062,49 @@
         }
       }
     },
+    "Nsr": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the network-service."
+        },
+        "vendor": {
+          "type": "string",
+          "description": "Identifier for the network-service vendor."
+        },
+        "name": {
+          "type": "string",
+          "description": "Identifier for the network-service name."
+        },
+        "version": {
+          "type": "string",
+          "description": "Identifier for the network-service version."
+        }
+      }
+    },
     "Vnfs": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the function."
+        },
+        "vendor": {
+          "type": "string",
+          "description": "Unique identifier for the function vendor."
+        },
+        "name": {
+          "type": "string",
+          "description": "Unique identifier for the function name."
+        },
+        "version": {
+          "type": "string",
+          "description": "Unique identifier for the function version."
+        }
+      }
+    },
+    "Vnfr": {
       "type": "object",
       "properties": {
         "id": {

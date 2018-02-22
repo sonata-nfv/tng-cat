@@ -1,7 +1,7 @@
 ---
 # Configuration settings to enable communication to the GK's User Management module
 # Connecto to GK API
-address: tng-api-gtw # <set_UM_Adapter_address_here> # tng-api-gtw
+address: son-gtkapi # <set_UM_Adapter_address_here> # son-gtkapi
 port: 5000 # <set_UM_Adapter_port_here>
 api_ver: /api/v2
 
@@ -13,5 +13,8 @@ login_path: /micro-services
 
 # Component identifiers and credentials
 # (sample)
-catalogue_client: tng-cat
+catalogue_client: son-catalogue
 catalogue_secret: 1234
+# (sample)
+repos_client: son-repositories
+repos_secret: 1234

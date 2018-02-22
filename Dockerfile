@@ -8,7 +8,7 @@ COPY Gemfile /app/
 WORKDIR /app
 RUN bundle install
 COPY . /app
-RUN rake yard
+#RUN rake yard
 ENV PORT 4002
 #ENV MAIN_DB son-catalogue-repository
 #ENV MAIN_DB_HOST mongo:27017

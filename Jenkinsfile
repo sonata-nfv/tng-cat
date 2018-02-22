@@ -50,12 +50,8 @@ pipeline {
   }
   post {
     always {
-      steps() {
         junit(allowEmptyResults: true, testResults: 'spec/reports/*.xml')
       }
-      
-      
     }
-    
   }
 }

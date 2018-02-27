@@ -49,6 +49,7 @@ db = connect("mongo:27017/son-catalogue-repository");
 db.createCollection("nsd");
 db.createCollection("vnfd");
 db.createCollection("pd");
+db.createCollection("sla");
 
 /* Uncomment next lines if MongoDB installation will be done in localhost, and comment lines above */
 //db = connect("127.0.0.1:27017/son-catalogue-repository");

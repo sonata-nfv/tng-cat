@@ -2,18 +2,18 @@
 development:
   sessions:
     default:
-      database: son-catalogue-repository
+      database: tng-catalogue
       hosts:
       - mongo:27017
 production:
   sessions:
     default:
-      database: son-catalogue-repository
+      database: tng-catalogue
       hosts:
       - mongo:27017
 test:
   sessions:
     default:
-      database: son-catalogue-repository
+      database: tng-catalogue
       hosts:
       - mongo:27017

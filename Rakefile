@@ -39,8 +39,8 @@ task default: ['ci:all']
 
 desc 'Start the service'
 task :start do
-  puts 'SON-CATALOGUE-REPOSITORIES STARTING...'
-  puts 'Version 3.0'
+  puts 'TNG-CATALOGUE STARTING...'
+  puts 'Version 0.0'
 
   # puts ENV['MAIN_DB'].to_s, ENV['MAIN_DB_HOST'].to_s, ENV['SECOND_DB'].to_s, ENV['SECOND_DB_HOST'].to_s
 
@@ -79,16 +79,16 @@ namespace :init do
   desc 'Fill Catalogues with default sonata-demo package contents'
   task :load_samples, :server do |_, args|
 
-    server = 'son-catalogue-repos:4011'
+    server = 'tng-cat:4011'
  
     firewall_sample = 'samples/sonata-demo/function-descriptor/firewall-vnfd.yml'
     iperf_sample = 'samples/sonata-demo/function-descriptor/iperf-vnfd.yml'
     tcpdump_sample = 'samples/sonata-demo/function-descriptor/tcpdump-vnfd.yml'
     nsd_sample = 'samples/sonata-demo/service-descriptor/sonata-demo.yml'
     pd_sample = 'samples/sonata-demo/package-descriptor/sonata-demo.yml'
-    vnfr_random_sample = 'samples/sonata-demo/function-record/random-vnfr.yml'
     vtc_sample = 'samples/sonata-demo-1/function-descriptor/vtc-vnfd.yml'
     nsd1_sample = 'samples/sonata-demo-1/service-descriptor/sonata-demo.yml'
+    sla_sample = 'samples/sonata-demo/sla-descriptor/sla-template-example.yml'
 
     sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ nsd1_sample } --connect-timeout 30 http://#{ server }/catalogues/api/v2/network-services"
     sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ vtc_sample } --connect-timeout 30 http://#{ server }/catalogues/api/v2/vnfs"
@@ -97,6 +97,6 @@ namespace :init do
     sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ tcpdump_sample } --connect-timeout 30 http://#{ server }/catalogues/api/v2/vnfs"
     sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ nsd_sample } --connect-timeout 30 http://#{ server }/catalogues/api/v2/network-services"
     sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ pd_sample } --connect-timeout 30 http://#{ server }/catalogues/api/v2/packages"
-	  sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ vnfr_random_sample } --connect-timeout 30 http://#{ server }/records/vnfr/vnf-instances"
+    sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ sla_sample } --connect-timeout 30 http://#{ server }/catalogues/api/v2/sla"
   end
 end

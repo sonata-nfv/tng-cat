@@ -165,3 +165,18 @@ class Dependencies_mapping
   field :status, type: String
   validates :son_package_uuid, :pd, :nsds, :vnfds, :status, :presence => true
 end
+
+
+# New API v2 item structure for meta-data and descriptor data
+class Slad
+  include Mongoid::Document
+  include Mongoid::Timestamps
+  include Mongoid::Pagination
+  include Mongoid::Attributes::Dynamic
+  store_in collection: 'slad'
+
+  field :slad, type: Hash
+  field :signature, type: String
+  field :username, type: String
+  validates :slad, presence: true
+end

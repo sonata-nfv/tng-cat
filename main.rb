@@ -206,7 +206,6 @@ class SonataVnfRepository < Sinatra::Application
   end
 end
 
-# Configurations for Catalogues
 class SonataCatalogue < Sinatra::Application
   register Sinatra::ConfigFile
   # Load configurations

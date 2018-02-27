@@ -1,11 +1,11 @@
 [![Build Status](http://jenkins.sonata-nfv.eu/buildStatus/icon?job=son-catalogue-repos)](http://jenkins.sonata-nfv.eu/job/son-catalogue-repos)
 
-# SON Catalogue and Repositories
-This repository contains the development for the [SONATA](http://www.sonata-nfv.eu) 's Service Platform Catalogue and Repositories. It holds the API implementation for the Service Platform Catalogue component and Repositories component.
-The Catalogue now integrates the SDK [son-catalogue](https://github.com/sonata-nfv/son-catalogue) in the Service Platform. It is closely related to the [son-schema](https://github.com/sonata-nfv/son-schema) repository that holds the schema for the various descriptors, such as the VNFD and the NSD.
+# SON Catalogue
+This repository contains the development for the [5GTANGO](https://5gtango.eu/) 's Service Platform Catalogue. It holds the API implementation for the Service Platform Catalogue component.
+The Catalogue now integrates the SDK [tng-catalogue](https://github.com/sonata-nfv/tng-cat) in the Service Platform. It is closely related to the [tng-schema](https://github.com/sonata-nfv/tng-schema) repository that holds the schema for the various descriptors, such as the VNFD and the NSD.
 
 ## Development
-To contribute to the development of the SONATA Catalogue and/or Repositories, you may use the very same development workflow as for any other SONATA Github project. That is, you have to fork the repository and create pull requests.
+To contribute to the development of the 5GTANGO Catalogue, you may use the very same development workflow as for any other 5GTANGOO Github project. That is, you have to fork the repository and create pull requests.
 
 ### Dependencies
 It is recommended to use Ubuntu 14.04.4 LTS (Trusty Tahr).
@@ -29,11 +29,11 @@ Ruby gems used (for more details see Gemfile):
 * [mongoid-grid_fs](https://github.com/mongoid/mongoid-grid_fs) - Implementation of the MongoDB GridFS specification
 
 ### Contributing
-You may contribute to the editor similar to other SONATA (sub-) projects, i.e. by creating pull requests.
+You may contribute to the editor similar to other 5GTANGO (sub-) projects, i.e. by creating pull requests.
 
 ## Installation
 
-After cloning the source code from the repository, you can run Catalogue-Repositories with the next command:
+After cloning the source code from the repository, you can run Catalogue with the next command:
 
 ```sh
 bundle install
@@ -57,49 +57,13 @@ or you can use docker-compose
 docker-compose up
 ```
 
-The Repositories' API allows the use of CRUD operations to send or retrieve records.
-The available records include services records (NSR) and functions records (VNFR).
-For testing the Repositories, you can use 'curl' tool to send a request to the API. It is required to set the HTTP header 'Content-type' field to 'application/json' or 'application/x-yaml' according to your desired format.
-Remember to set the IP address and port accordingly.
-
-Method GET:
-
-To receive all instances you can use
-
-```sh
- curl http://localhost:4011/records/nsr
-```
-```sh
- curl http://localhost:4011/records/vnfr
-```
-
-To receive an instance by its ID:
-
-```sh
-curl -X GET http://localhost:4011/records/nsr/9f18bc1b-b18d-483b-88da-a600e9255868
-```
-```sh
-curl -X GET http://localhost:4011/records/vnfr/9f18bc1b-b18d-483b-88da-a600e9255016
-```
-
-Method POST:
-
-To send a record instance
-
-```sh
-curl -X POST --data-binary @test_nsr.yaml -H "Content-type:application/x-yaml" http://localhost:4011/records/nsr
-```
-```sh
-curl -X POST --data-binary @test_vnfr.yaml -H "Content-type:application/x-yaml" http://localhost:4011/records/vnfr
-```
-
-The Catalogue's API allows the use of CRUD operations to send, retrieve, update and delete descriptors and sonata files.
+The Catalogue's API allows the use of CRUD operations to send, retrieve, update and delete descriptors and tng files.
 The available descriptors include services (NSD), functions (VNFD) and packages (PD) descriptors.
-The Catalogue also support storage for SONATA packages (son-packages), the binary files that contain the descriptors.
+The Catalogue also support storage for 5GTANGO packages (tng-packages), the binary files that contain the descriptors.
 For testing the Catalogues, you can use 'curl' tool to send a request descriptors to the API. It is required to set the HTTP header 'Content-type' field to 'application/json' or 'application/x-yaml' according to your desired format.
 
 The Catalogues' API now supports API versioning. New API v2 has been introduced in release v2.0 which implements some structure changes in the descriptors.
-The API v1 is deprecated and is no longer supported by the SONATA Service Platform. It is recommended to use v2 only in a MongoDB database.
+The API v1 is deprecated and is no longer supported by the 5GTANGO Service Platform. It is recommended to use v2 only in a MongoDB database.
 
 Method GET:
 
@@ -169,20 +133,20 @@ curl -X DELETE http://localhost:4011/catalogues/vnfs/api/v2/9f18bc1b-b18d-483b-8
 curl -X DELETE http://localhost:4011/catalogues/packages/api/v2/9f18bc1b-b18d-483b-88da-a600e9255018
 ```
 
-The API for SONATA packages (son-package) files works very similar to the API for the descriptors or records.
+The API for 5GTANGO packages (tng-package) files works very similar to the API for the descriptors.
 
 Method GET:
 
 To receive a list of stored packages
 
 ```sh
-curl http://localhost:4011/catalogues/api/v2/son-packages
+curl http://localhost:4011/catalogues/api/v2/tng-packages
 ```
 
 To receive a package file
 
 ```sh
-curl http://localhost:4011/catalogues/api/v2/son-packages/9f18bc1b-b18d-483b-88da-a600e9255000
+curl http://localhost:4011/catalogues/api/v2/tng-packages/9f18bc1b-b18d-483b-88da-a600e9255000
 ```
 Method POST:
 
@@ -193,7 +157,7 @@ HTTP header 'Content-Type' must be set to 'application/zip'
 HTTP header 'Content-Disposition' must be set to 'attachment; filename=```name_of_the_package```'
 
 ```sh
-curl -X POST -H "Content-Type: application/zip" -H "Content-Disposition: attachment; filename=sonata_example.son" -F "@sonata-demo.son" "http://0.0.0.0:4011/catalogues/api/v2/son-packages"
+curl -X POST -H "Content-Type: application/zip" -H "Content-Disposition: attachment; filename=sonata_example.tng" -F "@sonata-demo.tng" "http://0.0.0.0:4011/catalogues/api/v2/tng-packages"
 ```
 
 Method DELETE:
@@ -201,17 +165,13 @@ Method DELETE:
 To remove a package file by its ID
 
 ```sh
-curl -X DELETE http://localhost:4011/catalogues/api/v2/son-packages/9f18bc1b-b18d-483b-88da-a600e9255000
+curl -X DELETE http://localhost:4011/catalogues/api/v2/tng-packages/9f18bc1b-b18d-483b-88da-a600e9255000
 ```
 
-For more information about usage of Catalogue, please visit the wikipage link below which contains some information to interact and test the Catalogues API.
-
-* [Testing the code](http://wiki.sonata-nfv.eu/index.php/SONATA_Catalogues) - Inside SP Catalogue API Documentation (It currently works for SDK and SP Catalogues)
-
-### Pushing 'sonata-demo' files to Catalogue
+### Pushing 'tango-demo' files to Catalogue
 
 The Rakefile in root folder includes an specific task to fill the Catalogue with descriptor sample files from
-sonata-demo package. This is specially useful when starting an empty Catalogue. It can be run with a rake task:
+tango-demo package. This is specially useful when starting an empty Catalogue. It can be run with a rake task:
 
 ```sh
 rake init:load_samples[<server>]
@@ -225,44 +185,8 @@ An example of usage:
 rake init:load_samples[integration]
 ```
 
-### Multiple MongoDB database support (Hierarchical Service Providers case)
-
-Different MongoDBs can now be configured to the `son-catalogue-repos` component in order to support specific needs in the SONATA HSP Pilot (formerly known as SP2SP or SP-to-SP)
-
-In a default setup, Catalogue and Repositories API share a common MongoDB, however the it is possible to configure a secondary MongoDB in order to separate the database behind the API component.
-
-Specifically, in the HSP Pilot, we find two different SPs: SP1 and SP2. Each SP keeps its own `son-catalogue-repos` component, however each component is configured in a different way. In order to set the databases, the next environment variables are available:
-
-```
--e MAIN_DB
--e MAIN_DB_HOST
--e SECOND_DB
--e SECOND_DB_HOST
-```
-
-Thus, each SP deploys its `son-catalogue-repos` with the next settings:
-
-* SP1:
-
-```
-docker run --name sp1-son-catalogue-repos -d -p 4002:4011-e MAIN_DB=SP1_CATALOGUE_DB -e MAIN_DB_HOST=SP1_CATALOGUE_DB_ADDRESS -e SECOND_DB=SP1_REPOSITORY_DB -e SECOND_DB_HOST=SP1_REPOSITORY_DB
-```
-
-* SP2:
-
-```
-docker run --name sp2-son-catalogue-repos -d -p 4002:4011 -e MAIN_DB=SP1_CATALOGUE_DB -e MAIN_DB_HOST=SP1_CATALOGUE_DB_ADDRESS -e SECOND_DB=SP2_REPOSITORY_DB -e SECOND_DB_HOST=SP2_REPOSITORY_DB
-```
 
 ### API Documentation
-
-The API documentation is expected to be generated with Swagger soon. Further information can be found on SONATA's wikipages link for SONATA Catalogues:
-
-* [SONATA Catalogues](http://wiki.sonata-nfv.eu/index.php/SONATA_Catalogues) - SONATA Catalogues on wikipages
-
-
-New API documentation in Swagger can be accessed from http://localhost:4011/api-doc while running the Catalogue server
-
 Currently, the API is documented with yardoc and can be built with a rake task:
 
 ```sh
@@ -280,11 +204,11 @@ or you can use docker-compose and view from http://localhost:8808/
 
 ## License
 
-The SONATA SDK Catalogue is published under Apache 2.0 license. Please see the LICENSE file for more details.
+The 5GTANGO Catalogue is published under Apache 2.0 license. Please see the LICENSE file for more details.
 
 ## Useful Links
 
-To support working and testing with the son-catalogue database it is optional to use next tools:
+To support working and testing with the tng-catalogue database it is optional to use next tools:
 
 * [Robomongo](https://robomongo.org/download) - Robomongo 0.9.0-RC4
 

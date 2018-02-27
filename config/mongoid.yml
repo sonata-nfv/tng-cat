@@ -4,16 +4,16 @@ development:
     default:
       database: tng-catalogue
       hosts:
-      - mongo:27017
+      - 127.0.0.1:27017
 production:
   sessions:
     default:
       database: tng-catalogue
       hosts:
-      - mongo:27017
+      - 127.0.0.1:27017
 test:
   sessions:
     default:
       database: tng-catalogue
       hosts:
-      - mongo:27017
+      - 127.0.0.1:27017

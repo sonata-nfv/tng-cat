@@ -9063,3 +9063,689 @@ D, [2018-02-27T02:03:56.019598 #3288] DEBUG -- : Catalogue: leaving DELETE /api/
 Finished in 1.16 seconds (files took 58.26 seconds to load)
 72 examples, 0 failures
 
+D, [2018-02-27T17:47:13.765338 #7165] DEBUG -- : RETRY=0
+D, [2018-02-27T17:47:13.772378 #7165] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T17:47:13.772443 #7165] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T17:47:21.772782 #7165] DEBUG -- : RETRY=1
+D, [2018-02-27T17:47:21.793543 #7165] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T17:47:21.793792 #7165] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T17:47:29.794366 #7165] DEBUG -- : RETRY=2
+D, [2018-02-27T17:47:29.800655 #7165] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T17:47:29.800736 #7165] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T17:47:37.801606 #7165] DEBUG -- : RETRY=3
+D, [2018-02-27T17:47:37.817533 #7165] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T17:47:37.817602 #7165] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T17:47:45.817731 #7165] DEBUG -- : RETRY=4
+D, [2018-02-27T17:47:45.828099 #7165] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T17:47:45.828169 #7165] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T17:47:53.828569 #7165] DEBUG -- : RETRY=5
+D, [2018-02-27T17:47:54.096105 #7165] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T17:47:54.096295 #7165] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T17:48:02.096647 #7165] DEBUG -- : RETRY=6
+D, [2018-02-27T17:48:02.124677 #7165] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T17:48:02.124878 #7165] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T17:48:11.360919 #7165] DEBUG -- : RETRY=0
+D, [2018-02-27T17:48:11.369819 #7165] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T17:48:11.369884 #7165] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T17:48:19.370488 #7165] DEBUG -- : RETRY=1
+D, [2018-02-27T17:48:19.385940 #7165] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T17:48:19.386131 #7165] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T17:48:27.386484 #7165] DEBUG -- : RETRY=2
+D, [2018-02-27T17:48:27.403158 #7165] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T17:48:27.403507 #7165] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T17:48:35.403774 #7165] DEBUG -- : RETRY=3
+D, [2018-02-27T17:48:35.412806 #7165] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T17:48:35.413048 #7165] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T17:48:43.413588 #7165] DEBUG -- : RETRY=4
+D, [2018-02-27T17:48:43.427670 #7165] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T17:48:43.427865 #7165] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T17:48:51.428655 #7165] DEBUG -- : RETRY=5
+D, [2018-02-27T17:48:51.444140 #7165] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T17:48:51.444343 #7165] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T17:48:59.444839 #7165] DEBUG -- : RETRY=6
+D, [2018-02-27T17:48:59.455513 #7165] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T17:48:59.455740 #7165] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T17:50:09.449578 #7343] DEBUG -- : RETRY=0
+D, [2018-02-27T17:50:09.462149 #7343] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T17:50:09.462217 #7343] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T17:50:17.462524 #7343] DEBUG -- : RETRY=1
+D, [2018-02-27T17:50:17.482636 #7343] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T17:50:17.482822 #7343] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T17:50:25.483657 #7343] DEBUG -- : RETRY=2
+D, [2018-02-27T17:50:25.489754 #7343] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T17:50:25.489845 #7343] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T17:50:33.490031 #7343] DEBUG -- : RETRY=3
+D, [2018-02-27T17:50:33.499880 #7343] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T17:50:33.500044 #7343] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T17:50:41.500319 #7343] DEBUG -- : RETRY=4
+D, [2018-02-27T17:50:41.509073 #7343] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T17:50:41.509141 #7343] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T17:50:49.509830 #7343] DEBUG -- : RETRY=5
+D, [2018-02-27T17:50:49.526458 #7343] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T17:50:49.526693 #7343] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T17:50:57.527357 #7343] DEBUG -- : RETRY=6
+D, [2018-02-27T17:50:57.537958 #7343] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T17:50:57.538140 #7343] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T17:51:06.957462 #7458] DEBUG -- : RETRY=0
+D, [2018-02-27T17:51:06.971620 #7458] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T17:51:06.971712 #7458] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T17:51:14.971897 #7458] DEBUG -- : RETRY=1
+D, [2018-02-27T17:51:14.988569 #7458] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T17:51:14.988778 #7458] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T17:51:22.989085 #7458] DEBUG -- : RETRY=2
+D, [2018-02-27T17:51:28.050244 #7458] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T17:51:28.050548 #7458] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T17:51:36.050935 #7458] DEBUG -- : RETRY=3
+D, [2018-02-27T17:51:36.129197 #7458] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T17:51:36.129467 #7458] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T17:51:44.129987 #7458] DEBUG -- : RETRY=4
+D, [2018-02-27T17:51:44.155263 #7458] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T17:51:44.155960 #7458] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T17:51:52.156267 #7458] DEBUG -- : RETRY=5
+D, [2018-02-27T17:51:52.171847 #7458] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T17:51:52.172101 #7458] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T17:52:00.172322 #7458] DEBUG -- : RETRY=6
+D, [2018-02-27T17:52:00.184754 #7458] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T17:52:00.184832 #7458] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "GET / " 200 3065 0.0067
+.127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "POST /network-services " 201 1824 0.0340
+.I, [2018-02-27T17:52:08.352597 #7458]  INFO -- : {"OK"=>"Duplicated NS Name, Vendor and Version"}
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "POST /network-services " 200 47 0.0025
+.E, [2018-02-27T17:52:08.356122 #7458] ERROR -- : {"error"=>"ERROR: NS Vendor not found"}
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "POST /network-services " 400 38 0.0011
+.I, [2018-02-27T17:52:08.359622 #7458]  INFO -- : Catalogue: entered GET /network-services?
+I, [2018-02-27T17:52:08.359756 #7458]  INFO -- : Catalogue: NSDs=#<Mongoid::Criteria:0x00000002b471c8>
+I, [2018-02-27T17:52:08.360524 #7458]  INFO -- : Catalogue: leaving GET /network-services? with #<Mongoid::Criteria:0x00000002b471c8>
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "GET /network-services " 200 1826 0.0039
+.I, [2018-02-27T17:52:08.366069 #7458]  INFO -- : Catalogue: entered GET /network-services?X8rBMr9pRwJSAZy5WhBFy8_OUt9-SzGOAR.490Oc4Ns.XtUN_8QhIJ6VXKbXza.TdAy08kC4.u1XvQWLbFaQQn
+I, [2018-02-27T17:52:08.366426 #7458]  INFO -- : Catalogue: NSDs=#<Mongoid::Criteria:0x0000000324ac18>
+I, [2018-02-27T17:52:08.367239 #7458]  INFO -- : Catalogue: leaving GET /network-services?X8rBMr9pRwJSAZy5WhBFy8_OUt9-SzGOAR.490Oc4Ns.XtUN_8QhIJ6VXKbXza.TdAy08kC4.u1XvQWLbFaQQn with #<Mongoid::Criteria:0x0000000324ac18>
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "GET /network-services?X8rBMr9pRwJSAZy5WhBFy8_OUt9-SzGOAR.490Oc4Ns.XtUN_8QhIJ6VXKbXza.TdAy08kC4.u1XvQWLbFaQQn " 200 1826 0.0041
+.I, [2018-02-27T17:52:08.372954 #7458]  INFO -- : Catalogue: entered GET /network-services?version=last
+I, [2018-02-27T17:52:08.373247 #7458]  INFO -- : Catalogue: NSDs=#<Mongoid::Contextual::Mongo:0x000000039c2220>
+I, [2018-02-27T17:52:08.373806 #7458]  INFO -- : Catalogue: leaving GET /network-services?version=last with #<Mongoid::Contextual::Mongo:0x000000039c2220>
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "GET /network-services?version=last " 200 1826 0.0080
+.D, [2018-02-27T17:52:08.386848 #7458] DEBUG -- : Catalogue: GET /network-services/cca5dc8e-72b2-44c1-a1f0-131ba95ad2cc
+D, [2018-02-27T17:52:08.388214 #7458] DEBUG -- : Catalogue: leaving GET /network-services/cca5dc8e-72b2-44c1-a1f0-131ba95ad2cc" with NSD #<Ns:0x00000003ebcff0>
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "GET /network-services/cca5dc8e-72b2-44c1-a1f0-131ba95ad2cc " 200 1824 0.0030
+.D, [2018-02-27T17:52:08.392179 #7458] DEBUG -- : Catalogue: PUT /network-services/cca5dc8e-72b2-44c1-a1f0-131ba95ad2cc
+I, [2018-02-27T17:52:08.392255 #7458]  INFO -- : Catalogue: entered PUT /network-services/status=inactive
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "PUT /network-services/cca5dc8e-72b2-44c1-a1f0-131ba95ad2cc?status=inactive " 200 35 0.0037
+.D, [2018-02-27T17:52:08.397887 #7458] DEBUG -- : Catalogue: DELETE /network-services/cca5dc8e-72b2-44c1-a1f0-131ba95ad2cc
+D, [2018-02-27T17:52:08.399204 #7458] DEBUG -- : Catalogue: leaving DELETE /network-services/cca5dc8e-72b2-44c1-a1f0-131ba95ad2cc" with NSD #<Ns:0x00000004f94ff8>
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "DELETE /network-services/cca5dc8e-72b2-44c1-a1f0-131ba95ad2cc " 200 15 0.0025
+.127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "GET / " 200 3065 0.0028
+.127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "POST /network-services " 201 1887 0.0072
+.I, [2018-02-27T17:52:08.419783 #7458]  INFO -- : {"OK"=>"Duplicated NS Name, Vendor and Version"}
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "POST /network-services " 200 47 0.0027
+.E, [2018-02-27T17:52:08.424336 #7458] ERROR -- : {"error"=>"ERROR: NS Vendor not found"}
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "POST /network-services " 400 38 0.0013
+.I, [2018-02-27T17:52:08.429371 #7458]  INFO -- : Catalogue: entered GET /api/v2/network-services?
+I, [2018-02-27T17:52:08.430416 #7458]  INFO -- : Catalogue: NSDs=#<Mongoid::Criteria:0x000000053ad9a0>
+I, [2018-02-27T17:52:08.430762 #7458]  INFO -- : Catalogue: leaving GET /api/v2/network-services? with #<Mongoid::Criteria:0x000000053ad9a0>
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "GET /network-services " 200 1889 0.0045
+.I, [2018-02-27T17:52:08.436897 #7458]  INFO -- : Catalogue: entered GET /api/v2/network-services?X8rBMr9pRwJSAZy5WhBFy8_OUt9-SzGOAR.490Oc4Ns.XtUN_8QhIJ6VXKbXza.TdAy08kC4.u1XvQWLbFaQQn
+I, [2018-02-27T17:52:08.437995 #7458]  INFO -- : Catalogue: NSDs=#<Mongoid::Criteria:0x000000054e1650>
+I, [2018-02-27T17:52:08.438383 #7458]  INFO -- : Catalogue: leaving GET /api/v2/network-services?X8rBMr9pRwJSAZy5WhBFy8_OUt9-SzGOAR.490Oc4Ns.XtUN_8QhIJ6VXKbXza.TdAy08kC4.u1XvQWLbFaQQn with #<Mongoid::Criteria:0x000000054e1650>
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "GET /network-services?X8rBMr9pRwJSAZy5WhBFy8_OUt9-SzGOAR.490Oc4Ns.XtUN_8QhIJ6VXKbXza.TdAy08kC4.u1XvQWLbFaQQn " 200 1889 0.0043
+.I, [2018-02-27T17:52:08.444833 #7458]  INFO -- : Catalogue: entered GET /api/v2/network-services?version=last
+I, [2018-02-27T17:52:08.445157 #7458]  INFO -- : Catalogue: NSDs=#<Mongoid::Contextual::Mongo:0x000000056468b0>
+I, [2018-02-27T17:52:08.445747 #7458]  INFO -- : Catalogue: leaving GET /api/v2/network-services?version=last with #<Mongoid::Contextual::Mongo:0x000000056468b0>
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "GET /network-services?version=last " 200 1889 0.0055
+.D, [2018-02-27T17:52:08.452890 #7458] DEBUG -- : Catalogue: GET /api/v2/network-services/f251cb56-e561-4d31-9488-f5319fb0cd0d
+D, [2018-02-27T17:52:08.454104 #7458] DEBUG -- : Catalogue: leaving GET /api/v2/network-services/f251cb56-e561-4d31-9488-f5319fb0cd0d" with NSD #<Nsd:0x000000057f78d0>
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "GET /network-services/f251cb56-e561-4d31-9488-f5319fb0cd0d " 200 1887 0.0036
+.D, [2018-02-27T17:52:08.459670 #7458] DEBUG -- : Catalogue: DELETE /api/v2/network-services/f251cb56-e561-4d31-9488-f5319fb0cd0d
+D, [2018-02-27T17:52:08.461669 #7458] DEBUG -- : Catalogue: leaving DELETE /api/v2/network-services/f251cb56-e561-4d31-9488-f5319fb0cd0d" with NSD #<Nsd:0x000000059642e0>
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "DELETE /network-services/f251cb56-e561-4d31-9488-f5319fb0cd0d " 200 15 0.0036
+.127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "GET / " 200 3065 0.0035
+.127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "POST /packages " 201 2366 0.0300
+.I, [2018-02-27T17:52:08.504605 #7458]  INFO -- : {"OK"=>"Duplicated Package Name, Vendor and Version"}
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "POST /packages " 200 52 0.0021
+.E, [2018-02-27T17:52:08.508119 #7458] ERROR -- : {"error"=>"ERROR: Package Vendor not found"}
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "POST /packages " 400 43 0.0011
+.I, [2018-02-27T17:52:08.511375 #7458]  INFO -- : Catalogue: entered GET /packages?
+I, [2018-02-27T17:52:08.511517 #7458]  INFO -- : Catalogue: PDs=#<Mongoid::Criteria:0x000000059efe80>
+I, [2018-02-27T17:52:08.512207 #7458]  INFO -- : Catalogue: leaving GET /packages? with #<Mongoid::Criteria:0x000000059efe80>
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "GET /packages " 200 2368 0.0026
+.I, [2018-02-27T17:52:08.516016 #7458]  INFO -- : Catalogue: entered GET /packages?X8rBMr9pRwJSAZy5WhBFy8_OUt9-SzGOAR.490Oc4Ns.XtUN_8QhIJ6VXKbXza.TdAy08kC4.u1XvQWLbFaQQn
+I, [2018-02-27T17:52:08.516197 #7458]  INFO -- : Catalogue: PDs=#<Mongoid::Criteria:0x00000005914650>
+I, [2018-02-27T17:52:08.516929 #7458]  INFO -- : Catalogue: leaving GET /packages?X8rBMr9pRwJSAZy5WhBFy8_OUt9-SzGOAR.490Oc4Ns.XtUN_8QhIJ6VXKbXza.TdAy08kC4.u1XvQWLbFaQQn with #<Mongoid::Criteria:0x00000005914650>
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "GET /packages?X8rBMr9pRwJSAZy5WhBFy8_OUt9-SzGOAR.490Oc4Ns.XtUN_8QhIJ6VXKbXza.TdAy08kC4.u1XvQWLbFaQQn " 200 2368 0.0027
+.I, [2018-02-27T17:52:08.520588 #7458]  INFO -- : Catalogue: entered GET /packages?version=last
+I, [2018-02-27T17:52:08.520851 #7458]  INFO -- : Catalogue: PDs=#<Mongoid::Contextual::Mongo:0x0000000581a8f8>
+I, [2018-02-27T17:52:08.521419 #7458]  INFO -- : Catalogue: leaving GET /packages?version=last with #<Mongoid::Contextual::Mongo:0x0000000581a8f8>
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "GET /packages?version=last " 200 2368 0.0042
+.D, [2018-02-27T17:52:08.526545 #7458] DEBUG -- : Catalogue: GET /packages/5a98327a-f1b4-4d5c-8bf7-0f70b0c6a834
+D, [2018-02-27T17:52:08.527624 #7458] DEBUG -- : Catalogue: leaving GET /packages/5a98327a-f1b4-4d5c-8bf7-0f70b0c6a834" with PD #<Package:0x00000005709bf8>
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "GET /packages/5a98327a-f1b4-4d5c-8bf7-0f70b0c6a834 " 200 2366 0.0021
+.D, [2018-02-27T17:52:08.530381 #7458] DEBUG -- : Catalogue: PUT /packages/5a98327a-f1b4-4d5c-8bf7-0f70b0c6a834
+I, [2018-02-27T17:52:08.530440 #7458]  INFO -- : Catalogue: entered PUT /packages/status=inactive
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "PUT /packages/5a98327a-f1b4-4d5c-8bf7-0f70b0c6a834?status=inactive " 200 35 0.0027
+.D, [2018-02-27T17:52:08.534811 #7458] DEBUG -- : Catalogue: PUT /packages/5a98327a-f1b4-4d5c-8bf7-0f70b0c6a834
+I, [2018-02-27T17:52:08.534868 #7458]  INFO -- : Catalogue: entered PUT /packages/sonp_uuid=0123456789
+E, [2018-02-27T17:52:08.536477 #7458] ERROR -- : {"error"=>"Submitted son-package UUID not exists"}
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "PUT /packages/5a98327a-f1b4-4d5c-8bf7-0f70b0c6a834?sonp_uuid=0123456789 " 404 49 0.0027
+.D, [2018-02-27T17:52:08.539832 #7458] DEBUG -- : Catalogue: DELETE /packages/5a98327a-f1b4-4d5c-8bf7-0f70b0c6a834
+D, [2018-02-27T17:52:08.540860 #7458] DEBUG -- : Catalogue: leaving DELETE /packages/5a98327a-f1b4-4d5c-8bf7-0f70b0c6a834" with PD #<Package:0x00000005599638>
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "DELETE /packages/5a98327a-f1b4-4d5c-8bf7-0f70b0c6a834 " 200 14 0.0021
+.127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "GET / " 200 3065 0.0022
+.127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "POST /packages " 201 2447 0.0047
+.I, [2018-02-27T17:52:08.556405 #7458]  INFO -- : {"OK"=>"Duplicated Package Name, Vendor and Version"}
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "POST /packages " 200 52 0.0025
+.E, [2018-02-27T17:52:08.559798 #7458] ERROR -- : {"error"=>"ERROR: Package Vendor not found"}
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "POST /packages " 400 43 0.0010
+.I, [2018-02-27T17:52:08.562909 #7458]  INFO -- : Catalogue: entered GET /api/v2/packages?
+I, [2018-02-27T17:52:08.563763 #7458]  INFO -- : Catalogue: PDs=#<Mongoid::Criteria:0x0000000530f9a8>
+I, [2018-02-27T17:52:08.564120 #7458]  INFO -- : Catalogue: leaving GET /api/v2/packages? with #<Mongoid::Criteria:0x0000000530f9a8>
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "GET /packages " 200 2449 0.0034
+.I, [2018-02-27T17:52:08.568662 #7458]  INFO -- : Catalogue: entered GET /api/v2/packages?
+I, [2018-02-27T17:52:08.569484 #7458]  INFO -- : Catalogue: PDs=#<Mongoid::Criteria:0x000000052825f8>
+I, [2018-02-27T17:52:08.569799 #7458]  INFO -- : Catalogue: leaving GET /api/v2/packages? with #<Mongoid::Criteria:0x000000052825f8>
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "GET /packages " 200 2449 0.0036
+.I, [2018-02-27T17:52:08.574277 #7458]  INFO -- : Catalogue: entered GET /api/v2/packages?version=last
+I, [2018-02-27T17:52:08.574567 #7458]  INFO -- : Catalogue: PDs=#<Mongoid::Contextual::Mongo:0x000000051e44c0>
+I, [2018-02-27T17:52:08.575152 #7458]  INFO -- : Catalogue: leaving GET /api/v2/packages?version=last with #<Mongoid::Contextual::Mongo:0x000000051e44c0>
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "GET /packages?version=last " 200 2449 0.0044
+.D, [2018-02-27T17:52:08.580895 #7458] DEBUG -- : Catalogue: GET /api/v2/packages/ba1dc2ee-72ca-4e63-a0a0-9144d4a26eac
+D, [2018-02-27T17:52:08.582072 #7458] DEBUG -- : Catalogue: leaving GET /api/v2/packages/ba1dc2ee-72ca-4e63-a0a0-9144d4a26eac" with PD #<Pkgd:0x000000050ff4b0>
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "GET /packages/ba1dc2ee-72ca-4e63-a0a0-9144d4a26eac " 200 2447 0.0029
+.D, [2018-02-27T17:52:08.586199 #7458] DEBUG -- : Catalogue: PUT /api/v2/packages/ba1dc2ee-72ca-4e63-a0a0-9144d4a26eac
+I, [2018-02-27T17:52:08.586260 #7458]  INFO -- : Catalogue: entered PUT /api/v2/packages/status=inactive
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "PUT /packages/ba1dc2ee-72ca-4e63-a0a0-9144d4a26eac?status=inactive " 200 35 0.0028
+.D, [2018-02-27T17:52:08.591524 #7458] DEBUG -- : Catalogue: PUT /api/v2/packages/ba1dc2ee-72ca-4e63-a0a0-9144d4a26eac
+I, [2018-02-27T17:52:08.591599 #7458]  INFO -- : Catalogue: entered PUT /api/v2/packages/sonp_uuid=0123456789
+E, [2018-02-27T17:52:08.593240 #7458] ERROR -- : {"error"=>"Submitted son-package UUID not exists"}
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "PUT /packages/ba1dc2ee-72ca-4e63-a0a0-9144d4a26eac?sonp_uuid=0123456789 " 404 49 0.0029
+.D, [2018-02-27T17:52:08.596876 #7458] DEBUG -- : Catalogue: DELETE /api/v2/packages/ba1dc2ee-72ca-4e63-a0a0-9144d4a26eac
+E, [2018-02-27T17:52:08.598813 #7458] ERROR -- : Dependencies not found: 
+Problem:
+  Document not found for class Dependencies_mapping with attributes {"pd.name"=>"X8rBMr9pRwJSAZy5WhBFy8_OUt9-SzGOAR.490Oc4Ns.XtUN_8QhIJ6VXKbXza.TdAy08kC4.u1XvQWLbFaQQn", "pd.version"=>"582508180021607734924847085465088203416134071781801715084959918018529773253144941917518789", "pd.vendor"=>"u1XvQWLbFaQQn.X8rBMr9pRwJSAZy5WhBFy8_OUt9-SzGOAR.490Oc4Ns.XtUN_8QhIJ6VXKbXza.TdAy08kC4"}.
+Summary:
+  When calling Dependencies_mapping.find_by with a hash of attributes, all attributes provided must match a document in the database or this error will be raised.
+Resolution:
+  Search for attributes that are in the database or set the Mongoid.raise_not_found_error configuration option to false, which will cause a nil to be returned instead of raising this error.
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "DELETE /packages/ba1dc2ee-72ca-4e63-a0a0-9144d4a26eac " 500 49 0.0025
+.127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "GET / " 200 3065 0.0022
+.I, [2018-02-27T17:52:08.605194 #7458]  INFO -- : Catalogue: entered GET /son-packages?
+I, [2018-02-27T17:52:08.605330 #7458]  INFO -- : Catalogue: leaving GET /son-packages? with #<Mongoid::Criteria:0x00000004e8aab8>
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "GET /son-packages " 200 2 0.0014
+.127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "GET / " 200 3065 0.0023
+.I, [2018-02-27T17:52:08.612711 #7458]  INFO -- : Catalogue: entered GET /api/v2/son-packages?
+I, [2018-02-27T17:52:08.613563 #7458]  INFO -- : Catalogue: leaving GET /api/v2/son-packages? with #<Mongoid::Criteria:0x00000003e6e2b0>
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "GET /son-packages " 200 2 0.0024
+.D, [2018-02-27T17:52:08.617474 #7458] DEBUG -- : Catalogue: entered POST /api/v2/son-packages?
+D, [2018-02-27T17:52:08.726867 #7458] DEBUG -- : Catalogue: leaving POST /api/v2/son-packages/ with 5a957ea86a29921d22000000
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "POST /son-packages " 201 47 0.1628
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "POST /vnfs " 201 2743 0.0539
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "POST /vnfs " 201 1339 0.0116
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "POST /vnfs " 201 1345 0.0060
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "POST /network-services " 201 2583 0.0073
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "POST /packages " 201 2278 0.0063
+D, [2018-02-27T17:52:08.884961 #7458] DEBUG -- : Catalogue: entered POST /api/v2/son-packages?
+D, [2018-02-27T17:52:08.890157 #7458] DEBUG -- : Catalogue: leaving POST /api/v2/son-packages/ with 5a957ea86a29921d22000002
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "POST /son-packages " 201 47 0.0103
+I, [2018-02-27T17:52:08.899622 #7458]  INFO -- : {"OK"=>"Duplicated VNF Name, Vendor and Version"}
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "POST /vnfs " 200 48 0.0025
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "POST /network-services " 201 1564 0.0065
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "POST /packages " 201 2280 0.0067
+D, [2018-02-27T17:52:08.915966 #7458] DEBUG -- : Catalogue: entered POST /api/v2/son-packages?
+D, [2018-02-27T17:52:08.921651 #7458] DEBUG -- : Catalogue: leaving POST /api/v2/son-packages/ with 5a957ea86a29921d22000004
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "POST /son-packages " 201 47 0.0120
+I, [2018-02-27T17:52:08.932795 #7458]  INFO -- : {"OK"=>"Duplicated VNF Name, Vendor and Version"}
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "POST /vnfs " 200 48 0.0032
+I, [2018-02-27T17:52:08.936030 #7458]  INFO -- : {"OK"=>"Duplicated NS Name, Vendor and Version"}
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "POST /network-services " 200 47 0.0025
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "POST /packages " 201 2280 0.0064
+.I, [2018-02-27T17:52:08.947697 #7458]  INFO -- : Setting pd 300db35d-9fe4-4fb4-aecc-0f102a0c006a status to inactive
+I, [2018-02-27T17:52:08.949254 #7458]  INFO -- : VNFD firewall-vnf has more than one dependency
+I, [2018-02-27T17:52:08.950549 #7458]  INFO -- : VNFD tcpdump-vnf has more than one dependency
+I, [2018-02-27T17:52:08.951351 #7458]  INFO -- : COMPONENTS WITHOUT DEPENDENCIES: {:disable=>{:vnfds=>[{"vendor"=>"eu.sonata-nfv", "version"=>"0.2", "name"=>"iperf-vnf"}], :nsds=>[{"vendor"=>"eu.sonata-nfv.service-descriptor", "version"=>"0.2.1", "name"=>"sonata-demo"}]}, :cant_disable=>{:vnfds=>[{"vendor"=>"eu.sonata-nfv", "version"=>"0.3", "name"=>"firewall-vnf"}, {"vendor"=>"eu.sonata-nfv", "version"=>"0.2", "name"=>"tcpdump-vnf"}], :nsds=>[]}}
+D, [2018-02-27T17:52:08.958291 #7458] DEBUG -- : Catalogue: leaving DISABLE /api/v2/packages?" with PD #<Pkgd:0x00000005088888>
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "PUT /packages/300db35d-9fe4-4fb4-aecc-0f102a0c006a/status " 200 356 0.0123
+.I, [2018-02-27T17:52:08.961849 #7458]  INFO -- : Setting pd f3f6e42b-11e1-4016-8736-0e869af95bab status to inactive
+I, [2018-02-27T17:52:08.964130 #7458]  INFO -- : NSD sonata-demo-2 has more than one dependency
+I, [2018-02-27T17:52:08.964203 #7458]  INFO -- : COMPONENTS WITHOUT DEPENDENCIES: {:disable=>{:vnfds=>[{"vendor"=>"eu.sonata-nfv", "version"=>"0.2", "name"=>"tcpdump-vnf"}], :nsds=>[]}, :cant_disable=>{:vnfds=>[], :nsds=>[{"vendor"=>"eu.sonata-nfv.service-descriptor", "version"=>"0.2.1", "name"=>"sonata-demo-2"}]}}
+D, [2018-02-27T17:52:08.969047 #7458] DEBUG -- : Catalogue: leaving DISABLE /api/v2/packages?" with PD #<Pkgd:0x00000004f48478>
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "PUT /packages/f3f6e42b-11e1-4016-8736-0e869af95bab/status " 200 232 0.0089
+.I, [2018-02-27T17:52:08.972703 #7458]  INFO -- : Setting pd f3f6e42b-11e1-4016-8736-0e869af95bab status to active
+D, [2018-02-27T17:52:08.979440 #7458] DEBUG -- : Catalogue: leaving DISABLE /api/v2/packages?" with PD #<Pkgd:0x0000000401a140>
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "PUT /packages/f3f6e42b-11e1-4016-8736-0e869af95bab/status " 200 193 0.0084
+.D, [2018-02-27T17:52:08.981955 #7458] DEBUG -- : Catalogue: DELETE /api/v2/packages/300db35d-9fe4-4fb4-aecc-0f102a0c006a
+I, [2018-02-27T17:52:08.990410 #7458]  INFO -- : VNFD firewall-vnf has more than one dependency
+I, [2018-02-27T17:52:08.992049 #7458]  INFO -- : VNFD tcpdump-vnf has more than one dependency
+I, [2018-02-27T17:52:08.993015 #7458]  INFO -- : COMPONENTS WITHOUT DEPENDENCIES: {:delete=>{:vnfds=>[{"vendor"=>"eu.sonata-nfv", "version"=>"0.2", "name"=>"iperf-vnf"}], :nsds=>[{"vendor"=>"eu.sonata-nfv.service-descriptor", "version"=>"0.2.1", "name"=>"sonata-demo"}]}, :cant_delete=>{:vnfds=>[{"vendor"=>"eu.sonata-nfv", "version"=>"0.3", "name"=>"firewall-vnf"}, {"vendor"=>"eu.sonata-nfv", "version"=>"0.2", "name"=>"tcpdump-vnf"}], :nsds=>[]}}
+D, [2018-02-27T17:52:08.998075 #7458] DEBUG -- : Catalogue: leaving DELETE /api/v2/packages?" with PD #<Pkgd:0x00000003d60968>
+127.0.0.1 - - [27/Feb/2018:17:52:08 +0200] "DELETE /packages/300db35d-9fe4-4fb4-aecc-0f102a0c006a " 200 354 0.0167
+.D, [2018-02-27T17:52:09.001915 #7458] DEBUG -- : Catalogue: DELETE /api/v2/packages/f3f6e42b-11e1-4016-8736-0e869af95bab
+I, [2018-02-27T17:52:09.008743 #7458]  INFO -- : NSD sonata-demo-2 has more than one dependency
+I, [2018-02-27T17:52:09.008854 #7458]  INFO -- : COMPONENTS WITHOUT DEPENDENCIES: {:delete=>{:vnfds=>[{"vendor"=>"eu.sonata-nfv", "version"=>"0.2", "name"=>"tcpdump-vnf"}], :nsds=>[]}, :cant_delete=>{:vnfds=>[], :nsds=>[{"vendor"=>"eu.sonata-nfv.service-descriptor", "version"=>"0.2.1", "name"=>"sonata-demo-2"}]}}
+D, [2018-02-27T17:52:09.012900 #7458] DEBUG -- : Catalogue: leaving DELETE /api/v2/packages?" with PD #<Pkgd:0x0000000327e018>
+127.0.0.1 - - [27/Feb/2018:17:52:09 +0200] "DELETE /packages/f3f6e42b-11e1-4016-8736-0e869af95bab " 200 230 0.0117
+.D, [2018-02-27T17:52:09.015645 #7458] DEBUG -- : Catalogue: DELETE /api/v2/packages/e1baf45d-726a-4d2f-a216-f8aa7dccede4
+I, [2018-02-27T17:52:09.028523 #7458]  INFO -- : COMPONENTS WITHOUT DEPENDENCIES: {:delete=>{:vnfds=>[{"vendor"=>"eu.sonata-nfv", "version"=>"0.3", "name"=>"firewall-vnf"}], :nsds=>[{"vendor"=>"eu.sonata-nfv.service-descriptor", "version"=>"0.2.1", "name"=>"sonata-demo-2"}]}, :cant_delete=>{:vnfds=>[], :nsds=>[]}}
+D, [2018-02-27T17:52:09.036902 #7458] DEBUG -- : Catalogue: leaving DELETE /api/v2/packages?" with PD #<Pkgd:0x000000026076e0>
+127.0.0.1 - - [27/Feb/2018:17:52:09 +0200] "DELETE /packages/e1baf45d-726a-4d2f-a216-f8aa7dccede4 " 200 231 0.0219
+.127.0.0.1 - - [27/Feb/2018:17:52:09 +0200] "GET / " 200 3065 0.0023
+.127.0.0.1 - - [27/Feb/2018:17:52:09 +0200] "POST /vnfs " 201 1535 0.0047
+.I, [2018-02-27T17:52:09.051919 #7458]  INFO -- : {"OK"=>"Duplicated VNF Name, Vendor and Version"}
+127.0.0.1 - - [27/Feb/2018:17:52:09 +0200] "POST /vnfs " 200 48 0.0022
+.E, [2018-02-27T17:52:09.055316 #7458] ERROR -- : {"error"=>"ERROR: VNF Vendor not found"}
+127.0.0.1 - - [27/Feb/2018:17:52:09 +0200] "POST /vnfs " 400 39 0.0011
+.I, [2018-02-27T17:52:09.058569 #7458]  INFO -- : Catalogue: entered GET /vnfs?
+I, [2018-02-27T17:52:09.058789 #7458]  INFO -- : Catalogue: VNFDs=#<Mongoid::Criteria:0x00000005717898>
+I, [2018-02-27T17:52:09.059813 #7458]  INFO -- : Catalogue: leaving GET /vnfs? with #<Mongoid::Criteria:0x00000005717898>
+127.0.0.1 - - [27/Feb/2018:17:52:09 +0200] "GET /vnfs " 200 1537 0.0038
+.I, [2018-02-27T17:52:09.064521 #7458]  INFO -- : Catalogue: entered GET /vnfs?X8rBMr9pRwJSAZy5WhBFy8_OUt9-SzGOAR.490Oc4Ns.XtUN_8QhIJ6VXKbXza.TdAy08kC4.u1XvQWLbFaQQn
+I, [2018-02-27T17:52:09.064708 #7458]  INFO -- : Catalogue: VNFDs=#<Mongoid::Criteria:0x0000000567fbb0>
+I, [2018-02-27T17:52:09.065467 #7458]  INFO -- : Catalogue: leaving GET /vnfs?X8rBMr9pRwJSAZy5WhBFy8_OUt9-SzGOAR.490Oc4Ns.XtUN_8QhIJ6VXKbXza.TdAy08kC4.u1XvQWLbFaQQn with #<Mongoid::Criteria:0x0000000567fbb0>
+127.0.0.1 - - [27/Feb/2018:17:52:09 +0200] "GET /vnfs?X8rBMr9pRwJSAZy5WhBFy8_OUt9-SzGOAR.490Oc4Ns.XtUN_8QhIJ6VXKbXza.TdAy08kC4.u1XvQWLbFaQQn " 200 1537 0.0027
+.I, [2018-02-27T17:52:09.069476 #7458]  INFO -- : Catalogue: entered GET /vnfs?version=last
+I, [2018-02-27T17:52:09.069799 #7458]  INFO -- : Catalogue: VNFDs=#<Mongoid::Contextual::Mongo:0x000000055f7058>
+I, [2018-02-27T17:52:09.070397 #7458]  INFO -- : Catalogue: leaving GET /vnfs?version=last with #<Mongoid::Contextual::Mongo:0x000000055f7058>
+127.0.0.1 - - [27/Feb/2018:17:52:09 +0200] "GET /vnfs?version=last " 200 1537 0.0041
+.D, [2018-02-27T17:52:09.075498 #7458] DEBUG -- : Catalogue: GET /vnfs/5622a2d0-26ba-43ec-a212-6bec760f1ce3
+D, [2018-02-27T17:52:09.077349 #7458] DEBUG -- : Catalogue: leaving GET /vnfs/5622a2d0-26ba-43ec-a212-6bec760f1ce3" with VNFD #<Vnf:0x0000000550c210>
+127.0.0.1 - - [27/Feb/2018:17:52:09 +0200] "GET /vnfs/5622a2d0-26ba-43ec-a212-6bec760f1ce3 " 200 1535 0.0035
+.D, [2018-02-27T17:52:09.081171 #7458] DEBUG -- : Catalogue: PUT /vnfs/5622a2d0-26ba-43ec-a212-6bec760f1ce3
+I, [2018-02-27T17:52:09.081240 #7458]  INFO -- : Catalogue: entered PUT /vnfs/status=inactive
+127.0.0.1 - - [27/Feb/2018:17:52:09 +0200] "PUT /vnfs/5622a2d0-26ba-43ec-a212-6bec760f1ce3?status=inactive " 200 35 0.0031
+.D, [2018-02-27T17:52:09.086288 #7458] DEBUG -- : Catalogue: DELETE /vnfs/5622a2d0-26ba-43ec-a212-6bec760f1ce3
+D, [2018-02-27T17:52:09.087373 #7458] DEBUG -- : Catalogue: leaving DELETE /vnfs/5622a2d0-26ba-43ec-a212-6bec760f1ce3" with VNFD #<Vnf:0x000000053f8720>
+127.0.0.1 - - [27/Feb/2018:17:52:09 +0200] "DELETE /vnfs/5622a2d0-26ba-43ec-a212-6bec760f1ce3 " 200 16 0.0024
+.127.0.0.1 - - [27/Feb/2018:17:52:09 +0200] "GET / " 200 3065 0.0030
+.127.0.0.1 - - [27/Feb/2018:17:52:09 +0200] "POST /vnfs " 201 1618 0.0049
+.I, [2018-02-27T17:52:09.106593 #7458]  INFO -- : {"OK"=>"Duplicated VNF Name, Vendor and Version"}
+127.0.0.1 - - [27/Feb/2018:17:52:09 +0200] "POST /vnfs " 200 48 0.0024
+.E, [2018-02-27T17:52:09.110762 #7458] ERROR -- : {"error"=>"ERROR: VNF Vendor not found"}
+127.0.0.1 - - [27/Feb/2018:17:52:09 +0200] "POST /vnfs " 400 39 0.0012
+.I, [2018-02-27T17:52:09.114618 #7458]  INFO -- : Catalogue: entered GET /api/v2/vnfs?
+I, [2018-02-27T17:52:09.115479 #7458]  INFO -- : Catalogue: VNFDs=#<Mongoid::Criteria:0x00000005188a58>
+I, [2018-02-27T17:52:09.115871 #7458]  INFO -- : Catalogue: leaving GET /api/v2/vnfs? with #<Mongoid::Criteria:0x00000005188a58>
+127.0.0.1 - - [27/Feb/2018:17:52:09 +0200] "GET /vnfs " 200 1620 0.0038
+.I, [2018-02-27T17:52:09.120956 #7458]  INFO -- : Catalogue: entered GET /api/v2/vnfs?
+I, [2018-02-27T17:52:09.121822 #7458]  INFO -- : Catalogue: VNFDs=#<Mongoid::Criteria:0x00000005103ce0>
+I, [2018-02-27T17:52:09.122192 #7458]  INFO -- : Catalogue: leaving GET /api/v2/vnfs? with #<Mongoid::Criteria:0x00000005103ce0>
+127.0.0.1 - - [27/Feb/2018:17:52:09 +0200] "GET /vnfs " 200 1620 0.0036
+.I, [2018-02-27T17:52:09.127267 #7458]  INFO -- : Catalogue: entered GET /api/v2/vnfs?
+I, [2018-02-27T17:52:09.128053 #7458]  INFO -- : Catalogue: VNFDs=#<Mongoid::Criteria:0x00000005060e28>
+I, [2018-02-27T17:52:09.128466 #7458]  INFO -- : Catalogue: leaving GET /api/v2/vnfs? with #<Mongoid::Criteria:0x00000005060e28>
+127.0.0.1 - - [27/Feb/2018:17:52:09 +0200] "GET /vnfs " 200 1620 0.0035
+.D, [2018-02-27T17:52:09.132977 #7458] DEBUG -- : Catalogue: GET /api/v2/vnfs/2869e466-89c4-46cb-9ad4-b66785a5b0af
+D, [2018-02-27T17:52:09.134040 #7458] DEBUG -- : Catalogue: leaving GET /api/v2/vnfs/2869e466-89c4-46cb-9ad4-b66785a5b0af" with VNFD #<Vnfd:0x00000004fb5d20>
+127.0.0.1 - - [27/Feb/2018:17:52:09 +0200] "GET /vnfs/2869e466-89c4-46cb-9ad4-b66785a5b0af " 200 1618 0.0027
+.D, [2018-02-27T17:52:09.138544 #7458] DEBUG -- : Catalogue: PUT /api/v2/vnfs/2869e466-89c4-46cb-9ad4-b66785a5b0af
+I, [2018-02-27T17:52:09.138609 #7458]  INFO -- : Catalogue: entered PUT /api/v2/vnfs/status=inactive
+127.0.0.1 - - [27/Feb/2018:17:52:09 +0200] "PUT /vnfs/2869e466-89c4-46cb-9ad4-b66785a5b0af?status=inactive " 200 35 0.0030
+.D, [2018-02-27T17:52:09.143472 #7458] DEBUG -- : Catalogue: DELETE /api/v2/vnfs/2869e466-89c4-46cb-9ad4-b66785a5b0af
+D, [2018-02-27T17:52:09.144555 #7458] DEBUG -- : Catalogue: leaving DELETE /api/v2/vnfs/2869e466-89c4-46cb-9ad4-b66785a5b0af" with VNFD #<Vnfd:0x00000004ec50a0>
+127.0.0.1 - - [27/Feb/2018:17:52:09 +0200] "DELETE /vnfs/2869e466-89c4-46cb-9ad4-b66785a5b0af " 200 16 0.0022
+.
+
+Finished in 0.85354 seconds (files took 1 minute 2.53 seconds to load)
+72 examples, 0 failures
+
+D, [2018-02-27T17:53:03.604752 #7515] DEBUG -- : RETRY=0
+D, [2018-02-27T17:53:03.622156 #7515] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T17:53:03.622226 #7515] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T17:53:11.622559 #7515] DEBUG -- : RETRY=1
+D, [2018-02-27T17:53:11.639264 #7515] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T17:53:11.639611 #7515] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T17:53:19.639979 #7515] DEBUG -- : RETRY=2
+D, [2018-02-27T17:53:19.677853 #7515] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T17:53:19.677941 #7515] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T17:53:27.678725 #7515] DEBUG -- : RETRY=3
+D, [2018-02-27T17:53:27.692189 #7515] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T17:53:27.692390 #7515] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T17:53:35.693112 #7515] DEBUG -- : RETRY=4
+D, [2018-02-27T17:53:35.704821 #7515] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T17:53:35.704894 #7515] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T17:53:43.705308 #7515] DEBUG -- : RETRY=5
+D, [2018-02-27T17:53:48.724595 #7515] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T17:53:48.724903 #7515] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T17:53:56.725378 #7515] DEBUG -- : RETRY=6
+D, [2018-02-27T17:53:56.736978 #7515] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T17:53:56.737049 #7515] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T17:54:07.743174 #7547] DEBUG -- : RETRY=0
+D, [2018-02-27T17:54:07.766640 #7547] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T17:54:07.766714 #7547] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T17:54:15.766877 #7547] DEBUG -- : RETRY=1
+D, [2018-02-27T17:54:15.777058 #7547] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T17:54:15.777278 #7547] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T17:54:23.777942 #7547] DEBUG -- : RETRY=2
+D, [2018-02-27T17:54:23.794301 #7547] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T17:54:23.794513 #7547] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T17:54:31.794761 #7547] DEBUG -- : RETRY=3
+D, [2018-02-27T17:54:31.809999 #7547] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T17:54:31.810098 #7547] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T17:54:39.810633 #7547] DEBUG -- : RETRY=4
+D, [2018-02-27T17:54:39.824237 #7547] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T17:54:39.824492 #7547] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T17:54:47.825083 #7547] DEBUG -- : RETRY=5
+D, [2018-02-27T17:54:47.832698 #7547] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T17:54:47.832773 #7547] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T17:54:55.833238 #7547] DEBUG -- : RETRY=6
+D, [2018-02-27T17:54:55.846353 #7547] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T17:54:55.846435 #7547] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T18:03:19.403890 #7829] DEBUG -- : RETRY=0
+D, [2018-02-27T18:03:19.411466 #7829] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T18:03:19.411537 #7829] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T18:03:27.411747 #7829] DEBUG -- : RETRY=1
+D, [2018-02-27T18:03:27.425044 #7829] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T18:03:27.425360 #7829] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T18:03:35.425967 #7829] DEBUG -- : RETRY=2
+D, [2018-02-27T18:03:35.438894 #7829] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T18:03:35.439103 #7829] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T18:03:43.440174 #7829] DEBUG -- : RETRY=3
+D, [2018-02-27T18:03:43.453499 #7829] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T18:03:43.453712 #7829] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T18:03:51.454675 #7829] DEBUG -- : RETRY=4
+D, [2018-02-27T18:03:51.471255 #7829] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T18:03:51.471804 #7829] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T18:03:59.472669 #7829] DEBUG -- : RETRY=5
+D, [2018-02-27T18:03:59.493216 #7829] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T18:03:59.493429 #7829] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T18:04:07.494326 #7829] DEBUG -- : RETRY=6
+D, [2018-02-27T18:04:07.504605 #7829] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T18:04:07.504881 #7829] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T18:04:16.711611 #7829] DEBUG -- : RETRY=0
+D, [2018-02-27T18:04:16.727378 #7829] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T18:04:16.727461 #7829] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T18:04:24.728218 #7829] DEBUG -- : RETRY=1
+D, [2018-02-27T18:04:24.739101 #7829] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T18:04:24.739305 #7829] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T18:04:32.740220 #7829] DEBUG -- : RETRY=2
+D, [2018-02-27T18:04:32.753836 #7829] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T18:04:32.754100 #7829] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T18:04:40.754744 #7829] DEBUG -- : RETRY=3
+D, [2018-02-27T18:04:40.763311 #7829] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T18:04:40.763522 #7829] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T18:04:48.763878 #7829] DEBUG -- : RETRY=4
+D, [2018-02-27T18:04:48.775038 #7829] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T18:04:48.775376 #7829] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T18:04:56.776080 #7829] DEBUG -- : RETRY=5
+D, [2018-02-27T18:04:56.792517 #7829] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T18:04:56.792721 #7829] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T18:05:04.793679 #7829] DEBUG -- : RETRY=6
+D, [2018-02-27T18:05:04.825141 #7829] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T18:05:04.825343 #7829] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T18:05:32.149218 #7857] DEBUG -- : RETRY=0
+D, [2018-02-27T18:05:32.156683 #7857] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T18:05:32.156744 #7857] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T18:05:40.157441 #7857] DEBUG -- : RETRY=1
+D, [2018-02-27T18:05:40.172114 #7857] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T18:05:40.172355 #7857] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T18:05:48.172960 #7857] DEBUG -- : RETRY=2
+D, [2018-02-27T18:05:48.183054 #7857] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T18:05:48.183250 #7857] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T18:05:56.184040 #7857] DEBUG -- : RETRY=3
+D, [2018-02-27T18:05:56.200827 #7857] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T18:05:56.201076 #7857] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T18:06:04.201673 #7857] DEBUG -- : RETRY=4
+D, [2018-02-27T18:06:04.209759 #7857] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T18:06:04.209955 #7857] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T18:06:12.210797 #7857] DEBUG -- : RETRY=5
+D, [2018-02-27T18:06:12.221876 #7857] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T18:06:12.222117 #7857] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T18:06:20.222857 #7857] DEBUG -- : RETRY=6
+D, [2018-02-27T18:06:20.232053 #7857] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T18:06:20.232300 #7857] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T18:06:29.613850 #7869] DEBUG -- : RETRY=0
+D, [2018-02-27T18:06:29.641142 #7869] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T18:06:29.641214 #7869] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T18:06:37.641681 #7869] DEBUG -- : RETRY=1
+D, [2018-02-27T18:06:37.655221 #7869] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T18:06:37.655441 #7869] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T18:06:45.656335 #7869] DEBUG -- : RETRY=2
+D, [2018-02-27T18:06:45.669049 #7869] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T18:06:45.669305 #7869] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T18:06:53.669576 #7869] DEBUG -- : RETRY=3
+D, [2018-02-27T18:06:53.683827 #7869] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T18:06:53.684075 #7869] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T18:07:01.684462 #7869] DEBUG -- : RETRY=4
+D, [2018-02-27T18:07:01.698749 #7869] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T18:07:01.699013 #7869] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T18:07:09.699563 #7869] DEBUG -- : RETRY=5
+D, [2018-02-27T18:07:09.713459 #7869] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T18:07:09.713671 #7869] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+D, [2018-02-27T18:07:17.714152 #7869] DEBUG -- : RETRY=6
+D, [2018-02-27T18:07:17.730831 #7869] DEBUG -- : PUBLIC_KEY_CODE=503
+D, [2018-02-27T18:07:17.731216 #7869] DEBUG -- : PUBLIC_KEY_MSG=Failed to open TCP connection to son-gtkapi:5000 (getaddrinfo: Name or service not known)
+127.0.0.1 - - [27/Feb/2018:18:07:25 +0200] "GET / " 200 3065 0.0062
+.127.0.0.1 - - [27/Feb/2018:18:07:25 +0200] "POST /network-services " 201 1824 0.0372
+.I, [2018-02-27T18:07:25.923166 #7869]  INFO -- : {"OK"=>"Duplicated NS Name, Vendor and Version"}
+127.0.0.1 - - [27/Feb/2018:18:07:25 +0200] "POST /network-services " 200 47 0.0022
+.E, [2018-02-27T18:07:25.926604 #7869] ERROR -- : {"error"=>"ERROR: NS Vendor not found"}
+127.0.0.1 - - [27/Feb/2018:18:07:25 +0200] "POST /network-services " 400 38 0.0011
+.I, [2018-02-27T18:07:25.929579 #7869]  INFO -- : Catalogue: entered GET /network-services?
+I, [2018-02-27T18:07:25.929694 #7869]  INFO -- : Catalogue: NSDs=#<Mongoid::Criteria:0x000000043df6b8>
+I, [2018-02-27T18:07:25.930375 #7869]  INFO -- : Catalogue: leaving GET /network-services? with #<Mongoid::Criteria:0x000000043df6b8>
+127.0.0.1 - - [27/Feb/2018:18:07:25 +0200] "GET /network-services " 200 1826 0.0028
+.I, [2018-02-27T18:07:25.934232 #7869]  INFO -- : Catalogue: entered GET /network-services?X8rBMr9pRwJSAZy5WhBFy8_OUt9-SzGOAR.490Oc4Ns.XtUN_8QhIJ6VXKbXza.TdAy08kC4.u1XvQWLbFaQQn
+I, [2018-02-27T18:07:25.934371 #7869]  INFO -- : Catalogue: NSDs=#<Mongoid::Criteria:0x00000003419620>
+I, [2018-02-27T18:07:25.935372 #7869]  INFO -- : Catalogue: leaving GET /network-services?X8rBMr9pRwJSAZy5WhBFy8_OUt9-SzGOAR.490Oc4Ns.XtUN_8QhIJ6VXKbXza.TdAy08kC4.u1XvQWLbFaQQn with #<Mongoid::Criteria:0x00000003419620>
+127.0.0.1 - - [27/Feb/2018:18:07:25 +0200] "GET /network-services?X8rBMr9pRwJSAZy5WhBFy8_OUt9-SzGOAR.490Oc4Ns.XtUN_8QhIJ6VXKbXza.TdAy08kC4.u1XvQWLbFaQQn " 200 1826 0.0043
+.I, [2018-02-27T18:07:25.940901 #7869]  INFO -- : Catalogue: entered GET /network-services?version=last
+I, [2018-02-27T18:07:25.941225 #7869]  INFO -- : Catalogue: NSDs=#<Mongoid::Contextual::Mongo:0x000000030603d0>
+I, [2018-02-27T18:07:25.941803 #7869]  INFO -- : Catalogue: leaving GET /network-services?version=last with #<Mongoid::Contextual::Mongo:0x000000030603d0>
+127.0.0.1 - - [27/Feb/2018:18:07:25 +0200] "GET /network-services?version=last " 200 1826 0.0045
+.D, [2018-02-27T18:07:25.947239 #7869] DEBUG -- : Catalogue: GET /network-services/3d2c3c5a-4f67-4811-a02a-6c325eb69700
+D, [2018-02-27T18:07:25.948436 #7869] DEBUG -- : Catalogue: leaving GET /network-services/3d2c3c5a-4f67-4811-a02a-6c325eb69700" with NSD #<Ns:0x000000021026e0>
+127.0.0.1 - - [27/Feb/2018:18:07:25 +0200] "GET /network-services/3d2c3c5a-4f67-4811-a02a-6c325eb69700 " 200 1824 0.0026
+.D, [2018-02-27T18:07:25.953079 #7869] DEBUG -- : Catalogue: PUT /network-services/3d2c3c5a-4f67-4811-a02a-6c325eb69700
+I, [2018-02-27T18:07:25.953188 #7869]  INFO -- : Catalogue: entered PUT /network-services/status=inactive
+127.0.0.1 - - [27/Feb/2018:18:07:25 +0200] "PUT /network-services/3d2c3c5a-4f67-4811-a02a-6c325eb69700?status=inactive " 200 35 0.0052
+.D, [2018-02-27T18:07:25.960765 #7869] DEBUG -- : Catalogue: DELETE /network-services/3d2c3c5a-4f67-4811-a02a-6c325eb69700
+D, [2018-02-27T18:07:25.962261 #7869] DEBUG -- : Catalogue: leaving DELETE /network-services/3d2c3c5a-4f67-4811-a02a-6c325eb69700" with NSD #<Ns:0x00000002e77550>
+127.0.0.1 - - [27/Feb/2018:18:07:25 +0200] "DELETE /network-services/3d2c3c5a-4f67-4811-a02a-6c325eb69700 " 200 15 0.0028
+.127.0.0.1 - - [27/Feb/2018:18:07:25 +0200] "GET / " 200 3065 0.0043
+.127.0.0.1 - - [27/Feb/2018:18:07:25 +0200] "POST /network-services " 201 1887 0.0060
+.I, [2018-02-27T18:07:25.984715 #7869]  INFO -- : {"OK"=>"Duplicated NS Name, Vendor and Version"}
+127.0.0.1 - - [27/Feb/2018:18:07:25 +0200] "POST /network-services " 200 47 0.0026
+.E, [2018-02-27T18:07:25.990142 #7869] ERROR -- : {"error"=>"ERROR: NS Vendor not found"}
+127.0.0.1 - - [27/Feb/2018:18:07:25 +0200] "POST /network-services " 400 38 0.0012
+.I, [2018-02-27T18:07:25.993758 #7869]  INFO -- : Catalogue: entered GET /api/v2/network-services?
+I, [2018-02-27T18:07:25.994884 #7869]  INFO -- : Catalogue: NSDs=#<Mongoid::Criteria:0x00000004582a10>
+I, [2018-02-27T18:07:25.995288 #7869]  INFO -- : Catalogue: leaving GET /api/v2/network-services? with #<Mongoid::Criteria:0x00000004582a10>
+127.0.0.1 - - [27/Feb/2018:18:07:25 +0200] "GET /network-services " 200 1889 0.0046
+.I, [2018-02-27T18:07:26.002305 #7869]  INFO -- : Catalogue: entered GET /api/v2/network-services?X8rBMr9pRwJSAZy5WhBFy8_OUt9-SzGOAR.490Oc4Ns.XtUN_8QhIJ6VXKbXza.TdAy08kC4.u1XvQWLbFaQQn
+I, [2018-02-27T18:07:26.003467 #7869]  INFO -- : Catalogue: NSDs=#<Mongoid::Criteria:0x000000046e7810>
+I, [2018-02-27T18:07:26.003924 #7869]  INFO -- : Catalogue: leaving GET /api/v2/network-services?X8rBMr9pRwJSAZy5WhBFy8_OUt9-SzGOAR.490Oc4Ns.XtUN_8QhIJ6VXKbXza.TdAy08kC4.u1XvQWLbFaQQn with #<Mongoid::Criteria:0x000000046e7810>
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "GET /network-services?X8rBMr9pRwJSAZy5WhBFy8_OUt9-SzGOAR.490Oc4Ns.XtUN_8QhIJ6VXKbXza.TdAy08kC4.u1XvQWLbFaQQn " 200 1889 0.0051
+.I, [2018-02-27T18:07:26.010152 #7869]  INFO -- : Catalogue: entered GET /api/v2/network-services?version=last
+I, [2018-02-27T18:07:26.010415 #7869]  INFO -- : Catalogue: NSDs=#<Mongoid::Contextual::Mongo:0x000000047f1990>
+I, [2018-02-27T18:07:26.011148 #7869]  INFO -- : Catalogue: leaving GET /api/v2/network-services?version=last with #<Mongoid::Contextual::Mongo:0x000000047f1990>
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "GET /network-services?version=last " 200 1889 0.0055
+.D, [2018-02-27T18:07:26.018384 #7869] DEBUG -- : Catalogue: GET /api/v2/network-services/8cb557d7-d577-4e8c-9116-0d827b5b01f9
+D, [2018-02-27T18:07:26.019708 #7869] DEBUG -- : Catalogue: leaving GET /api/v2/network-services/8cb557d7-d577-4e8c-9116-0d827b5b01f9" with NSD #<Nsd:0x000000049b0d58>
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "GET /network-services/8cb557d7-d577-4e8c-9116-0d827b5b01f9 " 200 1887 0.0034
+.D, [2018-02-27T18:07:26.024721 #7869] DEBUG -- : Catalogue: DELETE /api/v2/network-services/8cb557d7-d577-4e8c-9116-0d827b5b01f9
+D, [2018-02-27T18:07:26.025966 #7869] DEBUG -- : Catalogue: leaving DELETE /api/v2/network-services/8cb557d7-d577-4e8c-9116-0d827b5b01f9" with NSD #<Nsd:0x00000004ad8ed8>
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "DELETE /network-services/8cb557d7-d577-4e8c-9116-0d827b5b01f9 " 200 15 0.0026
+.127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "GET / " 200 3065 0.0034
+.127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "POST /packages " 201 2366 0.0199
+.I, [2018-02-27T18:07:26.059539 #7869]  INFO -- : {"OK"=>"Duplicated Package Name, Vendor and Version"}
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "POST /packages " 200 52 0.0023
+.E, [2018-02-27T18:07:26.063008 #7869] ERROR -- : {"error"=>"ERROR: Package Vendor not found"}
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "POST /packages " 400 43 0.0011
+.I, [2018-02-27T18:07:26.066354 #7869]  INFO -- : Catalogue: entered GET /packages?
+I, [2018-02-27T18:07:26.066474 #7869]  INFO -- : Catalogue: PDs=#<Mongoid::Criteria:0x00000004f42140>
+I, [2018-02-27T18:07:26.067376 #7869]  INFO -- : Catalogue: leaving GET /packages? with #<Mongoid::Criteria:0x00000004f42140>
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "GET /packages " 200 2368 0.0034
+.I, [2018-02-27T18:07:26.072478 #7869]  INFO -- : Catalogue: entered GET /packages?X8rBMr9pRwJSAZy5WhBFy8_OUt9-SzGOAR.490Oc4Ns.XtUN_8QhIJ6VXKbXza.TdAy08kC4.u1XvQWLbFaQQn
+I, [2018-02-27T18:07:26.072946 #7869]  INFO -- : Catalogue: PDs=#<Mongoid::Criteria:0x000000044b9fc0>
+I, [2018-02-27T18:07:26.082518 #7869]  INFO -- : Catalogue: leaving GET /packages?X8rBMr9pRwJSAZy5WhBFy8_OUt9-SzGOAR.490Oc4Ns.XtUN_8QhIJ6VXKbXza.TdAy08kC4.u1XvQWLbFaQQn with #<Mongoid::Criteria:0x000000044b9fc0>
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "GET /packages?X8rBMr9pRwJSAZy5WhBFy8_OUt9-SzGOAR.490Oc4Ns.XtUN_8QhIJ6VXKbXza.TdAy08kC4.u1XvQWLbFaQQn " 200 2368 0.0120
+.I, [2018-02-27T18:07:26.086228 #7869]  INFO -- : Catalogue: entered GET /packages?version=last
+I, [2018-02-27T18:07:26.086484 #7869]  INFO -- : Catalogue: PDs=#<Mongoid::Contextual::Mongo:0x0000000501e2d0>
+I, [2018-02-27T18:07:26.087031 #7869]  INFO -- : Catalogue: leaving GET /packages?version=last with #<Mongoid::Contextual::Mongo:0x0000000501e2d0>
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "GET /packages?version=last " 200 2368 0.0040
+.D, [2018-02-27T18:07:26.091963 #7869] DEBUG -- : Catalogue: GET /packages/0e7ea8f5-624a-4b18-8ef8-b2754a06de1c
+D, [2018-02-27T18:07:26.093005 #7869] DEBUG -- : Catalogue: leaving GET /packages/0e7ea8f5-624a-4b18-8ef8-b2754a06de1c" with PD #<Package:0x00000004efa4f8>
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "GET /packages/0e7ea8f5-624a-4b18-8ef8-b2754a06de1c " 200 2366 0.0021
+.D, [2018-02-27T18:07:26.095841 #7869] DEBUG -- : Catalogue: PUT /packages/0e7ea8f5-624a-4b18-8ef8-b2754a06de1c
+I, [2018-02-27T18:07:26.095897 #7869]  INFO -- : Catalogue: entered PUT /packages/status=inactive
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "PUT /packages/0e7ea8f5-624a-4b18-8ef8-b2754a06de1c?status=inactive " 200 35 0.0026
+.D, [2018-02-27T18:07:26.100209 #7869] DEBUG -- : Catalogue: PUT /packages/0e7ea8f5-624a-4b18-8ef8-b2754a06de1c
+I, [2018-02-27T18:07:26.100263 #7869]  INFO -- : Catalogue: entered PUT /packages/sonp_uuid=0123456789
+E, [2018-02-27T18:07:26.102244 #7869] ERROR -- : {"error"=>"Submitted son-package UUID not exists"}
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "PUT /packages/0e7ea8f5-624a-4b18-8ef8-b2754a06de1c?sonp_uuid=0123456789 " 404 49 0.0032
+.D, [2018-02-27T18:07:26.105640 #7869] DEBUG -- : Catalogue: DELETE /packages/0e7ea8f5-624a-4b18-8ef8-b2754a06de1c
+D, [2018-02-27T18:07:26.106766 #7869] DEBUG -- : Catalogue: leaving DELETE /packages/0e7ea8f5-624a-4b18-8ef8-b2754a06de1c" with PD #<Package:0x00000004d54b08>
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "DELETE /packages/0e7ea8f5-624a-4b18-8ef8-b2754a06de1c " 200 14 0.0028
+.127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "GET / " 200 3065 0.0022
+.127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "POST /packages " 201 2447 0.0045
+.I, [2018-02-27T18:07:26.121933 #7869]  INFO -- : {"OK"=>"Duplicated Package Name, Vendor and Version"}
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "POST /packages " 200 52 0.0020
+.E, [2018-02-27T18:07:26.125106 #7869] ERROR -- : {"error"=>"ERROR: Package Vendor not found"}
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "POST /packages " 400 43 0.0011
+.I, [2018-02-27T18:07:26.128049 #7869]  INFO -- : Catalogue: entered GET /api/v2/packages?
+I, [2018-02-27T18:07:26.129149 #7869]  INFO -- : Catalogue: PDs=#<Mongoid::Criteria:0x00000004b154f0>
+I, [2018-02-27T18:07:26.129506 #7869]  INFO -- : Catalogue: leaving GET /api/v2/packages? with #<Mongoid::Criteria:0x00000004b154f0>
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "GET /packages " 200 2449 0.0038
+.I, [2018-02-27T18:07:26.133870 #7869]  INFO -- : Catalogue: entered GET /api/v2/packages?
+I, [2018-02-27T18:07:26.134629 #7869]  INFO -- : Catalogue: PDs=#<Mongoid::Criteria:0x00000004a64858>
+I, [2018-02-27T18:07:26.134952 #7869]  INFO -- : Catalogue: leaving GET /api/v2/packages? with #<Mongoid::Criteria:0x00000004a64858>
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "GET /packages " 200 2449 0.0039
+.I, [2018-02-27T18:07:26.139956 #7869]  INFO -- : Catalogue: entered GET /api/v2/packages?version=last
+I, [2018-02-27T18:07:26.140236 #7869]  INFO -- : Catalogue: PDs=#<Mongoid::Contextual::Mongo:0x000000049b9688>
+I, [2018-02-27T18:07:26.140774 #7869]  INFO -- : Catalogue: leaving GET /api/v2/packages?version=last with #<Mongoid::Contextual::Mongo:0x000000049b9688>
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "GET /packages?version=last " 200 2449 0.0045
+.D, [2018-02-27T18:07:26.146536 #7869] DEBUG -- : Catalogue: GET /api/v2/packages/27b228fe-6044-4f99-b7dd-048984c5bd12
+D, [2018-02-27T18:07:26.147618 #7869] DEBUG -- : Catalogue: leaving GET /api/v2/packages/27b228fe-6044-4f99-b7dd-048984c5bd12" with PD #<Pkgd:0x000000048df5c8>
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "GET /packages/27b228fe-6044-4f99-b7dd-048984c5bd12 " 200 2447 0.0025
+.D, [2018-02-27T18:07:26.151195 #7869] DEBUG -- : Catalogue: PUT /api/v2/packages/27b228fe-6044-4f99-b7dd-048984c5bd12
+I, [2018-02-27T18:07:26.151257 #7869]  INFO -- : Catalogue: entered PUT /api/v2/packages/status=inactive
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "PUT /packages/27b228fe-6044-4f99-b7dd-048984c5bd12?status=inactive " 200 35 0.0026
+.D, [2018-02-27T18:07:26.155477 #7869] DEBUG -- : Catalogue: PUT /api/v2/packages/27b228fe-6044-4f99-b7dd-048984c5bd12
+I, [2018-02-27T18:07:26.155533 #7869]  INFO -- : Catalogue: entered PUT /api/v2/packages/sonp_uuid=0123456789
+E, [2018-02-27T18:07:26.157047 #7869] ERROR -- : {"error"=>"Submitted son-package UUID not exists"}
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "PUT /packages/27b228fe-6044-4f99-b7dd-048984c5bd12?sonp_uuid=0123456789 " 404 49 0.0032
+.D, [2018-02-27T18:07:26.160932 #7869] DEBUG -- : Catalogue: DELETE /api/v2/packages/27b228fe-6044-4f99-b7dd-048984c5bd12
+E, [2018-02-27T18:07:26.162663 #7869] ERROR -- : Dependencies not found: 
+Problem:
+  Document not found for class Dependencies_mapping with attributes {"pd.name"=>"X8rBMr9pRwJSAZy5WhBFy8_OUt9-SzGOAR.490Oc4Ns.XtUN_8QhIJ6VXKbXza.TdAy08kC4.u1XvQWLbFaQQn", "pd.version"=>"582508180021607734924847085465088203416134071781801715084959918018529773253144941917518789", "pd.vendor"=>"u1XvQWLbFaQQn.X8rBMr9pRwJSAZy5WhBFy8_OUt9-SzGOAR.490Oc4Ns.XtUN_8QhIJ6VXKbXza.TdAy08kC4"}.
+Summary:
+  When calling Dependencies_mapping.find_by with a hash of attributes, all attributes provided must match a document in the database or this error will be raised.
+Resolution:
+  Search for attributes that are in the database or set the Mongoid.raise_not_found_error configuration option to false, which will cause a nil to be returned instead of raising this error.
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "DELETE /packages/27b228fe-6044-4f99-b7dd-048984c5bd12 " 500 49 0.0022
+.127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "GET / " 200 3065 0.0022
+.I, [2018-02-27T18:07:26.168865 #7869]  INFO -- : Catalogue: entered GET /son-packages?
+I, [2018-02-27T18:07:26.168998 #7869]  INFO -- : Catalogue: leaving GET /son-packages? with #<Mongoid::Criteria:0x0000000460ade8>
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "GET /son-packages " 200 2 0.0012
+.127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "GET / " 200 3065 0.0022
+.I, [2018-02-27T18:07:26.175969 #7869]  INFO -- : Catalogue: entered GET /api/v2/son-packages?
+I, [2018-02-27T18:07:26.176737 #7869]  INFO -- : Catalogue: leaving GET /api/v2/son-packages? with #<Mongoid::Criteria:0x0000000450a7e0>
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "GET /son-packages " 200 2 0.0022
+.D, [2018-02-27T18:07:26.180533 #7869] DEBUG -- : Catalogue: entered POST /api/v2/son-packages?
+D, [2018-02-27T18:07:26.298415 #7869] DEBUG -- : Catalogue: leaving POST /api/v2/son-packages/ with 5a95823e6a29921ebd000000
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "POST /son-packages " 201 47 0.1609
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "POST /vnfs " 201 2743 0.0426
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "POST /vnfs " 201 1339 0.0066
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "POST /vnfs " 201 1345 0.0058
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "POST /network-services " 201 2583 0.0134
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "POST /packages " 201 2278 0.0068
+D, [2018-02-27T18:07:26.449940 #7869] DEBUG -- : Catalogue: entered POST /api/v2/son-packages?
+D, [2018-02-27T18:07:26.455518 #7869] DEBUG -- : Catalogue: leaving POST /api/v2/son-packages/ with 5a95823e6a29921ebd000002
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "POST /son-packages " 201 47 0.0111
+I, [2018-02-27T18:07:26.465186 #7869]  INFO -- : {"OK"=>"Duplicated VNF Name, Vendor and Version"}
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "POST /vnfs " 200 48 0.0025
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "POST /network-services " 201 1564 0.0059
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "POST /packages " 201 2280 0.0061
+D, [2018-02-27T18:07:26.479953 #7869] DEBUG -- : Catalogue: entered POST /api/v2/son-packages?
+D, [2018-02-27T18:07:26.485328 #7869] DEBUG -- : Catalogue: leaving POST /api/v2/son-packages/ with 5a95823e6a29921ebd000004
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "POST /son-packages " 201 47 0.0111
+I, [2018-02-27T18:07:26.495785 #7869]  INFO -- : {"OK"=>"Duplicated VNF Name, Vendor and Version"}
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "POST /vnfs " 200 48 0.0031
+I, [2018-02-27T18:07:26.498895 #7869]  INFO -- : {"OK"=>"Duplicated NS Name, Vendor and Version"}
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "POST /network-services " 200 47 0.0024
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "POST /packages " 201 2280 0.0062
+.I, [2018-02-27T18:07:26.510313 #7869]  INFO -- : Setting pd 029544e4-a558-48a7-b384-4e499ec0d5b2 status to inactive
+I, [2018-02-27T18:07:26.511932 #7869]  INFO -- : VNFD firewall-vnf has more than one dependency
+I, [2018-02-27T18:07:26.513385 #7869]  INFO -- : VNFD tcpdump-vnf has more than one dependency
+I, [2018-02-27T18:07:26.514114 #7869]  INFO -- : COMPONENTS WITHOUT DEPENDENCIES: {:disable=>{:vnfds=>[{"vendor"=>"eu.sonata-nfv", "version"=>"0.2", "name"=>"iperf-vnf"}], :nsds=>[{"vendor"=>"eu.sonata-nfv.service-descriptor", "version"=>"0.2.1", "name"=>"sonata-demo"}]}, :cant_disable=>{:vnfds=>[{"vendor"=>"eu.sonata-nfv", "version"=>"0.3", "name"=>"firewall-vnf"}, {"vendor"=>"eu.sonata-nfv", "version"=>"0.2", "name"=>"tcpdump-vnf"}], :nsds=>[]}}
+D, [2018-02-27T18:07:26.522599 #7869] DEBUG -- : Catalogue: leaving DISABLE /api/v2/packages?" with PD #<Pkgd:0x0000000488e0b0>
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "PUT /packages/029544e4-a558-48a7-b384-4e499ec0d5b2/status " 200 356 0.0140
+.I, [2018-02-27T18:07:26.526167 #7869]  INFO -- : Setting pd 4954dfed-2d30-4253-ae8e-3a7ce77b8885 status to inactive
+I, [2018-02-27T18:07:26.528401 #7869]  INFO -- : NSD sonata-demo-2 has more than one dependency
+I, [2018-02-27T18:07:26.528470 #7869]  INFO -- : COMPONENTS WITHOUT DEPENDENCIES: {:disable=>{:vnfds=>[{"vendor"=>"eu.sonata-nfv", "version"=>"0.2", "name"=>"tcpdump-vnf"}], :nsds=>[]}, :cant_disable=>{:vnfds=>[], :nsds=>[{"vendor"=>"eu.sonata-nfv.service-descriptor", "version"=>"0.2.1", "name"=>"sonata-demo-2"}]}}
+D, [2018-02-27T18:07:26.533389 #7869] DEBUG -- : Catalogue: leaving DISABLE /api/v2/packages?" with PD #<Pkgd:0x000000046f80c0>
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "PUT /packages/4954dfed-2d30-4253-ae8e-3a7ce77b8885/status " 200 232 0.0088
+.I, [2018-02-27T18:07:26.537514 #7869]  INFO -- : Setting pd 4954dfed-2d30-4253-ae8e-3a7ce77b8885 status to active
+D, [2018-02-27T18:07:26.543977 #7869] DEBUG -- : Catalogue: leaving DISABLE /api/v2/packages?" with PD #<Pkgd:0x000000045d4950>
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "PUT /packages/4954dfed-2d30-4253-ae8e-3a7ce77b8885/status " 200 193 0.0081
+.D, [2018-02-27T18:07:26.546543 #7869] DEBUG -- : Catalogue: DELETE /api/v2/packages/029544e4-a558-48a7-b384-4e499ec0d5b2
+I, [2018-02-27T18:07:26.554859 #7869]  INFO -- : VNFD firewall-vnf has more than one dependency
+I, [2018-02-27T18:07:26.556321 #7869]  INFO -- : VNFD tcpdump-vnf has more than one dependency
+I, [2018-02-27T18:07:26.557085 #7869]  INFO -- : COMPONENTS WITHOUT DEPENDENCIES: {:delete=>{:vnfds=>[{"vendor"=>"eu.sonata-nfv", "version"=>"0.2", "name"=>"iperf-vnf"}], :nsds=>[{"vendor"=>"eu.sonata-nfv.service-descriptor", "version"=>"0.2.1", "name"=>"sonata-demo"}]}, :cant_delete=>{:vnfds=>[{"vendor"=>"eu.sonata-nfv", "version"=>"0.3", "name"=>"firewall-vnf"}, {"vendor"=>"eu.sonata-nfv", "version"=>"0.2", "name"=>"tcpdump-vnf"}], :nsds=>[]}}
+D, [2018-02-27T18:07:26.561497 #7869] DEBUG -- : Catalogue: leaving DELETE /api/v2/packages?" with PD #<Pkgd:0x000000044e11b0>
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "DELETE /packages/029544e4-a558-48a7-b384-4e499ec0d5b2 " 200 354 0.0156
+.D, [2018-02-27T18:07:26.564142 #7869] DEBUG -- : Catalogue: DELETE /api/v2/packages/4954dfed-2d30-4253-ae8e-3a7ce77b8885
+I, [2018-02-27T18:07:26.570782 #7869]  INFO -- : NSD sonata-demo-2 has more than one dependency
+I, [2018-02-27T18:07:26.570867 #7869]  INFO -- : COMPONENTS WITHOUT DEPENDENCIES: {:delete=>{:vnfds=>[{"vendor"=>"eu.sonata-nfv", "version"=>"0.2", "name"=>"tcpdump-vnf"}], :nsds=>[]}, :cant_delete=>{:vnfds=>[], :nsds=>[{"vendor"=>"eu.sonata-nfv.service-descriptor", "version"=>"0.2.1", "name"=>"sonata-demo-2"}]}}
+D, [2018-02-27T18:07:26.573945 #7869] DEBUG -- : Catalogue: leaving DELETE /api/v2/packages?" with PD #<Pkgd:0x000000034090e0>
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "DELETE /packages/4954dfed-2d30-4253-ae8e-3a7ce77b8885 " 200 230 0.0104
+.D, [2018-02-27T18:07:26.576634 #7869] DEBUG -- : Catalogue: DELETE /api/v2/packages/7dfea2b0-2c0b-469f-a392-87e215926268
+I, [2018-02-27T18:07:26.583394 #7869]  INFO -- : COMPONENTS WITHOUT DEPENDENCIES: {:delete=>{:vnfds=>[{"vendor"=>"eu.sonata-nfv", "version"=>"0.3", "name"=>"firewall-vnf"}], :nsds=>[{"vendor"=>"eu.sonata-nfv.service-descriptor", "version"=>"0.2.1", "name"=>"sonata-demo-2"}]}, :cant_delete=>{:vnfds=>[], :nsds=>[]}}
+D, [2018-02-27T18:07:26.588218 #7869] DEBUG -- : Catalogue: leaving DELETE /api/v2/packages?" with PD #<Pkgd:0x00000002ff3730>
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "DELETE /packages/7dfea2b0-2c0b-469f-a392-87e215926268 " 200 231 0.0121
+.127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "GET / " 200 3065 0.0027
+.127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "POST /vnfs " 201 1535 0.0086
+.I, [2018-02-27T18:07:26.607080 #7869]  INFO -- : {"OK"=>"Duplicated VNF Name, Vendor and Version"}
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "POST /vnfs " 200 48 0.0020
+.E, [2018-02-27T18:07:26.610338 #7869] ERROR -- : {"error"=>"ERROR: VNF Vendor not found"}
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "POST /vnfs " 400 39 0.0010
+.I, [2018-02-27T18:07:26.613532 #7869]  INFO -- : Catalogue: entered GET /vnfs?
+I, [2018-02-27T18:07:26.613678 #7869]  INFO -- : Catalogue: VNFDs=#<Mongoid::Criteria:0x00000004f4f430>
+I, [2018-02-27T18:07:26.614371 #7869]  INFO -- : Catalogue: leaving GET /vnfs? with #<Mongoid::Criteria:0x00000004f4f430>
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "GET /vnfs " 200 1537 0.0026
+.I, [2018-02-27T18:07:26.618361 #7869]  INFO -- : Catalogue: entered GET /vnfs?X8rBMr9pRwJSAZy5WhBFy8_OUt9-SzGOAR.490Oc4Ns.XtUN_8QhIJ6VXKbXza.TdAy08kC4.u1XvQWLbFaQQn
+I, [2018-02-27T18:07:26.618511 #7869]  INFO -- : Catalogue: VNFDs=#<Mongoid::Criteria:0x00000004e97240>
+I, [2018-02-27T18:07:26.619298 #7869]  INFO -- : Catalogue: leaving GET /vnfs?X8rBMr9pRwJSAZy5WhBFy8_OUt9-SzGOAR.490Oc4Ns.XtUN_8QhIJ6VXKbXza.TdAy08kC4.u1XvQWLbFaQQn with #<Mongoid::Criteria:0x00000004e97240>
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "GET /vnfs?X8rBMr9pRwJSAZy5WhBFy8_OUt9-SzGOAR.490Oc4Ns.XtUN_8QhIJ6VXKbXza.TdAy08kC4.u1XvQWLbFaQQn " 200 1537 0.0027
+.I, [2018-02-27T18:07:26.623221 #7869]  INFO -- : Catalogue: entered GET /vnfs?version=last
+I, [2018-02-27T18:07:26.623555 #7869]  INFO -- : Catalogue: VNFDs=#<Mongoid::Contextual::Mongo:0x00000004e038b0>
+I, [2018-02-27T18:07:26.624140 #7869]  INFO -- : Catalogue: leaving GET /vnfs?version=last with #<Mongoid::Contextual::Mongo:0x00000004e038b0>
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "GET /vnfs?version=last " 200 1537 0.0052
+.D, [2018-02-27T18:07:26.629777 #7869] DEBUG -- : Catalogue: GET /vnfs/dc915008-3844-43f5-8e6e-89a919b56f99
+D, [2018-02-27T18:07:26.630863 #7869] DEBUG -- : Catalogue: leaving GET /vnfs/dc915008-3844-43f5-8e6e-89a919b56f99" with VNFD #<Vnf:0x00000004ce9e48>
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "GET /vnfs/dc915008-3844-43f5-8e6e-89a919b56f99 " 200 1535 0.0022
+.D, [2018-02-27T18:07:26.633776 #7869] DEBUG -- : Catalogue: PUT /vnfs/dc915008-3844-43f5-8e6e-89a919b56f99
+I, [2018-02-27T18:07:26.633835 #7869]  INFO -- : Catalogue: entered PUT /vnfs/status=inactive
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "PUT /vnfs/dc915008-3844-43f5-8e6e-89a919b56f99?status=inactive " 200 35 0.0028
+.D, [2018-02-27T18:07:26.638844 #7869] DEBUG -- : Catalogue: DELETE /vnfs/dc915008-3844-43f5-8e6e-89a919b56f99
+D, [2018-02-27T18:07:26.639904 #7869] DEBUG -- : Catalogue: leaving DELETE /vnfs/dc915008-3844-43f5-8e6e-89a919b56f99" with VNFD #<Vnf:0x00000004c18938>
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "DELETE /vnfs/dc915008-3844-43f5-8e6e-89a919b56f99 " 200 16 0.0022
+.127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "GET / " 200 3065 0.0023
+.127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "POST /vnfs " 201 1618 0.0046
+.I, [2018-02-27T18:07:26.655788 #7869]  INFO -- : {"OK"=>"Duplicated VNF Name, Vendor and Version"}
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "POST /vnfs " 200 48 0.0025
+.E, [2018-02-27T18:07:26.659244 #7869] ERROR -- : {"error"=>"ERROR: VNF Vendor not found"}
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "POST /vnfs " 400 39 0.0010
+.I, [2018-02-27T18:07:26.662243 #7869]  INFO -- : Catalogue: entered GET /api/v2/vnfs?
+I, [2018-02-27T18:07:26.662999 #7869]  INFO -- : Catalogue: VNFDs=#<Mongoid::Criteria:0x000000049b1190>
+I, [2018-02-27T18:07:26.663362 #7869]  INFO -- : Catalogue: leaving GET /api/v2/vnfs? with #<Mongoid::Criteria:0x000000049b1190>
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "GET /vnfs " 200 1620 0.0033
+.I, [2018-02-27T18:07:26.668520 #7869]  INFO -- : Catalogue: entered GET /api/v2/vnfs?
+I, [2018-02-27T18:07:26.669312 #7869]  INFO -- : Catalogue: VNFDs=#<Mongoid::Criteria:0x00000004924ad8>
+I, [2018-02-27T18:07:26.669632 #7869]  INFO -- : Catalogue: leaving GET /api/v2/vnfs? with #<Mongoid::Criteria:0x00000004924ad8>
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "GET /vnfs " 200 1620 0.0033
+.I, [2018-02-27T18:07:26.674200 #7869]  INFO -- : Catalogue: entered GET /api/v2/vnfs?
+I, [2018-02-27T18:07:26.674980 #7869]  INFO -- : Catalogue: VNFDs=#<Mongoid::Criteria:0x00000004875f38>
+I, [2018-02-27T18:07:26.675323 #7869]  INFO -- : Catalogue: leaving GET /api/v2/vnfs? with #<Mongoid::Criteria:0x00000004875f38>
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "GET /vnfs " 200 1620 0.0034
+.D, [2018-02-27T18:07:26.679675 #7869] DEBUG -- : Catalogue: GET /api/v2/vnfs/1017ee1c-7dd6-4667-91ce-94e29fda7390
+D, [2018-02-27T18:07:26.680758 #7869] DEBUG -- : Catalogue: leaving GET /api/v2/vnfs/1017ee1c-7dd6-4667-91ce-94e29fda7390" with VNFD #<Vnfd:0x0000000479faf0>
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "GET /vnfs/1017ee1c-7dd6-4667-91ce-94e29fda7390 " 200 1618 0.0026
+.D, [2018-02-27T18:07:26.684472 #7869] DEBUG -- : Catalogue: PUT /api/v2/vnfs/1017ee1c-7dd6-4667-91ce-94e29fda7390
+I, [2018-02-27T18:07:26.684529 #7869]  INFO -- : Catalogue: entered PUT /api/v2/vnfs/status=inactive
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "PUT /vnfs/1017ee1c-7dd6-4667-91ce-94e29fda7390?status=inactive " 200 35 0.0026
+.D, [2018-02-27T18:07:26.689041 #7869] DEBUG -- : Catalogue: DELETE /api/v2/vnfs/1017ee1c-7dd6-4667-91ce-94e29fda7390
+D, [2018-02-27T18:07:26.690116 #7869] DEBUG -- : Catalogue: leaving DELETE /api/v2/vnfs/1017ee1c-7dd6-4667-91ce-94e29fda7390" with VNFD #<Vnfd:0x00000004682f00>
+127.0.0.1 - - [27/Feb/2018:18:07:26 +0200] "DELETE /vnfs/1017ee1c-7dd6-4667-91ce-94e29fda7390 " 200 16 0.0022
+.
+
+Finished in 0.83648 seconds (files took 57.4 seconds to load)
+72 examples, 0 failures
+

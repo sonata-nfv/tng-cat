@@ -360,6 +360,30 @@ class SonataCatalogue < Sinatra::Application
     return false
   end
 
+  # # # Method returning boolean depending if there is some instance of a descriptor
+  # # # @param [Symbol] desc_type Descriptor type (:vnfd, :nsd)
+  # # # @param [Hash] descriptor Descriptor hash
+  # # # @return [Boolean] true/false
+  # def instanced_descriptor?(desc_type, descriptor)
+  #   if desc_type == :vnfd
+  #     desc = Vnfd.where({ 'vnfd.name' => descriptor['name'],
+  #                         'vnfd.vendor' => descriptor['vendor'],
+  #                         'vnfd.version' => descriptor['version'] }).first
+  #     return false if desc.nil?
+  #     instances = Vnfr.where({ 'descriptor_reference' => desc['_id'] }).count
+  #   elsif desc_type == :nsd
+  #     desc = Nsd.where({ 'nsd.name' => descriptor['name'],
+  #                        'nsd.vendor' => descriptor['vendor'],
+  #                        'nsd.version' => descriptor['version'] }).first
+  #     return false if desc.nil?
+  #     instances = Nsr.where({ 'descriptor_reference' => desc['_id'] }).count
+  #   end
+  #   if instances > 0
+  #     return true
+  #   end
+  #   return false
+  # end
+
   # Method returning boolean depending if there is some instance of a descriptor
   # @param [Symbol] desc_type Descriptor type (:vnfd, :nsd)
   # @param [Hash] descriptor Descriptor hash
@@ -370,19 +394,31 @@ class SonataCatalogue < Sinatra::Application
                           'vnfd.vendor' => descriptor['vendor'],
                           'vnfd.version' => descriptor['version'] }).first
       return false if desc.nil?
-      instances = Vnfr.where({ 'descriptor_reference' => desc['_id'] }).count
+      # instances = Vnfr.where( 'descriptor_reference' => desc['_id'] }).count
+      begin
+        resp_rep = HTTParty.get('https://tng-rep:4011/records/vnfr/descriptor_reference=' + desc['_id'],
+                               headers: {'Content-Type' => 'applications/json'})
+      rescue HTTParty::Error, StandardError => error
+        logger.info error.inspect
+        return false
+      end
     elsif desc_type == :nsd
       desc = Nsd.where({ 'nsd.name' => descriptor['name'],
                          'nsd.vendor' => descriptor['vendor'],
                          'nsd.version' => descriptor['version'] }).first
       return false if desc.nil?
-      instances = Nsr.where({ 'descriptor_reference' => desc['_id'] }).count
+      begin
+        resp_rep = HTTParty.get('https://tng-rep:4011/records/nsr/descriptor_reference=' + desc['_id'],
+                               headers: {'Content-Type' => 'applications/json'})
+      rescue HTTParty::Error, StandardError => error
+        logger.info error.inspect
+        return false
+      end
     end
-    if instances > 0
-      return true
-    end
+    return true if resp_rep.success?
     return false
   end
+
 
   # Method returning descritptor information depending if there's one component instanced
   # @param [Pkgd] package Package descriptor model

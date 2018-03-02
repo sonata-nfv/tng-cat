@@ -184,7 +184,7 @@ class Dependencies_mapping
 end
 
 
-# New API v2 item structure for meta-data and descriptor data
+# Class Slad for service level agreement descriptors
 class Slad
   include Mongoid::Document
   include Mongoid::Timestamps

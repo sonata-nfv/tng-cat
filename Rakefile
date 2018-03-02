@@ -79,7 +79,7 @@ namespace :init do
   desc 'Fill Catalogues with default sonata-demo package contents'
   task :load_samples, :server do |_, args|
 
-    server = 'tng-cat:4011'
+    server = 'localhost:4011'
  
     firewall_sample = 'samples/sonata-demo/function-descriptor/firewall-vnfd.yml'
     iperf_sample = 'samples/sonata-demo/function-descriptor/iperf-vnfd.yml'
@@ -97,6 +97,6 @@ namespace :init do
     sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ tcpdump_sample } --connect-timeout 30 http://#{ server }/catalogues/api/v2/vnfs"
     sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ nsd_sample } --connect-timeout 30 http://#{ server }/catalogues/api/v2/network-services"
     sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ pd_sample } --connect-timeout 30 http://#{ server }/catalogues/api/v2/packages"
-    sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ sla_sample } --connect-timeout 30 http://#{ server }/catalogues/api/v2/sla"
+    sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ sla_sample } --connect-timeout 30 http://#{ server }/catalogues/api/v2/sla/template-descriptor"
   end
 end

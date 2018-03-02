@@ -294,6 +294,7 @@ class CatalogueV1 < SonataCatalogue
 
         # Validate JSON format
         new_vnf, errors = parse_json(new_vnf_json)
+        new_vnf, errors = parse_json(new_vnf_json)
         # puts 'vnf: ', new_vnf.to_json
         # puts 'new_vnf id', new_vnf['_id'].to_json
         halt 400, errors.to_json if errors

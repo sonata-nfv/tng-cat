@@ -15,6 +15,3 @@ login_path: /micro-services
 # (sample)
 catalogue_client: son-catalogue
 catalogue_secret: 1234
-# (sample)
-repos_client: son-repositories
-repos_secret: 1234

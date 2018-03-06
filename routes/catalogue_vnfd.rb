@@ -1,5 +1,5 @@
 ##
-## Copyright (c) 2015 SONATA-NFV
+## Copyright (c) 2015 SONATA-NFV, 2017 5GTANGO [, ANY ADDITIONAL AFFILIATION]
 ## ALL RIGHTS RESERVED.
 ##
 ## Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
 ## See the License for the specific language governing permissions and
 ## limitations under the License.
 ##
-## Neither the name of the SONATA-NFV
+## Neither the name of the SONATA-NFV, 5GTANGO [, ANY ADDITIONAL AFFILIATION]
 ## nor the names of its contributors may be used to endorse or promote
 ## products derived from this software without specific prior written
 ## permission.
@@ -24,6 +24,12 @@
 ## the Horizon 2020 and 5G-PPP programmes. The authors would like to
 ## acknowledge the contributions of their colleagues of the SONATA
 ## partner consortium (www.sonata-nfv.eu).
+##
+## This work has been performed in the framework of the 5GTANGO project,
+## funded by the European Commission under Grant number 761493 through
+## the Horizon 2020 and 5G-PPP programmes. The authors would like to
+## acknowledge the contributions of their colleagues of the 5GTANGO
+## partner consortium (www.5gtango.eu).
 
 # @see SonCatalogue
 # class SonataCatalogue < Sinatra::Application
@@ -287,6 +293,7 @@ class CatalogueV1 < SonataCatalogue
         new_vnf_json = yaml_to_json(vnf)
 
         # Validate JSON format
+        new_vnf, errors = parse_json(new_vnf_json)
         new_vnf, errors = parse_json(new_vnf_json)
         # puts 'vnf: ', new_vnf.to_json
         # puts 'new_vnf id', new_vnf['_id'].to_json

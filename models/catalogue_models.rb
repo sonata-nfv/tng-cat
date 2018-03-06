@@ -1,5 +1,5 @@
 ##
-## Copyright (c) 2015 SONATA-NFV
+## Copyright (c) 2015 SONATA-NFV, 2017 5GTANGO [, ANY ADDITIONAL AFFILIATION]
 ## ALL RIGHTS RESERVED.
 ##
 ## Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
 ## See the License for the specific language governing permissions and
 ## limitations under the License.
 ##
-## Neither the name of the SONATA-NFV
+## Neither the name of the SONATA-NFV, 5GTANGO [, ANY ADDITIONAL AFFILIATION]
 ## nor the names of its contributors may be used to endorse or promote
 ## products derived from this software without specific prior written
 ## permission.
@@ -24,6 +24,12 @@
 ## the Horizon 2020 and 5G-PPP programmes. The authors would like to
 ## acknowledge the contributions of their colleagues of the SONATA
 ## partner consortium (www.sonata-nfv.eu).
+##
+## This work has been performed in the framework of the 5GTANGO project,
+## funded by the European Commission under Grant number 761493 through
+## the Horizon 2020 and 5G-PPP programmes. The authors would like to
+## acknowledge the contributions of their colleagues of the 5GTANGO
+## partner consortium (www.5gtango.eu).
 
 # Convert BSON ID to String
 module BSON
@@ -31,12 +37,23 @@ module BSON
     def to_json(*)
       to_s.to_json
     end
-
     def as_json(*)
       to_s.as_json
     end
   end
 end
+
+module Mongoid
+  module Document
+    def serializable_hash(options = nil)
+      h = super(options)
+      h['uuid'] = h.delete('_id') if(h.has_key?('_id'))
+      h
+    end
+  end
+end
+
+
 
 # Sonata class for Catalogue Services
 class Ns
@@ -164,4 +181,19 @@ class Dependencies_mapping
   field :deps, type: Array
   field :status, type: String
   validates :son_package_uuid, :pd, :nsds, :vnfds, :status, :presence => true
+end
+
+
+# Class Slad for service level agreement descriptors
+class Slad
+  include Mongoid::Document
+  include Mongoid::Timestamps
+  include Mongoid::Pagination
+  include Mongoid::Attributes::Dynamic
+  store_in collection: 'slad'
+
+  field :slad, type: Hash
+  field :signature, type: String
+  field :username, type: String
+  validates :slad, presence: true
 end

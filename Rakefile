@@ -1,5 +1,4 @@
-##
-## Copyright (c) 2015 SONATA-NFV
+## Copyright (c) 2015 SONATA-NFV, 2017 5GTANGO [, ANY ADDITIONAL AFFILIATION]
 ## ALL RIGHTS RESERVED.
 ##
 ## Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +13,7 @@
 ## See the License for the specific language governing permissions and
 ## limitations under the License.
 ##
-## Neither the name of the SONATA-NFV [, ANY ADDITIONAL AFFILIATION]
+## Neither the name of the SONATA-NFV, 5GTANGO [, ANY ADDITIONAL AFFILIATION]
 ## nor the names of its contributors may be used to endorse or promote
 ## products derived from this software without specific prior written
 ## permission.
@@ -24,6 +23,12 @@
 ## the Horizon 2020 and 5G-PPP programmes. The authors would like to
 ## acknowledge the contributions of their colleagues of the SONATA
 ## partner consortium (www.sonata-nfv.eu).
+##
+## This work has been performed in the framework of the 5GTANGO project,
+## funded by the European Commission under Grant number 761493 through
+## the Horizon 2020 and 5G-PPP programmes. The authors would like to
+## acknowledge the contributions of their colleagues of the 5GTANGO
+## partner consortium (www.5gtango.eu).
 
 require 'yard'
 require 'rspec/core/rake_task'
@@ -34,8 +39,8 @@ task default: ['ci:all']
 
 desc 'Start the service'
 task :start do
-  puts 'SON-CATALOGUE-REPOSITORIES STARTING...'
-  puts 'Version 3.0'
+  puts 'TNG-CATALOGUE STARTING...'
+  puts 'Version 0.0'
 
   # puts ENV['MAIN_DB'].to_s, ENV['MAIN_DB_HOST'].to_s, ENV['SECOND_DB'].to_s, ENV['SECOND_DB_HOST'].to_s
 
@@ -74,16 +79,16 @@ namespace :init do
   desc 'Fill Catalogues with default sonata-demo package contents'
   task :load_samples, :server do |_, args|
 
-    server = 'son-catalogue-repos:4011'
+    server = 'localhost:4011'
  
     firewall_sample = 'samples/sonata-demo/function-descriptor/firewall-vnfd.yml'
     iperf_sample = 'samples/sonata-demo/function-descriptor/iperf-vnfd.yml'
     tcpdump_sample = 'samples/sonata-demo/function-descriptor/tcpdump-vnfd.yml'
     nsd_sample = 'samples/sonata-demo/service-descriptor/sonata-demo.yml'
     pd_sample = 'samples/sonata-demo/package-descriptor/sonata-demo.yml'
-    vnfr_random_sample = 'samples/sonata-demo/function-record/random-vnfr.yml'
     vtc_sample = 'samples/sonata-demo-1/function-descriptor/vtc-vnfd.yml'
     nsd1_sample = 'samples/sonata-demo-1/service-descriptor/sonata-demo.yml'
+    sla_sample = 'samples/sonata-demo/sla-descriptor/sla-template-example.yml'
 
     sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ nsd1_sample } --connect-timeout 30 http://#{ server }/catalogues/api/v2/network-services"
     sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ vtc_sample } --connect-timeout 30 http://#{ server }/catalogues/api/v2/vnfs"
@@ -92,6 +97,6 @@ namespace :init do
     sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ tcpdump_sample } --connect-timeout 30 http://#{ server }/catalogues/api/v2/vnfs"
     sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ nsd_sample } --connect-timeout 30 http://#{ server }/catalogues/api/v2/network-services"
     sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ pd_sample } --connect-timeout 30 http://#{ server }/catalogues/api/v2/packages"
-	  sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ vnfr_random_sample } --connect-timeout 30 http://#{ server }/records/vnfr/vnf-instances"
+    sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ sla_sample } --connect-timeout 30 http://#{ server }/catalogues/api/v2/sla/template-descriptor"
   end
 end

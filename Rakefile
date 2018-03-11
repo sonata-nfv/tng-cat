@@ -34,6 +34,7 @@ require 'yard'
 require 'rspec/core/rake_task'
 require 'ci/reporter/rake/rspec'
 require './main'
+require 'mongoid'
 
 task default: ['ci:all']
 
@@ -81,14 +82,15 @@ namespace :init do
 
     server = 'localhost:4011'
  
-    firewall_sample = 'samples/sonata-demo/function-descriptor/firewall-vnfd.yml'
-    iperf_sample = 'samples/sonata-demo/function-descriptor/iperf-vnfd.yml'
-    tcpdump_sample = 'samples/sonata-demo/function-descriptor/tcpdump-vnfd.yml'
-    nsd_sample = 'samples/sonata-demo/service-descriptor/sonata-demo.yml'
-    pd_sample = 'samples/sonata-demo/package-descriptor/sonata-demo.yml'
-    vtc_sample = 'samples/sonata-demo-1/function-descriptor/vtc-vnfd.yml'
-    nsd1_sample = 'samples/sonata-demo-1/service-descriptor/sonata-demo.yml'
-    sla_sample = 'samples/sonata-demo/sla-descriptor/sla-template-example.yml'
+    firewall_sample = 'samples/tango-demo/function-descriptor/firewall-vnfd.yml'
+    iperf_sample = 'samples/tango-demo/function-descriptor/iperf-vnfd.yml'
+    tcpdump_sample = 'samples/tango-demo/function-descriptor/tcpdump-vnfd.yml'
+    nsd_sample = 'samples/tango-demo/service-descriptor/sonata-demo.yml'
+    pd_sample = 'samples/tango-demo/package-descriptor/sonata-demo.yml'
+    vtc_sample = 'samples/tango-demo-1/function-descriptor/vtc-vnfd.yml'
+    nsd1_sample = 'samples/tango-demo-1/service-descriptor/sonata-demo.yml'
+    sla_sample = 'samples/tango-demo/sla-descriptor/sla-template-example.yml'
+    test_sample = 'samples/tango-demo/test-descriptor/test-descriptor-example.yml'
 
     sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ nsd1_sample } --connect-timeout 30 http://#{ server }/catalogues/api/v2/network-services"
     sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ vtc_sample } --connect-timeout 30 http://#{ server }/catalogues/api/v2/vnfs"
@@ -97,6 +99,7 @@ namespace :init do
     sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ tcpdump_sample } --connect-timeout 30 http://#{ server }/catalogues/api/v2/vnfs"
     sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ nsd_sample } --connect-timeout 30 http://#{ server }/catalogues/api/v2/network-services"
     sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ pd_sample } --connect-timeout 30 http://#{ server }/catalogues/api/v2/packages"
-    sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ sla_sample } --connect-timeout 30 http://#{ server }/catalogues/api/v2/sla/template-descriptor"
+    sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ sla_sample } --connect-timeout 30 http://#{ server }/catalogues/api/v2/sla/template-descriptors"
+    sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ test_sample } --connect-timeout 30 http://#{ server }/catalogues/api/v2/tests"
   end
 end

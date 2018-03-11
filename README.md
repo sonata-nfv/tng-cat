@@ -58,7 +58,7 @@ docker-compose up
 ```
 
 The Catalogue's API allows the use of CRUD operations to send, retrieve, update and delete descriptors and tng files.
-The available descriptors include services (NSD), functions (VNFD) and packages (PD) descriptors.
+The available descriptors include services (NSD), functions (VNFD), packages (PD), Service Level Agreements (SLAD) and test (TESTD) descriptors.
 The Catalogue also support storage for 5GTANGO packages (tng-packages), the binary files that contain the descriptors.
 For testing the Catalogues, you can use 'curl' tool to send a request descriptors to the API. It is required to set the HTTP header 'Content-type' field to 'application/json' or 'application/x-yaml' according to your desired format.
 
@@ -78,6 +78,12 @@ curl http://localhost:4011/catalogues/api/v2/vnfs
 ```sh
 curl http://localhost:4011/catalogues/api/v2/packages
 ```
+```sh
+curl http://localhost:4011/catalogues/api/v2/sla/template-descriptor
+```
+```sh
+curl http://localhost:4011/catalogues/api/v2/tests
+```
 
 To receive a descriptor by its ID:
 
@@ -89,6 +95,12 @@ curl http://localhost:4011/catalogues/api/v2/vnfs/9f18bc1b-b18d-483b-88da-a600e9
 ```
 ```sh
 curl http://localhost:4011/catalogues/api/v2/packages/9f18bc1b-b18d-483b-88da-a600e9255018
+```
+```sh
+curl http://localhost:4011/catalogues/api/v2/sla/template-descriptor/9f18bc1b-b18d-483b-88da-a600e9255018
+```
+```sh
+curl http://localhost:4011/catalogues/api/v2/tests/9f18bc1b-b18d-483b-88da-a600e9255018
 ```
 
 Method POST:
@@ -104,19 +116,31 @@ curl -X POST --data-binary @vnfd_sample.yaml -H "Content-type:application/x-yaml
 ```sh
 curl -X POST --data-binary @pd_sample.yaml -H "Content-type:application/x-yaml" http://localhost:4011/catalogues/api/v2/packages
 ```
+```sh
+curl -X POST --data-binary @sla-template-example.yaml -H "Content-type:application/x-yaml" http://localhost:4011/catalogues/api/v2/sla/template-descriptor
+```
+```sh
+curl -X POST --data-binary @test_sample.yaml -H "Content-type:application/x-yaml" http://localhost:4011/catalogues/api/v2/tests
+```
 
 Method PUT:
 
 To update a descriptor is similar to the POST method, but it is required that a older version of the descriptor is stored in the Catalogues
 
 ```sh
-curl -X POST --data-binary @nsd_sample.yaml -H "Content-type:application/x-yaml" http://localhost:4011/catalogues/api/v2/network-services
+curl -X PUT --data-binary @nsd_sample.yaml -H "Content-type:application/x-yaml" http://localhost:4011/catalogues/api/v2/network-services
 ```
 ```sh
-curl -X POST --data-binary @vnfd_sample.yaml -H "Content-type:application/x-yaml" http://localhost:4011/catalogues/api/v2/vnfs
+curl -X PUT --data-binary @vnfd_sample.yaml -H "Content-type:application/x-yaml" http://localhost:4011/catalogues/api/v2/vnfs
 ```
 ```sh
-curl -X POST --data-binary @pd_sample.yaml -H "Content-type:application/x-yaml" http://localhost:4011/catalogues/api/v2/packages
+curl -X PUT --data-binary @pd_sample.yaml -H "Content-type:application/x-yaml" http://localhost:4011/catalogues/api/v2/packages
+```
+```sh
+curl -X PUT --data-binary @sla-template-example.yaml -H "Content-type:application/x-yaml" http://localhost:4011/catalogues/api/v2/sla/template-descriptor
+```
+```sh
+curl -X PUT --data-binary @test_sample.yaml -H "Content-type:application/x-yaml" http://localhost:4011/catalogues/api/v2/tests
 ```
 
 Method DELETE:
@@ -131,6 +155,12 @@ curl -X DELETE http://localhost:4011/catalogues/vnfs/api/v2/9f18bc1b-b18d-483b-8
 ```
 ```sh
 curl -X DELETE http://localhost:4011/catalogues/packages/api/v2/9f18bc1b-b18d-483b-88da-a600e9255018
+```
+```sh
+curl -X DELETE http://localhost:4011/catalogues/sla/template-descriptor/api/v2/9f18bc1b-b18d-483b-88da-a600e9255018
+```
+```sh
+curl -X DELETE http://localhost:4011/catalogues/tests/api/v2/9f18bc1b-b18d-483b-88da-a600e9255018
 ```
 
 The API for 5GTANGO packages (tng-package) files works very similar to the API for the descriptors.
@@ -219,10 +249,9 @@ To support working and testing with the tng-catalogue database it is optional to
 
 The following lead developers are responsible for this repository and have admin rights. They can, for example, merge pull requests.
 
+* Panagiotis Stavrianos (panstav1)
 * Felipe Vicens (felipevicens)
-* Daniel Guija (dang03)
-* Santiago Rodriguez (srodriguezOPT)
 
-#### Feedback-Channel
+## Feedback-Channel
 
 Please use the GitHub issues and the SONATA development mailing list sonata-dev@lists.atosresearch.eu for feedback.

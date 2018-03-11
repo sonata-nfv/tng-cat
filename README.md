@@ -79,7 +79,7 @@ curl http://localhost:4011/catalogues/api/v2/vnfs
 curl http://localhost:4011/catalogues/api/v2/packages
 ```
 ```sh
-curl http://localhost:4011/catalogues/api/v2/sla/template-descriptor
+curl http://localhost:4011/catalogues/api/v2/sla/template-descriptors
 ```
 ```sh
 curl http://localhost:4011/catalogues/api/v2/tests
@@ -97,7 +97,7 @@ curl http://localhost:4011/catalogues/api/v2/vnfs/9f18bc1b-b18d-483b-88da-a600e9
 curl http://localhost:4011/catalogues/api/v2/packages/9f18bc1b-b18d-483b-88da-a600e9255018
 ```
 ```sh
-curl http://localhost:4011/catalogues/api/v2/sla/template-descriptor/9f18bc1b-b18d-483b-88da-a600e9255018
+curl http://localhost:4011/catalogues/api/v2/sla/template-descriptors/9f18bc1b-b18d-483b-88da-a600e9255018
 ```
 ```sh
 curl http://localhost:4011/catalogues/api/v2/tests/9f18bc1b-b18d-483b-88da-a600e9255018
@@ -117,7 +117,7 @@ curl -X POST --data-binary @vnfd_sample.yaml -H "Content-type:application/x-yaml
 curl -X POST --data-binary @pd_sample.yaml -H "Content-type:application/x-yaml" http://localhost:4011/catalogues/api/v2/packages
 ```
 ```sh
-curl -X POST --data-binary @sla-template-example.yaml -H "Content-type:application/x-yaml" http://localhost:4011/catalogues/api/v2/sla/template-descriptor
+curl -X POST --data-binary @sla-template-example.yaml -H "Content-type:application/x-yaml" http://localhost:4011/catalogues/api/v2/sla/template-descriptors
 ```
 ```sh
 curl -X POST --data-binary @test_sample.yaml -H "Content-type:application/x-yaml" http://localhost:4011/catalogues/api/v2/tests
@@ -137,10 +137,10 @@ curl -X PUT --data-binary @vnfd_sample.yaml -H "Content-type:application/x-yaml"
 curl -X PUT --data-binary @pd_sample.yaml -H "Content-type:application/x-yaml" http://localhost:4011/catalogues/api/v2/packages
 ```
 ```sh
-curl -X PUT --data-binary @sla-template-example.yaml -H "Content-type:application/x-yaml" http://localhost:4011/catalogues/api/v2/sla/template-descriptor
+curl -X PUT --data-binary @sla-template-example.yaml -H "Content-type:application/x-yaml" http://localhost:4011/catalogues/api/v2/sla/template-descriptors
 ```
 ```sh
-curl -X PUT --data-binary @test_sample.yaml -H "Content-type:application/x-yaml" http://localhost:4011/catalogues/api/v2/tests
+curl -X PUT --data-binary @test-descriptor-sample.yaml -H "Content-type:application/x-yaml" http://localhost:4011/catalogues/api/v2/tests
 ```
 
 Method DELETE:
@@ -157,7 +157,7 @@ curl -X DELETE http://localhost:4011/catalogues/vnfs/api/v2/9f18bc1b-b18d-483b-8
 curl -X DELETE http://localhost:4011/catalogues/packages/api/v2/9f18bc1b-b18d-483b-88da-a600e9255018
 ```
 ```sh
-curl -X DELETE http://localhost:4011/catalogues/sla/template-descriptor/api/v2/9f18bc1b-b18d-483b-88da-a600e9255018
+curl -X DELETE http://localhost:4011/catalogues/sla/template-descriptors/api/v2/9f18bc1b-b18d-483b-88da-a600e9255018
 ```
 ```sh
 curl -X DELETE http://localhost:4011/catalogues/tests/api/v2/9f18bc1b-b18d-483b-88da-a600e9255018

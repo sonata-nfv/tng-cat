@@ -102,16 +102,18 @@ end
 
 # New API v2 item structure for meta-data and descriptor data
 class Vnfd
+
   include Mongoid::Document
   include Mongoid::Timestamps
   include Mongoid::Pagination
   include Mongoid::Attributes::Dynamic
   store_in collection: 'vnfd'
 
-  field :vnfd, type: Hash
-  field :status, type: String
-  field :signature, type: String
-  field :username, type: String
+  field :vnfd
+  field :status
+  field :signature
+  field :username
+
   validates :vnfd, presence: true
 end
 
@@ -196,4 +198,18 @@ class Slad
   field :signature, type: String
   field :username, type: String
   validates :slad, presence: true
+end
+
+# Class TestSuites for test descriptors
+class Testd
+  include Mongoid::Document
+  include Mongoid::Timestamps
+  include Mongoid::Pagination
+  include Mongoid::Attributes::Dynamic
+  store_in collection: 'testd'
+
+  field :testd, type: Hash
+  field :signature, type: String
+  field :username, type: String
+  validates :testd, presence: true
 end

@@ -37,7 +37,6 @@ require 'pp'
 require 'rspec/its'
 
 
-
 RSpec.describe CatalogueV2 do
 
   def app
@@ -53,124 +52,102 @@ RSpec.describe CatalogueV2 do
     its(:status) { is_expected.to eq 200 }
   end
 
-  let(:sla_descriptor) {Rack::Test::UploadedFile.new('./spec/fixtures/slad-example.json','application/json', true)}
-  describe 'POST \'/api/v2/sla/template-descriptors\'' do
+  let(:test_descriptor) {Rack::Test::UploadedFile.new('./spec/fixtures/testd-example.json','application/json', true)}
+  describe 'POST \'/api/v2/tests\'' do
     context 'with correct parameters' do
-      it 'Submit a slad' do
+      it 'Submit a testd' do
         headers = { 'CONTENT_TYPE' => 'application/json' }
-        post '/sla/template-descriptors', sla_descriptor, headers
+        post '/tests', test_descriptor, headers
         expect(last_response.status).to eq(201)
-        slad_body = JSON.parse(last_response.body)
-        $slad_id = (slad_body['uuid'])
-        $slad_name = (slad_body['name'])
+        testd_body = JSON.parse(last_response.body)
+        $testd_id = (testd_body['uuid'])
+        $testd_name = (testd_body['name'])
       end
     end
   end
 
-  let(:sla_descriptor) {Rack::Test::UploadedFile.new('./spec/fixtures/slad-example.json','application/json', true)}
-  describe 'POST \'/api/v2/sla/template-descriptor\'' do
-    context 'Duplicated slad' do
-      it 'Submit a duplicated slad' do
+  let(:test_descriptor) {Rack::Test::UploadedFile.new('./spec/fixtures/testd-example.json','application/json', true)}
+  describe 'POST \'/api/v2/tests\'' do
+    context 'Duplicated testd' do
+      it 'Submit a duplicated testd' do
         headers = { 'CONTENT_TYPE' => 'application/json' }
-        post '/sla/template-descriptors', sla_descriptor, headers
+        post '/tests', test_descriptor, headers
         expect(last_response.status).to eq(200)
       end
     end
   end
 
-  let(:sla_bad_descriptor) {Rack::Test::UploadedFile.new('./spec/fixtures/slad-example-with-errors.json',
+  let(:test_bad_descriptor) {Rack::Test::UploadedFile.new('./spec/fixtures/testd-example-with-errors.json',
                                                          'application/json', true)}
-  describe 'POST \'/api/v2/sla/template-bad-descriptor\'' do
+  describe 'POST \'/api/v2/tests-bad\'' do
     context 'with incorrect parameters' do
-      it 'Submit an invalid slad' do
+      it 'Submit an invalid testd' do
         headers = { 'CONTENT_TYPE' => 'application/json' }
-        post '/sla/template-descriptors', sla_bad_descriptor, headers
+        post '/tests', test_bad_descriptor, headers
         expect(last_response.status).to eq(400)
       end
     end
   end
 
-  describe 'GET /api/v2/sla/template-descriptors' do
+  describe 'GET /api/v2/tests' do
     context 'without (UU)ID given' do
       before do
         headers = { 'CONTENT_TYPE' => 'application/json' }
-        get '/sla/template-descriptors', nil, headers
+        get '/tests', nil, headers
       end
       subject { last_response }
       its(:status) { is_expected.to eq 200 }
     end
   end
 
-  describe 'GET /api/v2/sla/template-descriptors' do
+  describe 'GET /api/v2/tests' do
     context 'with name parameter given' do
       before do
         headers = { 'CONTENT_TYPE' => 'application/json' }
-        get '/sla/template-descriptors?' + $slad_name.to_s, nil, headers
+        get '/tests?' + $testd_name.to_s, nil, headers
       end
       subject { last_response }
       its(:status) { is_expected.to eq 200 }
     end
   end
 
-  describe 'GET /api/v2/sla/template-descriptors' do
+  describe 'GET /api/v2/tests' do
     context 'with name parameter given' do
       before do
         headers = { 'CONTENT_TYPE' => 'application/json' }
-        get '/sla/template-descriptors?' + $slad_name.to_s, nil, headers
+        get '/tests?' + $testd_name.to_s, nil, headers
       end
       subject { last_response }
       its(:status) { is_expected.to eq 200 }
     end
   end
 
-  describe 'GET /api/v2/sla/template-descriptors/:uuid' do
+  describe 'GET /api/v2/tests/:uuid' do
     context 'with (UU)ID given' do
       before do
         headers = { 'CONTENT_TYPE' => 'application/json' }
-        get '/sla/template-descriptors/' + $slad_id.to_s, nil, headers
+        get '/tests/' + $testd_id.to_s, nil, headers
       end
       subject { last_response }
       its(:status) { is_expected.to eq 200 }
     end
   end
 
-  describe 'PUT /api/v2/sla/template-descriptors/:uuid' do
+  describe 'PUT /api/v2/tests/:uuid' do
     context 'update status to (UU)ID given' do
       before do
         headers = { 'CONTENT_TYPE' => 'application/json' }
-        put '/sla/template-descriptors/' + $slad_id.to_s + '?state=published', nil, headers
+        put '/tests/' + $testd_id.to_s + '?status=inactive', nil, headers
       end
       subject { last_response }
       its(:status) { is_expected.to eq 200 }
     end
   end
 
-  describe 'PUT /api/v2/sla/template-descriptors/:uuid' do
-    context 'update status to (UU)ID given' do
-      before do
-        headers = { 'CONTENT_TYPE' => 'application/json' }
-        put '/sla/template-descriptors/' + $slad_id.to_s + '?state=unpublished&status=inactive', nil, headers
-      end
-      subject { last_response }
-      its(:status) { is_expected.to eq 200 }
-    end
-  end
-
-  describe 'PUT /api/v2/sla/template-descriptors/:uuid' do
-    context 'update status to (UU)ID given' do
-      before do
-        headers = { 'CONTENT_TYPE' => 'application/json' }
-        put '/sla/template-descriptors/' + $slad_id.to_s + '?state=published&status=active', nil, headers
-      end
-      subject { last_response }
-      its(:status) { is_expected.to eq 400 }
-    end
-  end
-
-  describe 'DELETE /api/v2/sla/template-descriptors/:uuid' do
+  describe 'DELETE /api/v2/tests/:uuid' do
     context 'with (UU)ID given' do
       before do
-        delete '/sla/template-descriptors/' + $slad_id.to_s
+        delete '/tests/' + $testd_id.to_s
       end
       subject { last_response }
       its(:status) { is_expected.to eq 200 }

@@ -80,7 +80,7 @@ namespace :init do
   desc 'Fill Catalogues with default sonata-demo package contents'
   task :load_samples, :server do |_, args|
 
-    server = 'tng-cat:4011'
+    server = 'tng-catalogue:4011'
  
     firewall_sample = 'samples/sonata-demo/function-descriptor/firewall-vnfd.yml'
     iperf_sample = 'samples/sonata-demo/function-descriptor/iperf-vnfd.yml'

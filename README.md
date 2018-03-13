@@ -1,6 +1,6 @@
 [![Build Status](http://jenkins.sonata-nfv.eu/buildStatus/icon?job=son-catalogue-repos)](http://jenkins.sonata-nfv.eu/job/son-catalogue-repos)
 
-# SON Catalogue
+# TNG Catalogue
 This repository contains the development for the [5GTANGO](https://5gtango.eu/) 's Service Platform Catalogue. It holds the API implementation for the Service Platform Catalogue component.
 The Catalogue now integrates the SDK [tng-catalogue](https://github.com/sonata-nfv/tng-cat) in the Service Platform. It is closely related to the [tng-schema](https://github.com/sonata-nfv/tng-schema) repository that holds the schema for the various descriptors, such as the VNFD and the NSD.
 
@@ -8,7 +8,7 @@ The Catalogue now integrates the SDK [tng-catalogue](https://github.com/sonata-n
 To contribute to the development of the 5GTANGO Catalogue, you may use the very same development workflow as for any other 5GTANGOO Github project. That is, you have to fork the repository and create pull requests.
 
 ### Dependencies
-It is recommended to use Ubuntu 14.04.4 LTS (Trusty Tahr).
+It is recommended to use Ubuntu 16.04.4 LTS (Trusty Tahr).
 
 This code has been run on Ruby 2.1.
 

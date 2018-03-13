@@ -76,8 +76,7 @@ configure do
   # STDOUT.sync = true
   retries = 0
   code = 503
-  # while retries <= 6 do
-  while retries < 0 do
+  while retries <= 6 do
     # turn keycloak realm pub key into an actual openssl compat pub key
     logger.debug "RETRY=#{retries}"
     code, keycloak_key = get_public_key(settings.auth_address,

@@ -1,12 +1,12 @@
-son-catalogue-repos:
+tng-catalogue:
   image: registry.sonata-nfv.eu:5000/tng-catalogue
   links:
    - mongo-catalogues:mongo
   ports:
-    - "4002:4011"
+    - "4011:4011"
   restart: always
 
-son-catalogue-repos-doc:
+tng-catalogue-doc:
   image: registry.sonata-nfv.eu:5000/tng-catalogue
   ports:
     - "8800:8808"

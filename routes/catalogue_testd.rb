@@ -43,6 +43,9 @@ class CatalogueV2 < SonataCatalogue
     params['limit'] ||= DEFAULT_LIMIT
     logger.info "Catalogue: entered GET /api/v2/tests?#{query_string}"
 
+    #Delete key "captures" if present
+    params.delete(:captures) if params.key?(:captures)
+
     # Split keys in meta_data and data
     # Then transform 'string' params Hash into keys
     keyed_params = add_descriptor_level('testd', params)
@@ -183,6 +186,9 @@ class CatalogueV2 < SonataCatalogue
         halt 400, errors.to_json if errors
     end
 
+    #Delete key "captures" if present
+    params.delete(:captures) if params.key?(:captures)
+
     # Transform 'string' params Hash into keys
     keyed_params = keyed_hash(params)
 
@@ -247,6 +253,9 @@ class CatalogueV2 < SonataCatalogue
   ## Catalogue - UPDATE
   put '/tests/?' do
     logger.info "Catalogue: entered PUT /api/v2/tests?#{query_string}"
+
+    #Delete key "captures" if present
+    params.delete(:captures) if params.key?(:captures)
 
     # Transform 'string' params Hash into keys
     keyed_params = keyed_hash(params)
@@ -361,6 +370,9 @@ class CatalogueV2 < SonataCatalogue
 
     unless params[:id].nil?
       logger.debug "Catalogue: PUT /api/v2/tests/#{params[:id]}"
+
+      #Delete key "captures" if present
+      params.delete(:captures) if params.key?(:captures)
 
       # Transform 'string' params Hash into keys
       keyed_params = keyed_hash(params)
@@ -486,6 +498,9 @@ class CatalogueV2 < SonataCatalogue
   #	Delete a TEST by vendor, name and version
   delete '/tests/?' do
     logger.info "Catalogue: entered DELETE /api/v2/tests?#{query_string}"
+
+    #Delete key "captures" if present
+    params.delete(:captures) if params.key?(:captures)
 
     # Transform 'string' params Hash into keys
     keyed_params = keyed_hash(params)

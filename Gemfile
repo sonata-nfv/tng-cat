@@ -34,8 +34,8 @@ source 'https://rubygems.org'
 
 gem 'addressable', '~> 2.3.8'
 gem 'rake', '~> 11.2.2'
-gem 'sinatra', '~> 1.4.3', require: 'sinatra/base'
-gem 'sinatra-contrib', '~> 1.4.1', require: false
+gem 'sinatra', '~> 2.0.1', require: 'sinatra/base'
+gem 'sinatra-contrib', '~> 2.0.1', require: false
 gem 'puma', '~> 3.4.0'
 gem 'json', '~>1.8'
 gem 'json-schema', '~>2.5'

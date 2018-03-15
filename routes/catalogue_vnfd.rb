@@ -582,6 +582,9 @@ class CatalogueV2 < SonataCatalogue
     params['limit'] ||= DEFAULT_LIMIT
     logger.info "Catalogue: entered GET /api/v2/vnfs?#{query_string}"
 
+    #Delete key "captures" if present
+    params.delete(:captures) if params.key?(:captures)
+
     # Split keys in meta_data and data
     # Then transform 'string' params Hash into keys
     keyed_params = add_descriptor_level('vnfd', params)
@@ -722,6 +725,9 @@ class CatalogueV2 < SonataCatalogue
         halt 400, errors.to_json if errors
     end
 
+    #Delete key "captures" if present
+    params.delete(:captures) if params.key?(:captures)
+
     # Transform 'string' params Hash into keys
     keyed_params = keyed_hash(params)
 
@@ -786,6 +792,9 @@ class CatalogueV2 < SonataCatalogue
   ## Catalogue - UPDATE
   put '/vnfs/?' do
     logger.info "Catalogue: entered PUT /api/v2/vnfs?#{query_string}"
+
+    #Delete key "captures" if present
+    params.delete(:captures) if params.key?(:captures)
 
     # Transform 'string' params Hash into keys
     keyed_params = keyed_hash(params)
@@ -900,6 +909,9 @@ class CatalogueV2 < SonataCatalogue
 
     unless params[:id].nil?
       logger.debug "Catalogue: PUT /api/v2/vnfs/#{params[:id]}"
+
+      #Delete key "captures" if present
+      params.delete(:captures) if params.key?(:captures)
 
       # Transform 'string' params Hash into keys
       keyed_params = keyed_hash(params)
@@ -1025,6 +1037,9 @@ class CatalogueV2 < SonataCatalogue
   #	Delete a VNF by vendor, name and version
   delete '/vnfs/?' do
     logger.info "Catalogue: entered DELETE /api/v2/vnfs?#{query_string}"
+
+    #Delete key "captures" if present
+    params.delete(:captures) if params.key?(:captures)
 
     # Transform 'string' params Hash into keys
     keyed_params = keyed_hash(params)

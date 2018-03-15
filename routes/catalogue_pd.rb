@@ -630,6 +630,9 @@ class CatalogueV2 < SonataCatalogue
 
     logger.info "Catalogue: entered GET /api/v2/packages?#{query_string}"
 
+    #Delete key "captures" if present
+    params.delete(:captures) if params.key?(:captures)
+
     # Split keys in meta_data and data
     # Then transform 'string' params Hash into keys
     keyed_params = add_descriptor_level('pd', params)
@@ -770,6 +773,9 @@ class CatalogueV2 < SonataCatalogue
         halt 400, errors.to_json if errors
     end
 
+    #Delete key "captures" if present
+    params.delete(:captures) if params.key?(:captures)
+
     # Transform 'string' params Hash into keys
     keyed_params = keyed_hash(params)
 
@@ -834,6 +840,9 @@ class CatalogueV2 < SonataCatalogue
   ## Catalogue - UPDATE
   put '/packages/?' do
     logger.info "Catalogue: entered PUT /api/v2/packages?#{query_string}"
+
+    #Delete key "captures" if present
+    params.delete(:captures) if params.key?(:captures)
 
     # Transform 'string' params Hash into keys
     keyed_params = keyed_hash(params)
@@ -945,6 +954,9 @@ class CatalogueV2 < SonataCatalogue
   put '/packages/:id/?' do
     # Return if content-type is invalid
     halt 415 unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+
+    #Delete key "captures" if present
+    params.delete(:captures) if params.key?(:captures)
 
     unless params[:id].nil?
       logger.debug "Catalogue: PUT /api/v2/packages/#{params[:id]}"
@@ -1151,6 +1163,9 @@ class CatalogueV2 < SonataCatalogue
   #	Delete a PD by group, name and version
   delete '/packages/?' do
     logger.info "Catalogue: entered DELETE /api/v2/packages?#{query_string}"
+
+    #Delete key "captures" if present
+    params.delete(:captures) if params.key?(:captures)
 
     # Transform 'string' params Hash into keys
     keyed_params = keyed_hash(params)

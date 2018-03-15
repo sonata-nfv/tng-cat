@@ -244,6 +244,9 @@ class CatalogueV2 < SonataCatalogue
 
     logger.info "Catalogue: entered GET /api/v2/son-packages?#{query_string}"
 
+    #Delete key "captures" if present
+    params.delete(:captures) if params.key?(:captures)
+
     # Transform 'string' params Hash into keys
     keyed_params = keyed_hash(params)
 
@@ -360,6 +363,9 @@ class CatalogueV2 < SonataCatalogue
       signature = nil
     end
 
+    #Delete key "captures" if present
+    params.delete(:captures) if params.key?(:captures)
+
     # Transform 'string' params Hash into keys
     keyed_params = keyed_hash(params)
     filename = att.match(/filename=(\"?)(.+)\1/)[2]
@@ -440,6 +446,9 @@ class CatalogueV2 < SonataCatalogue
 
     unless params[:id].nil?
       logger.debug "Catalogue: PUT /son-packages/#{params[:id]}"
+
+      #Delete key "captures" if present
+      params.delete(:captures) if params.key?(:captures)
 
       # Transform 'string' params Hash into keys
       keyed_params = keyed_hash(params)

@@ -1,7 +1,7 @@
 version: '2'
 
 services:
-  tng-catalogue:
+  tng-cat:
     build:
       context: ./
       dockerfile: Dockerfile
@@ -9,39 +9,39 @@ services:
       - "4011:4011"
     restart: always
     environment:
-      - MAIN_DB=tng-catalogue
-      - MAIN_DB_HOST=localhost:27017
+      - MAIN_DB=tng-cat
+      - MAIN_DB_HOST=mongo:27017
       #- SECOND_DB=tng-catalogue
       #- SECOND_DB_HOST=localhost:27017
-    container_name: son-catalogue-repos
+    container_name: tng-cat
 
-tng-catalogue_doc:
-  image: sonatanfv/tng-catalogue:dev
-  ports:
-    - "8808:8808"
-  command: [rake,yard]
-  command: [yard, server, -B, 0.0.0.0]
-  restart: always
+#tng-catalogue_doc:
+#  image: sonatanfv/tng-cat:dev
+#  ports:
+#    - "8808:8808"
+#  command: [rake,yard]
+#  command: [yard, server, -B, 0.0.0.0]
+#  restart: always
 
-mongodata:
-  image: mongo:3.0.4
-  volumes:
-    - /data/db
-  command: --break-mongo
+  mongodata:
+    image: mongo:3.0.4
+    volumes:
+      - /data/db
+    command: --break-mongo
 
-mongo:
-  image: mongo:3.0.4
-  volumes_from:
-    - mongodata
-  ports:
-    - "27017"
-  command: --smallfiles --rest
-  restart: always
+  mongo:
+    image: mongo:3.0.4
+    volumes_from:
+      - mongodata
+    ports:
+      - "27017"
+    command: --smallfiles --rest
+    restart: always
 
-mongoexpress:
-  image: mongo-express
-  links:
-    - mongo:mongo
-  ports:
-    - "8081:8081"
-  restart: always
+  mongoexpress:
+    image: mongo-express
+    links:
+      - mongo:mongo
+    ports:
+      - "8081:8081"
+    restart: always

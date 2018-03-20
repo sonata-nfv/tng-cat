@@ -200,7 +200,7 @@ class Slad
   validates :slad, presence: true
 end
 
-# Class TestSuites for test descriptors
+# Class tests for test descriptors
 class Testd
   include Mongoid::Document
   include Mongoid::Timestamps
@@ -212,4 +212,32 @@ class Testd
   field :signature, type: String
   field :username, type: String
   validates :testd, presence: true
+end
+
+# Class Nst for Network Slice Templates
+class Nstd
+  include Mongoid::Document
+  include Mongoid::Timestamps
+  include Mongoid::Pagination
+  include Mongoid::Attributes::Dynamic
+  store_in collection: 'nstd'
+
+  field :nstd, type: Hash
+  field :signature, type: String
+  field :username, type: String
+  validates :nstd, presence: true
+end
+
+# Class Nst for Network Slice Templates
+class Pld
+  include Mongoid::Document
+  include Mongoid::Timestamps
+  include Mongoid::Pagination
+  include Mongoid::Attributes::Dynamic
+  store_in collection: 'pld'
+
+  field :pld, type: Hash
+  field :signature, type: String
+  field :username, type: String
+  validates :pld, presence: true
 end

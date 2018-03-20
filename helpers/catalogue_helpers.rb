@@ -214,7 +214,7 @@ class SonataCatalogue < Sinatra::Application
 
   def add_descriptor_level(descriptor_type, parameters)
     new_parameters = {}
-    meta_data = %w(offset limit _id uuid status signature md5 updated_at created_at)
+    meta_data = %w(offset limit id uuid status state signature md5 updated_at created_at)
     parameters.each { |k, v|
       if meta_data.include? k
         if k == 'uuid'

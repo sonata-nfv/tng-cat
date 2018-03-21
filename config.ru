@@ -37,4 +37,5 @@ require ::File.join(root, 'main')
 map('/catalogues') {run CatalogueV2.new}
 map('/catalogues/api/v1') {run CatalogueV1.new}
 map('/catalogues/api/v2') { run CatalogueV2.new }
+map('/api/catalogues/v2') { run CatalogueV2.new }
 map('/') { run Sonata.new }

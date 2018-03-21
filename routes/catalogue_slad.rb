@@ -380,46 +380,42 @@ class CatalogueV2 < SonataCatalogue
 
       if keyed_params.key?(:status) || keyed_params.key?(:state)
         # Do update of Descriptor status -> update_sla_status
-        logger.info "Catalogue: entered PUT /api/v2/sla/template-descriptors/#{query_string}"
-        valid_state = %w(published unpublished)
-        valid_status = %w(active inactive delete)
-        out_query = ""
+        logger.info "Catalogue: entered PUT /api/v2/slas/template-descriptors/#{query_string}"
+        valid_state = %w[published unpublished]
+        valid_status = %w[active inactive]
+        out_query1 = ''
+        out_query2 = ''
+
         # Validate SLA
         # Retrieve stored version
         begin
           puts 'Searching ' + params[:id].to_s
-          sla = Slad.find_by({ '_id' => params[:id] })
+          sla = Slad.find_by('_id' => params[:id])
           puts 'SLA is found'
         rescue Mongoid::Errors::DocumentNotFound => e
           json_error 404, 'This SLAD does not exists'
         end
-
-        if valid_state.include? keyed_params[:state]
-          # Update to new state
-          json_error 400, "THE SLAD cannot be published if inactive" if sla['status'] == 'inactive' && keyed_params[:state] == 'published'
-          begin
-            sla.update_attributes(state: keyed_params[:state])
-            out_query = "state => " + keyed_params[:state].to_s + " "
-          rescue Moped::Errors::OperationFailure => e
-            json_error 400, 'ERROR: Operation failed'
+        # Validate state
+        if keyed_params.key?(:state)
+          if valid_state.include? keyed_params[:state]
+            begin
+              sla.update_attributes(state: keyed_params[:state])
+              out_query1 = 'state => ' + keyed_params[:state].to_s
+            rescue Moped::Errors::OperationFailure => e
+              json_error 400, 'ERROR: Operation failed'
+            end
+          else
+            json_error 400, "Invalid new state #{keyed_params[:state]}"
           end
-        elsif keyed_params.key?(:status)
-          #Continue
-        else
-          json_error 400, "Invalid new state #{keyed_params[:state]}"
         end
 
-
-        # Check if SLAD is state == published. Then, it cannot be edited
-        json_error 400, "The SLAD is published and cannot be edited" if sla['state'] == 'published' && keyed_params.key?(:status)
-
-        #Validate new status
+        # Validate new status
         if keyed_params.key?(:status)
           if valid_status.include? keyed_params[:status]
-          # Update to new status
+            # Update to new status
             begin
               sla.update_attributes(status: keyed_params[:status])
-              out_query = out_query + "status =>" + keyed_params[:status].to_s
+              out_query2 = 'status => ' + keyed_params[:status].to_s
             rescue Moped::Errors::OperationFailure => e
               json_error 400, 'ERROR: Operation failed'
             end
@@ -428,7 +424,18 @@ class CatalogueV2 < SonataCatalogue
             json_error 400, "Invalid new status #{keyed_params[:status]}"
           end
         end
-        halt 200, "Updated to {#{out_query}}"
+        logger.info "#{out_query1.empty?}"
+        logger.info "#{out_query2.empty?}"
+
+        if out_query2.empty? ^ out_query1.empty?
+          if out_query1.empty?
+            halt 200, "Updated to {#{out_query2}}"
+          else
+            halt 200, "Updated to {#{out_query1}}"
+          end
+        else
+          halt 200, "Updated to {#{out_query1}} and {#{out_query2}}"
+        end
       else
         # Compatibility support for YAML content-type
         case request.content_type

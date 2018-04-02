@@ -580,7 +580,7 @@ class CatalogueV2 < SonataCatalogue
   get '/vnfs/?' do
     params['offset'] ||= DEFAULT_OFFSET
     params['limit'] ||= DEFAULT_LIMIT
-    logger.info "Catalogue: entered GET /api/v2/vnfs?#{query_string}"
+    logger.info "Catalogue: entered GET /v2/vnfs?#{query_string}"
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
@@ -611,7 +611,7 @@ class CatalogueV2 < SonataCatalogue
       # vnfs = vnfs.sort({"version" => -1})
 
       if vnfs && vnfs.size.to_i > 0
-        logger.info "Catalogue: leaving GET /api/v2/vnfs?#{query_string} with #{vnfs}"
+        logger.info "Catalogue: leaving GET /v2/vnfs?#{query_string} with #{vnfs}"
 
         vnfs_list = []
         checked_list = []
@@ -629,7 +629,7 @@ class CatalogueV2 < SonataCatalogue
           checked_list.push(vnfs_name_vendor)
         end
       else
-        logger.info "Catalogue: leaving GET /api/v2/vnfs?#{query_string} with 'No VNFDs were found'"
+        logger.info "Catalogue: leaving GET /v2/vnfs?#{query_string} with 'No VNFDs were found'"
         vnfs_list = []
 
       end
@@ -642,11 +642,11 @@ class CatalogueV2 < SonataCatalogue
       headers 'Record-Count' => vnfs.count.to_s
       logger.info "Catalogue: VNFDs=#{vnfs}"
       if vnfs && vnfs.size.to_i > 0
-        logger.info "Catalogue: leaving GET /api/v2/vnfs?#{query_string} with #{vnfs}"
+        logger.info "Catalogue: leaving GET /v2/vnfs?#{query_string} with #{vnfs}"
         # Paginate results
         vnfs = vnfs.paginate(offset: params[:offset], limit: params[:limit])
       else
-        logger.info "Catalogue: leaving GET /api/v2/vnfs?#{query_string} with 'No VNFDs were found'"
+        logger.info "Catalogue: leaving GET /v2/vnfs?#{query_string} with 'No VNFDs were found'"
       end
     end
 
@@ -669,7 +669,7 @@ class CatalogueV2 < SonataCatalogue
   # Show a VNF by internal ID (uuid)
   get '/vnfs/:id/?' do
     unless params[:id].nil?
-      logger.debug "Catalogue: GET /api/v2/vnfs/#{params[:id]}"
+      logger.debug "Catalogue: GET /v2/vnfs/#{params[:id]}"
 
       begin
         vnf = Vnfd.find(params[:id])
@@ -677,7 +677,7 @@ class CatalogueV2 < SonataCatalogue
         logger.error e
         json_error 404, "The VNFD ID #{params[:id]} does not exist" unless vnf
       end
-      logger.debug "Catalogue: leaving GET /api/v2/vnfs/#{params[:id]}\" with VNFD #{vnf}"
+      logger.debug "Catalogue: leaving GET /v2/vnfs/#{params[:id]}\" with VNFD #{vnf}"
 
       response = ''
       case request.content_type
@@ -691,7 +691,7 @@ class CatalogueV2 < SonataCatalogue
       halt 200, {'Content-type' => request.content_type}, response
 
     end
-    logger.debug "Catalogue: leaving GET /api/v2/vnfs/#{params[:id]} with 'No VNFD ID specified'"
+    logger.debug "Catalogue: leaving GET /v2/vnfs/#{params[:id]} with 'No VNFD ID specified'"
     json_error 400, 'No VNFD ID specified'
   end
 
@@ -791,7 +791,7 @@ class CatalogueV2 < SonataCatalogue
   # Update a VNF by vendor, name and version in JSON or YAML format
   ## Catalogue - UPDATE
   put '/vnfs/?' do
-    logger.info "Catalogue: entered PUT /api/v2/vnfs?#{query_string}"
+    logger.info "Catalogue: entered PUT /v2/vnfs?#{query_string}"
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
@@ -885,7 +885,7 @@ class CatalogueV2 < SonataCatalogue
     rescue Moped::Errors::OperationFailure => e
       json_return 200, 'Duplicated VNF ID' if e.message.include? 'E11000'
     end
-    logger.debug "Catalogue: leaving PUT /api/v2/vnfs?#{query_string}\" with VNFD #{new_vnf}"
+    logger.debug "Catalogue: leaving PUT /v2/vnfs?#{query_string}\" with VNFD #{new_vnf}"
 
     response = ''
     case request.content_type
@@ -908,7 +908,7 @@ class CatalogueV2 < SonataCatalogue
     halt 415 unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
 
     unless params[:id].nil?
-      logger.debug "Catalogue: PUT /api/v2/vnfs/#{params[:id]}"
+      logger.debug "Catalogue: PUT /v2/vnfs/#{params[:id]}"
 
       #Delete key "captures" if present
       params.delete(:captures) if params.key?(:captures)
@@ -919,7 +919,7 @@ class CatalogueV2 < SonataCatalogue
       # Check for special case (:status param == <new_status>)
       if keyed_params.key?(:status)
         # Do update of Descriptor status -> update_vnf_status
-        logger.info "Catalogue: entered PUT /api/v2/vnfs/#{query_string}"
+        logger.info "Catalogue: entered PUT /v2/vnfs/#{query_string}"
 
         # Validate VNF
         # Retrieve stored version
@@ -1014,7 +1014,7 @@ class CatalogueV2 < SonataCatalogue
         rescue Moped::Errors::OperationFailure => e
           json_return 200, 'Duplicated VNF ID' if e.message.include? 'E11000'
         end
-        logger.debug "Catalogue: leaving PUT /api/v2/vnfs/#{params[:id]}\" with VNFD #{new_vnf}"
+        logger.debug "Catalogue: leaving PUT /v2/vnfs/#{params[:id]}\" with VNFD #{new_vnf}"
 
         response = ''
         case request.content_type
@@ -1028,7 +1028,7 @@ class CatalogueV2 < SonataCatalogue
         halt 200, {'Content-type' => request.content_type}, response
       end
     end
-    logger.debug "Catalogue: leaving PUT /api/v2/vnfs/#{params[:id]} with 'No VNF ID specified'"
+    logger.debug "Catalogue: leaving PUT /v2/vnfs/#{params[:id]} with 'No VNF ID specified'"
     json_error 400, 'No VNF ID specified'
   end
 
@@ -1036,7 +1036,7 @@ class CatalogueV2 < SonataCatalogue
   # @overload delete '/vnfs/?'
   #	Delete a VNF by vendor, name and version
   delete '/vnfs/?' do
-    logger.info "Catalogue: entered DELETE /api/v2/vnfs?#{query_string}"
+    logger.info "Catalogue: entered DELETE /v2/vnfs?#{query_string}"
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
@@ -1052,11 +1052,11 @@ class CatalogueV2 < SonataCatalogue
       rescue Mongoid::Errors::DocumentNotFound => e
         json_error 404, "The VNFD Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist"
       end
-      logger.debug "Catalogue: leaving DELETE /api/v2/vnfs?#{query_string}\" with VNFD #{vnf}"
+      logger.debug "Catalogue: leaving DELETE /v2/vnfs?#{query_string}\" with VNFD #{vnf}"
       vnf.destroy
       halt 200, 'OK: VNFD removed'
     end
-    logger.debug "Catalogue: leaving DELETE /api/v2/vnfs?#{query_string} with 'No VNFD Vendor, Name, Version specified'"
+    logger.debug "Catalogue: leaving DELETE /v2/vnfs?#{query_string} with 'No VNFD Vendor, Name, Version specified'"
     json_error 400, 'No VNFD Vendor, Name, Version specified'
   end
 
@@ -1067,18 +1067,18 @@ class CatalogueV2 < SonataCatalogue
   # Delete a VNF by uuid
   delete '/vnfs/:id/?' do
     unless params[:id].nil?
-      logger.debug "Catalogue: DELETE /api/v2/vnfs/#{params[:id]}"
+      logger.debug "Catalogue: DELETE /v2/vnfs/#{params[:id]}"
       begin
         vnf = Vnfd.find(params[:id])
       rescue Mongoid::Errors::DocumentNotFound => e
         logger.error e
         json_error 404, "The VNFD ID #{params[:id]} does not exist" unless vnf
       end
-      logger.debug "Catalogue: leaving DELETE /api/v2/vnfs/#{params[:id]}\" with VNFD #{vnf}"
+      logger.debug "Catalogue: leaving DELETE /v2/vnfs/#{params[:id]}\" with VNFD #{vnf}"
       vnf.destroy
       halt 200, 'OK: VNFD removed'
     end
-    logger.debug "Catalogue: leaving DELETE /api/v2/vnfs/#{params[:id]} with 'No VNFD ID specified'"
+    logger.debug "Catalogue: leaving DELETE /v2/vnfs/#{params[:id]} with 'No VNFD ID specified'"
     json_error 400, 'No VNFD ID specified'
   end
 end

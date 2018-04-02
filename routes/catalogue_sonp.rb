@@ -242,7 +242,7 @@ class CatalogueV2 < SonataCatalogue
     params['offset'] ||= DEFAULT_OFFSET
     params['limit'] ||= DEFAULT_LIMIT
 
-    logger.info "Catalogue: entered GET /api/v2/son-packages?#{query_string}"
+    logger.info "Catalogue: entered GET /v2/son-packages?#{query_string}"
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
@@ -275,7 +275,7 @@ class CatalogueV2 < SonataCatalogue
     file_list = FileContainer.where(new_params)
     # Set total count for results
     headers 'Record-Count' => file_list.count.to_s
-    logger.info "Catalogue: leaving GET /api/v2/son-packages?#{query_string} with #{file_list}"
+    logger.info "Catalogue: leaving GET /v2/son-packages?#{query_string} with #{file_list}"
 
     # Paginate results
     file_list = file_list.paginate(offset: params[:offset], limit: params[:limit])
@@ -299,7 +299,7 @@ class CatalogueV2 < SonataCatalogue
   # son-package internal database identifier
   get '/son-packages/:id/?' do
     # Dir.chdir(File.dirname(__FILE__))
-    logger.debug "Catalogue: entered GET /api/v2/son-packages/#{params[:id]}"
+    logger.debug "Catalogue: entered GET /v2/son-packages/#{params[:id]}"
 
     # Check headers
     case request.content_type
@@ -319,7 +319,7 @@ class CatalogueV2 < SonataCatalogue
         # Set custom header with package Filename
         headers 'Filename' => (sonp['grid_fs_name'].to_s)
 
-        logger.debug "Catalogue: leaving GET /api/v2/son-packages/#{params[:id]}"
+        logger.debug "Catalogue: leaving GET /v2/son-packages/#{params[:id]}"
         halt 200, grid_file.data
 
       when 'application/json'
@@ -330,7 +330,7 @@ class CatalogueV2 < SonataCatalogue
           json_error 404, "The son-package ID #{params[:id]} does not exist" unless sonp
         end
 
-        logger.debug "Catalogue: leaving GET /api/v2/son-packages/#{params[:id]}"
+        logger.debug "Catalogue: leaving GET /v2/son-packages/#{params[:id]}"
         halt 200, {'Content-type' => 'application/json'}, sonp.to_json
 
       else
@@ -343,7 +343,7 @@ class CatalogueV2 < SonataCatalogue
   # Post a son Package in binary-data
   post '/son-packages' do
     # logger.debug "Catalogue: entered POST /api/v2/son-packages/"
-    logger.debug "Catalogue: entered POST /api/v2/son-packages?#{query_string}"
+    logger.debug "Catalogue: entered POST /v2/son-packages?#{query_string}"
     # Return if content-type is invalid
     halt 415 unless request.content_type == 'application/zip'
 
@@ -422,7 +422,7 @@ class CatalogueV2 < SonataCatalogue
       file_container.signature = signature
       file_container.save
     end
-    logger.debug "Catalogue: leaving POST /api/v2/son-packages/ with #{grid_file.id}"
+    logger.debug "Catalogue: leaving POST /v2/son-packages/ with #{grid_file.id}"
     response = {"uuid" => sonp_id}
 
     # Requirements:
@@ -497,7 +497,7 @@ class CatalogueV2 < SonataCatalogue
   #	  @param :id [Symbol] son-package ID
   delete '/son-packages/:id/?' do
     unless params[:id].nil?
-      logger.debug "Catalogue: entered DELETE /api/v2/son-packages/#{params[:id]}"
+      logger.debug "Catalogue: entered DELETE /v2/son-packages/#{params[:id]}"
       begin
         sonp = FileContainer.find_by('_id' => params[:id])
       rescue Mongoid::Errors::DocumentNotFound => e
@@ -510,10 +510,10 @@ class CatalogueV2 < SonataCatalogue
       grid_fs.delete(sonp['grid_fs_id'])
       sonp.destroy
 
-      logger.debug "Catalogue: leaving DELETE /api/v2/son-packages/#{params[:id]}\" with son-package #{sonp}"
+      logger.debug "Catalogue: leaving DELETE /v2/son-packages/#{params[:id]}\" with son-package #{sonp}"
       halt 200, 'OK: son-package removed'
     end
-    logger.debug "Catalogue: leaving DELETE /api/v2/son-packages/#{params[:id]} with 'No son-package ID specified'"
+    logger.debug "Catalogue: leaving DELETE /v2/son-packages/#{params[:id]} with 'No son-package ID specified'"
     json_error 400, 'No son-package ID specified'
   end
 end

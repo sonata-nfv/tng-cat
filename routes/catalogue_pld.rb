@@ -41,7 +41,7 @@ class CatalogueV2 < SonataCatalogue
   get '/policies/?' do
     params['offset'] ||= DEFAULT_OFFSET
     params['limit'] ||= DEFAULT_LIMIT
-    logger.info "Catalogue: entered GET /api/v2/policies?#{query_string}"
+    logger.info "Catalogue: entered GET v2/policies?#{query_string}"
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
@@ -103,11 +103,11 @@ class CatalogueV2 < SonataCatalogue
     headers 'Record-Count' => policies.count.to_s
     logger.info "Catalogue: PLDs=#{policies}"
     if policies && policies.size.to_i > 0
-      logger.info "Catalogue: leaving GET /api/v2/policies?#{query_string} with #{policies}"
+      logger.info "Catalogue: leaving GET v2/policies?#{query_string} with #{policies}"
       # Paginate results
       policies = policies.paginate(offset: params[:offset], limit: params[:limit])
     else
-      logger.info "Catalogue: leaving GET /api/v2/policies?#{query_string} with 'No PLDs were found'"
+      logger.info "Catalogue: leaving GET v2/policies?#{query_string} with 'No PLDs were found'"
     end
 
     response = ''
@@ -129,7 +129,7 @@ class CatalogueV2 < SonataCatalogue
   # Show a Policy by internal ID (uuid)
   get '/policies/:id/?' do
     unless params[:id].nil?
-      logger.debug "Catalogue: GET /api/v2/policies/#{params[:id]}"
+      logger.debug "Catalogue: GET v2/policies/#{params[:id]}"
 
       begin
         pl = Pld.find(params[:id])
@@ -137,7 +137,7 @@ class CatalogueV2 < SonataCatalogue
         logger.error e
         json_error 404, "The PLD ID #{params[:id]} does not exist" unless pl
       end
-      logger.debug "Catalogue: leaving GET /api/v2/policies/#{params[:id]}\" with PLD #{pl}"
+      logger.debug "Catalogue: leaving GET v2/policies/#{params[:id]}\" with PLD #{pl}"
 
       response = ''
       case request.content_type
@@ -151,7 +151,7 @@ class CatalogueV2 < SonataCatalogue
       halt 200, {'Content-type' => request.content_type}, response
 
     end
-    logger.debug "Catalogue: leaving GET /api/v2/policies/#{params[:id]} with 'No PLD ID specified'"
+    logger.debug "Catalogue: leaving GET v2/policies/#{params[:id]} with 'No PLD ID specified'"
     json_error 400, 'No PLD ID specified'
   end
 
@@ -247,7 +247,7 @@ class CatalogueV2 < SonataCatalogue
   # Update a Policy by name in JSON or YAML format
   ## Catalogue - UPDATE
   put '/policies/?' do
-    logger.info "Catalogue: entered PUT /api/v2/policies?#{query_string}"
+    logger.info "Catalogue: entered PUT v2/policies?#{query_string}"
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
@@ -337,7 +337,7 @@ class CatalogueV2 < SonataCatalogue
     rescue Moped::Errors::OperationFailure => e
       json_return 200, 'Duplicated Policy ID' if e.message.include? 'E11000'
     end
-    logger.debug "Catalogue: leaving PUT /api/v2/policies?#{query_string}\" with PLD #{new_pl}"
+    logger.debug "Catalogue: leaving PUT v2/policies?#{query_string}\" with PLD #{new_pl}"
 
     response = ''
     case request.content_type
@@ -360,7 +360,7 @@ class CatalogueV2 < SonataCatalogue
     halt 415 unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
 
     unless params[:id].nil?
-      logger.debug "Catalogue: PUT /api/v2/policies/#{params[:id]}"
+      logger.debug "Catalogue: PUT v2/policies/#{params[:id]}"
 
       #Delete key "captures" if present
       params.delete(:captures) if params.key?(:captures)
@@ -371,7 +371,7 @@ class CatalogueV2 < SonataCatalogue
       # Check for special case (:status param == <new_status>)
       if keyed_params.key?(:status)
         # Do update of Descriptor status -> update_policy_status
-        logger.info "Catalogue: entered PUT /api/v2/policies/#{query_string}"
+        logger.info "Catalogue: entered PUT v2/policies/#{query_string}"
 
         # Validate Policy
         # Retrieve stored version
@@ -463,7 +463,7 @@ class CatalogueV2 < SonataCatalogue
         rescue Moped::Errors::OperationFailure => e
           json_return 200, 'Duplicated Policy ID' if e.message.include? 'E11000'
         end
-        logger.debug "Catalogue: leaving PUT /api/v2/policies/#{params[:id]}\" with PLD #{new_pl}"
+        logger.debug "Catalogue: leaving PUT v2/policies/#{params[:id]}\" with PLD #{new_pl}"
 
         response = ''
         case request.content_type
@@ -477,7 +477,7 @@ class CatalogueV2 < SonataCatalogue
         halt 200, {'Content-type' => request.content_type}, response
       end
     end
-    logger.debug "Catalogue: leaving PUT /api/v2/policies/#{params[:id]} with 'No Policy ID specified'"
+    logger.debug "Catalogue: leaving PUT v2/policies/#{params[:id]} with 'No Policy ID specified'"
     json_error 400, 'No Policy ID specified'
   end
 
@@ -485,7 +485,7 @@ class CatalogueV2 < SonataCatalogue
   # @overload delete '/policies/?'
   #	Delete a policy by name
   delete '/policies/?' do
-    logger.info "Catalogue: entered DELETE /api/v2/policies?#{query_string}"
+    logger.info "Catalogue: entered DELETE /v2/policies?#{query_string}"
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
@@ -500,11 +500,11 @@ class CatalogueV2 < SonataCatalogue
       rescue Mongoid::Errors::DocumentNotFound => e
         json_error 404, "The PLD Name #{keyed_params[:name]} does not exist"
       end
-      logger.debug "Catalogue: leaving DELETE /api/v2/policies?#{query_string}\" with PLD #{pl}"
+      logger.debug "Catalogue: leaving DELETE /v2/policies?#{query_string}\" with PLD #{pl}"
       pl.destroy
       halt 200, 'OK: PLD removed'
     end
-    logger.debug "Catalogue: leaving DELETE /api/v2/policies?#{query_string} with 'No PLD Name specified'"
+    logger.debug "Catalogue: leaving DELETE /v2/policies?#{query_string} with 'No PLD Name specified'"
     json_error 400, 'No PLD Name specified'
   end
 
@@ -515,18 +515,18 @@ class CatalogueV2 < SonataCatalogue
   # Delete a Policy by uuid
   delete '/policies/:id/?' do
     unless params[:id].nil?
-      logger.debug "Catalogue: DELETE /api/v2/policies/#{params[:id]}"
+      logger.debug "Catalogue: DELETE /v2/policies/#{params[:id]}"
       begin
         pl = Pld.find(params[:id])
       rescue Mongoid::Errors::DocumentNotFound => e
         logger.error e
         json_error 404, "The PLD ID #{params[:id]} does not exist" unless pl
       end
-      logger.debug "Catalogue: leaving DELETE /api/v2/policies/#{params[:id]}\" with PLD #{pl}"
+      logger.debug "Catalogue: leaving DELETE /v2/policies/#{params[:id]}\" with PLD #{pl}"
       pl.destroy
       halt 200, 'OK: PLD removed'
     end
-    logger.debug "Catalogue: leaving DELETE /api/v2/policies/#{params[:id]} with 'No PLD ID specified'"
+    logger.debug "Catalogue: leaving DELETE /v2/policies/#{params[:id]} with 'No PLD ID specified'"
     json_error 400, 'No PLD ID specified'
   end
 end

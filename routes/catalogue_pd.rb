@@ -628,7 +628,7 @@ class CatalogueV2 < SonataCatalogue
     params['offset'] ||= DEFAULT_OFFSET
     params['limit'] ||= DEFAULT_LIMIT
 
-    logger.info "Catalogue: entered GET /api/v2/packages?#{query_string}"
+    logger.info "Catalogue: entered GET /v2/packages?#{query_string}"
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
@@ -659,7 +659,7 @@ class CatalogueV2 < SonataCatalogue
       # pks = pks.sort({"version" => -1})
 
       if pks && pks.size.to_i > 0
-        logger.info "Catalogue: leaving GET /api/v2/packages?#{query_string} with #{pks}"
+        logger.info "Catalogue: leaving GET /v2/packages?#{query_string} with #{pks}"
 
         pks_list = []
         checked_list = []
@@ -678,7 +678,7 @@ class CatalogueV2 < SonataCatalogue
         end
 
       else
-        logger.info "Catalogue: leaving GET /api/v2/packages?#{query_string} with 'No PDs were found'"
+        logger.info "Catalogue: leaving GET /v2/packages?#{query_string} with 'No PDs were found'"
         pks_list = []
       end
       pks = apply_limit_and_offset(pks_list, offset=params[:offset], limit=params[:limit])
@@ -690,11 +690,11 @@ class CatalogueV2 < SonataCatalogue
       headers 'Record-Count' => pks.count.to_s
       logger.info "Catalogue: PDs=#{pks}"
       if pks && pks.size.to_i > 0
-        logger.info "Catalogue: leaving GET /api/v2/packages?#{query_string} with #{pks}"
+        logger.info "Catalogue: leaving GET /v2/packages?#{query_string} with #{pks}"
         # Paginate results
         pks = pks.paginate(offset: params[:offset], limit: params[:limit])
       else
-        logger.info "Catalogue: leaving GET /api/v2/packages?#{query_string} with 'No PDs were found'"
+        logger.info "Catalogue: leaving GET /v2/packages?#{query_string} with 'No PDs were found'"
       end
     end
 
@@ -717,7 +717,7 @@ class CatalogueV2 < SonataCatalogue
   # Show a Package by uuid
   get '/packages/:id/?' do
     unless params[:id].nil?
-      logger.debug "Catalogue: GET /api/v2/packages/#{params[:id]}"
+      logger.debug "Catalogue: GET /v2/packages/#{params[:id]}"
 
       begin
         pks = Pkgd.find(params[:id])
@@ -725,7 +725,7 @@ class CatalogueV2 < SonataCatalogue
         logger.error e
         json_error 404, "The PD ID #{params[:id]} does not exist" unless pks
       end
-      logger.debug "Catalogue: leaving GET /api/v2/packages/#{params[:id]}\" with PD #{pks}"
+      logger.debug "Catalogue: leaving GET /v2/packages/#{params[:id]}\" with PD #{pks}"
 
       response = ''
       case request.content_type
@@ -739,7 +739,7 @@ class CatalogueV2 < SonataCatalogue
       halt 200, {'Content-type' => request.content_type}, response
 
     end
-    logger.debug "Catalogue: leaving GET /api/v2/packages/#{params[:id]} with 'No PD ID specified'"
+    logger.debug "Catalogue: leaving GET /v2/packages/#{params[:id]} with 'No PD ID specified'"
     json_error 400, 'No PD ID specified'
   end
 
@@ -839,7 +839,7 @@ class CatalogueV2 < SonataCatalogue
   #	Update a Package vendor, name and version in JSON or YAML format
   ## Catalogue - UPDATE
   put '/packages/?' do
-    logger.info "Catalogue: entered PUT /api/v2/packages?#{query_string}"
+    logger.info "Catalogue: entered PUT /v2/packages?#{query_string}"
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
@@ -933,7 +933,7 @@ class CatalogueV2 < SonataCatalogue
     rescue Moped::Errors::OperationFailure => e
       json_return 200, 'Duplicated Package ID' if e.message.include? 'E11000'
     end
-    logger.debug "Catalogue: leaving PUT /api/v2/packages?#{query_string}\" with PD #{new_pks}"
+    logger.debug "Catalogue: leaving PUT /v2/packages?#{query_string}\" with PD #{new_pks}"
 
     response = ''
     case request.content_type
@@ -959,7 +959,7 @@ class CatalogueV2 < SonataCatalogue
     params.delete(:captures) if params.key?(:captures)
 
     unless params[:id].nil?
-      logger.debug "Catalogue: PUT /api/v2/packages/#{params[:id]}"
+      logger.debug "Catalogue: PUT /v2/packages/#{params[:id]}"
 
       # Transform 'string' params Hash into keys
       keyed_params = keyed_hash(params)
@@ -967,7 +967,7 @@ class CatalogueV2 < SonataCatalogue
       # Check for special case (:status param == <new_status>)
       if keyed_params.key?(:status)
         # Do update of Descriptor status -> update_ns_status
-        logger.info "Catalogue: entered PUT /api/v2/packages/#{query_string}"
+        logger.info "Catalogue: entered PUT /v2/packages/#{query_string}"
 
         # Validate Package
         # Retrieve stored version
@@ -998,7 +998,7 @@ class CatalogueV2 < SonataCatalogue
         # Check for special case (:sonp_uuid param == <uuid>)
       elsif keyed_params.key?(:sonp_uuid)
         # Do update of Package meta-data to include son-package uuid
-        logger.info "Catalogue: entered PUT /api/v2/packages/#{query_string}"
+        logger.info "Catalogue: entered PUT /v2/packages/#{query_string}"
 
         # Validate Package
         # Retrieve stored version
@@ -1026,7 +1026,7 @@ class CatalogueV2 < SonataCatalogue
         rescue Moped::Errors::OperationFailure => e
           json_error 400, 'ERROR: Operation failed'
         end
-        logger.debug "Catalogue: leaving PUT /api/v2/packages/#{query_string} succesfully"
+        logger.debug "Catalogue: leaving PUT /v2/packages/#{query_string} succesfully"
         halt 200, "PD updated with son-package uuid: #{keyed_params[:sonp_uuid]}"
 
       else
@@ -1098,7 +1098,7 @@ class CatalogueV2 < SonataCatalogue
         rescue Moped::Errors::OperationFailure => e
           json_return 200, 'Duplicated Package ID' if e.message.include? 'E11000'
         end
-        logger.debug "Catalogue: leaving PUT /api/v2/packages/#{params[:id]}\" with PD #{new_pks}"
+        logger.debug "Catalogue: leaving PUT /v2/packages/#{params[:id]}\" with PD #{new_pks}"
 
         response = ''
         case request.content_type
@@ -1112,7 +1112,7 @@ class CatalogueV2 < SonataCatalogue
         halt 200, {'Content-type' => request.content_type}, response
       end
     end
-    logger.debug "Catalogue: leaving PUT /api/v2/packages/#{params[:id]} with 'No PD ID specified'"
+    logger.debug "Catalogue: leaving PUT /v2/packages/#{params[:id]} with 'No PD ID specified'"
     json_error 400, 'No PD ID specified'
   end
 
@@ -1154,7 +1154,7 @@ class CatalogueV2 < SonataCatalogue
       logger.info "Setting pd #{params[:id]} status to active"
       intelligent_enable_all(pks)
     end
-    logger.debug "Catalogue: leaving PUT /api/v2/packages/#{params[:id]}/status with 'No PD ID specified'"
+    logger.debug "Catalogue: leaving PUT /v2/packages/#{params[:id]}/status with 'No PD ID specified'"
     json_error 400, 'No PD ID specified'
   end
 
@@ -1162,7 +1162,7 @@ class CatalogueV2 < SonataCatalogue
   # @overload delete '/catalogues/packages/vendor/:package_group/name/:package_name/version/:package_version'
   #	Delete a PD by group, name and version
   delete '/packages/?' do
-    logger.info "Catalogue: entered DELETE /api/v2/packages?#{query_string}"
+    logger.info "Catalogue: entered DELETE /v2/packages?#{query_string}"
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
@@ -1181,7 +1181,7 @@ class CatalogueV2 < SonataCatalogue
       end
       intelligent_delete(pks)
     end
-    logger.debug "Catalogue: leaving DELETE /api/v2/packages?#{query_string} with 'No PD Vendor, Name, Version specified'"
+    logger.debug "Catalogue: leaving DELETE /v2/packages?#{query_string} with 'No PD Vendor, Name, Version specified'"
     json_error 400, 'No PD Vendor, Name, Version specified'
   end
 
@@ -1192,7 +1192,7 @@ class CatalogueV2 < SonataCatalogue
   # Delete a PD by uuid
   delete '/packages/:id/?' do
     unless params[:id].nil?
-      logger.debug "Catalogue: DELETE /api/v2/packages/#{params[:id]}"
+      logger.debug "Catalogue: DELETE /v2/packages/#{params[:id]}"
       begin
         pks = Pkgd.find(params[:id])
       rescue Mongoid::Errors::DocumentNotFound => e
@@ -1201,7 +1201,7 @@ class CatalogueV2 < SonataCatalogue
       end
       intelligent_delete(pks)
     end
-    logger.debug "Catalogue: leaving DELETE /api/v2/packages/#{params[:id]} with 'No PD ID specified'"
+    logger.debug "Catalogue: leaving DELETE /v2/packages/#{params[:id]} with 'No PD ID specified'"
     json_error 400, 'No PD ID specified'
   end
 end

@@ -41,7 +41,7 @@ class CatalogueV2 < SonataCatalogue
   get '/tests/?' do
     params['offset'] ||= DEFAULT_OFFSET
     params['limit'] ||= DEFAULT_LIMIT
-    logger.info "Catalogue: entered GET /api/v2/tests?#{query_string}"
+    logger.info "Catalogue: entered GET /v2/tests?#{query_string}"
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
@@ -71,7 +71,7 @@ class CatalogueV2 < SonataCatalogue
       logger.info "Catalogue: TESTDs=#{tests}"
 
       if tests && tests.size.to_i > 0
-        logger.info "Catalogue: leaving GET /api/v2/tests?#{query_string} with #{tests}"
+        logger.info "Catalogue: leaving GET /v2/tests?#{query_string} with #{tests}"
 
         tests_list = []
         checked_list = []
@@ -89,7 +89,7 @@ class CatalogueV2 < SonataCatalogue
           checked_list.push(tests_name_vendor)
         end
       else
-        logger.info "Catalogue: leaving GET /api/v2/tests?#{query_string} with 'No TESTDs were found'"
+        logger.info "Catalogue: leaving GET /v2/tests?#{query_string} with 'No TESTDs were found'"
         tests_list = []
 
       end
@@ -103,11 +103,11 @@ class CatalogueV2 < SonataCatalogue
       headers 'Record-Count' => tests.count.to_s
       logger.info "Catalogue: TESTDs=#{tests}"
       if tests && tests.size.to_i > 0
-        logger.info "Catalogue: leaving GET /api/v2/tests?#{query_string} with #{tests}"
+        logger.info "Catalogue: leaving GET /v2/tests?#{query_string} with #{tests}"
         # Paginate results
         tests = tests.paginate(offset: params[:offset], limit: params[:limit])
       else
-        logger.info "Catalogue: leaving GET /api/v2/tests?#{query_string} with 'No TESTDs were found'"
+        logger.info "Catalogue: leaving GET /v2/tests?#{query_string} with 'No TESTDs were found'"
       end
     end
 
@@ -130,7 +130,7 @@ class CatalogueV2 < SonataCatalogue
   # Show a Test Descriptor by internal ID (uuid)
   get '/tests/:id/?' do
     unless params[:id].nil?
-      logger.debug "Catalogue: GET /api/v2/tests/#{params[:id]}"
+      logger.debug "Catalogue: GET /v2/tests/#{params[:id]}"
 
       begin
         test = Testd.find(params[:id])
@@ -138,7 +138,7 @@ class CatalogueV2 < SonataCatalogue
         logger.error e
         json_error 404, "The TESTD ID #{params[:id]} does not exist" unless test
       end
-      logger.debug "Catalogue: leaving GET /api/v2/tests/#{params[:id]}\" with TESTD #{test}"
+      logger.debug "Catalogue: leaving GET /v2/tests/#{params[:id]}\" with TESTD #{test}"
 
       response = ''
       case request.content_type
@@ -152,7 +152,7 @@ class CatalogueV2 < SonataCatalogue
       halt 200, {'Content-type' => request.content_type}, response
 
     end
-    logger.debug "Catalogue: leaving GET /api/v2/tests/#{params[:id]} with 'No TESTD ID specified'"
+    logger.debug "Catalogue: leaving GET /v2/tests/#{params[:id]} with 'No TESTD ID specified'"
     json_error 400, 'No TESTD ID specified'
   end
 
@@ -252,7 +252,7 @@ class CatalogueV2 < SonataCatalogue
   # Update a Test Descriptor by vendor, name and version in JSON or YAML format
   ## Catalogue - UPDATE
   put '/tests/?' do
-    logger.info "Catalogue: entered PUT /api/v2/tests?#{query_string}"
+    logger.info "Catalogue: entered PUT /v2/tests?#{query_string}"
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
@@ -346,7 +346,7 @@ class CatalogueV2 < SonataCatalogue
     rescue Moped::Errors::OperationFailure => e
       json_return 200, 'Duplicated TEST ID' if e.message.include? 'E11000'
     end
-    logger.debug "Catalogue: leaving PUT /api/v2/tests?#{query_string}\" with TESTD #{new_test}"
+    logger.debug "Catalogue: leaving PUT /v2/tests?#{query_string}\" with TESTD #{new_test}"
 
     response = ''
     case request.content_type
@@ -369,7 +369,7 @@ class CatalogueV2 < SonataCatalogue
     halt 415 unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
 
     unless params[:id].nil?
-      logger.debug "Catalogue: PUT /api/v2/tests/#{params[:id]}"
+      logger.debug "Catalogue: PUT /v2/tests/#{params[:id]}"
 
       #Delete key "captures" if present
       params.delete(:captures) if params.key?(:captures)
@@ -380,7 +380,7 @@ class CatalogueV2 < SonataCatalogue
       # Check for special case (:status param == <new_status>)
       if keyed_params.key?(:status)
         # Do update of Descriptor status -> update_test_status
-        logger.info "Catalogue: entered PUT /api/v2/tests/#{query_string}"
+        logger.info "Catalogue: entered PUT /v2/tests/#{query_string}"
 
         # Validate Test
         # Retrieve stored version
@@ -475,7 +475,7 @@ class CatalogueV2 < SonataCatalogue
         rescue Moped::Errors::OperationFailure => e
           json_return 200, 'Duplicated TEST ID' if e.message.include? 'E11000'
         end
-        logger.debug "Catalogue: leaving PUT /api/v2/tests/#{params[:id]}\" with TESTD #{new_test}"
+        logger.debug "Catalogue: leaving PUT /v2/tests/#{params[:id]}\" with TESTD #{new_test}"
 
         response = ''
         case request.content_type
@@ -489,7 +489,7 @@ class CatalogueV2 < SonataCatalogue
         halt 200, {'Content-type' => request.content_type}, response
       end
     end
-    logger.debug "Catalogue: leaving PUT /api/v2/tests/#{params[:id]} with 'No TEST ID specified'"
+    logger.debug "Catalogue: leaving PUT /v2/tests/#{params[:id]} with 'No TEST ID specified'"
     json_error 400, 'No TEST ID specified'
   end
 
@@ -497,7 +497,7 @@ class CatalogueV2 < SonataCatalogue
   # @overload delete '/tests/?'
   #	Delete a TEST by vendor, name and version
   delete '/tests/?' do
-    logger.info "Catalogue: entered DELETE /api/v2/tests?#{query_string}"
+    logger.info "Catalogue: entered DELETE /v2/tests?#{query_string}"
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
@@ -513,11 +513,11 @@ class CatalogueV2 < SonataCatalogue
       rescue Mongoid::Errors::DocumentNotFound => e
         json_error 404, "The TESTD Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist"
       end
-      logger.debug "Catalogue: leaving DELETE /api/v2/tests?#{query_string}\" with TESTD #{test}"
+      logger.debug "Catalogue: leaving DELETE /v2/tests?#{query_string}\" with TESTD #{test}"
       test.destroy
       halt 200, 'OK: TESTD removed'
     end
-    logger.debug "Catalogue: leaving DELETE /api/v2/tests?#{query_string} with 'No TESTD Vendor, Name, Version specified'"
+    logger.debug "Catalogue: leaving DELETE /v2/tests?#{query_string} with 'No TESTD Vendor, Name, Version specified'"
     json_error 400, 'No TESTD Vendor, Name, Version specified'
   end
 
@@ -528,18 +528,18 @@ class CatalogueV2 < SonataCatalogue
   # Delete a TEST by uuid
   delete '/tests/:id/?' do
     unless params[:id].nil?
-      logger.debug "Catalogue: DELETE /api/v2/tests/#{params[:id]}"
+      logger.debug "Catalogue: DELETE /v2/tests/#{params[:id]}"
       begin
         test = Testd.find(params[:id])
       rescue Mongoid::Errors::DocumentNotFound => e
         logger.error e
         json_error 404, "The TESTD ID #{params[:id]} does not exist" unless test
       end
-      logger.debug "Catalogue: leaving DELETE /api/v2/tests/#{params[:id]}\" with TESTD #{test}"
+      logger.debug "Catalogue: leaving DELETE /v2/tests/#{params[:id]}\" with TESTD #{test}"
       test.destroy
       halt 200, 'OK: TESTD removed'
     end
-    logger.debug "Catalogue: leaving DELETE /api/v2/tests/#{params[:id]} with 'No TESTD ID specified'"
+    logger.debug "Catalogue: leaving DELETE /v2/tests/#{params[:id]} with 'No TESTD ID specified'"
     json_error 400, 'No TESTD ID specified'
   end
 end

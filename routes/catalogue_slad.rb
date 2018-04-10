@@ -42,7 +42,7 @@ class CatalogueV2 < SonataCatalogue
   get '/slas/template-descriptors/?' do
     params['offset'] ||= DEFAULT_OFFSET
     params['limit'] ||= DEFAULT_LIMIT
-    logger.info "Catalogue: entered GET /api/v2/slas/template-descriptors?#{query_string}"
+    logger.info "Catalogue: entered GET /v2/slas/template-descriptors?#{query_string}"
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
@@ -72,7 +72,7 @@ class CatalogueV2 < SonataCatalogue
       logger.info "Catalogue: SLADs=#{slas}"
 
       if slas && slas.size.to_i > 0
-        logger.info "Catalogue: leaving GET /api/v2/slas/template-descriptors?#{query_string} with #{slas}"
+        logger.info "Catalogue: leaving GET /v2/slas/template-descriptors?#{query_string} with #{slas}"
 
         slas_list = []
         checked_list = []
@@ -89,7 +89,7 @@ class CatalogueV2 < SonataCatalogue
           checked_list.push(slas_name_vendor)
         end
       else
-        logger.info "Catalogue: leaving GET /api/v2/slas/template-descriptors?#{query_string} with 'No SLADs were found'"
+        logger.info "Catalogue: leaving GET /v2/slas/template-descriptors?#{query_string} with 'No SLADs were found'"
         slas_list = []
 
       end
@@ -102,11 +102,11 @@ class CatalogueV2 < SonataCatalogue
       headers 'Record-Count' => slas.count.to_s
       logger.info "Catalogue: SLADs=#{slas}"
       if slas && slas.size.to_i > 0
-        logger.info "Catalogue: leaving GET /api/v2/slas/template-descriptors?#{query_string} with #{slas}"
+        logger.info "Catalogue: leaving GET /v2/slas/template-descriptors?#{query_string} with #{slas}"
         # Paginate results
         slas = slas.paginate(offset: params[:offset], limit: params[:limit])
       else
-        logger.info "Catalogue: leaving GET /api/v2/slas/template-descriptors?#{query_string} with 'No SLADs were found'"
+        logger.info "Catalogue: leaving GET /v2/slas/template-descriptors?#{query_string} with 'No SLADs were found'"
       end
     end
 
@@ -129,7 +129,7 @@ class CatalogueV2 < SonataCatalogue
   # Show a SLAd by internal ID (uuid)
   get '/slas/template-descriptors/:id/?' do
     unless params[:id].nil?
-      logger.debug "Catalogue: GET /api/v2/slas/template-descriptors/#{params[:id]}"
+      logger.debug "Catalogue: GET /v2/slas/template-descriptors/#{params[:id]}"
 
       begin
         sla = Slad.find(params[:id])
@@ -137,7 +137,7 @@ class CatalogueV2 < SonataCatalogue
         logger.error e
         json_error 404, "The SLAD ID #{params[:id]} does not exist" unless sla
       end
-      logger.debug "Catalogue: leaving GET /api/v2/slas/template-descriptors/#{params[:id]}\" with SLAD #{sla}"
+      logger.debug "Catalogue: leaving GET /v2/slas/template-descriptors/#{params[:id]}\" with SLAD #{sla}"
 
       response = ''
       case request.content_type
@@ -151,7 +151,7 @@ class CatalogueV2 < SonataCatalogue
       halt 200, {'Content-type' => request.content_type}, response
 
     end
-    logger.debug "Catalogue: leaving GET /api/v2/slas/template-descriptors/#{params[:id]} with 'No SLAD ID specified'"
+    logger.debug "Catalogue: leaving GET /v2/slas/template-descriptors/#{params[:id]} with 'No SLAD ID specified'"
     json_error 400, 'No SLAD ID specified'
   end
 
@@ -252,7 +252,7 @@ class CatalogueV2 < SonataCatalogue
   # Update a SLA by vendor, name and version in JSON or YAML format
   ## Catalogue - UPDATE
   put '/slas/template-descriptors/?' do
-    logger.info "Catalogue: entered PUT /api/v2/slas/template-descriptors/#{query_string}"
+    logger.info "Catalogue: entered PUT /v2/slas/template-descriptors/#{query_string}"
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
@@ -347,7 +347,7 @@ class CatalogueV2 < SonataCatalogue
     rescue Moped::Errors::OperationFailure => e
       json_return 200, 'Duplicated SLA ID' if e.message.include? 'E11000'
     end
-    logger.debug "Catalogue: leaving PUT /api/v2/sla/template-descriptors?#{query_string}\" with SLAD #{new_sla}"
+    logger.debug "Catalogue: leaving PUT /v2/sla/template-descriptors?#{query_string}\" with SLAD #{new_sla}"
 
     response = ''
     case request.content_type
@@ -370,7 +370,7 @@ class CatalogueV2 < SonataCatalogue
     halt 415 unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
 
     unless params[:id].nil?
-      logger.debug "Catalogue: PUT /api/v2/slas/template-descriptors/#{params[:id]}"
+      logger.debug "Catalogue: PUT /v2/slas/template-descriptors/#{params[:id]}"
 
       #Delete key "captures" if present
       params.delete(:captures) if params.key?(:captures)
@@ -380,7 +380,7 @@ class CatalogueV2 < SonataCatalogue
 
       if keyed_params.key?(:status) || keyed_params.key?(:state)
         # Do update of Descriptor status -> update_sla_status
-        logger.info "Catalogue: entered PUT /api/v2/slas/template-descriptors/#{query_string}"
+        logger.info "Catalogue: entered PUT /v2/slas/template-descriptors/#{query_string}"
         valid_state = %w[published unpublished]
         valid_status = %w[active inactive]
         out_query1 = ''
@@ -510,7 +510,7 @@ class CatalogueV2 < SonataCatalogue
         rescue Moped::Errors::OperationFailure => e
           json_return 200, 'Duplicated SLA ID' if e.message.include? 'E11000'
         end
-        logger.debug "Catalogue: leaving PUT /api/v2/slas/template-descriptors/#{params[:id]}\" with SLAD #{new_sla}"
+        logger.debug "Catalogue: leaving PUT /v2/slas/template-descriptors/#{params[:id]}\" with SLAD #{new_sla}"
 
         response = ''
         case request.content_type
@@ -524,7 +524,7 @@ class CatalogueV2 < SonataCatalogue
         halt 200, {'Content-type' => request.content_type}, response
       end
     end
-    logger.debug "Catalogue: leaving PUT /api/v2/slas/template-descriptors/#{params[:id]} with 'No SLA ID specified'"
+    logger.debug "Catalogue: leaving PUT /v2/slas/template-descriptors/#{params[:id]} with 'No SLA ID specified'"
     json_error 400, 'No SLA ID specified'
   end
 
@@ -532,7 +532,7 @@ class CatalogueV2 < SonataCatalogue
   # @overload delete '/sla/template-descriptor/?'
   #	Delete a SLA by vendor, name and version
   delete '/slas/template-descriptors/?' do
-    logger.info "Catalogue: entered DELETE /api/v2/slas/template-descriptors?#{query_string}"
+    logger.info "Catalogue: entered DELETE /v2/slas/template-descriptors?#{query_string}"
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
@@ -550,7 +550,7 @@ class CatalogueV2 < SonataCatalogue
       end
       # Check if SLAD is unpublished and inactive. Then, it cannot be deleted
       if sla['state'] == 'unpublished' && sla['status'] == 'inactive'
-        logger.debug "Catalogue: leaving DELETE /api/v2/sla/template-descriptors?#{query_string}\" with SLAD #{sla}"
+        logger.debug "Catalogue: leaving DELETE /v2/sla/template-descriptors?#{query_string}\" with SLAD #{sla}"
         sla.destroy
         halt 200, 'OK: SLAD removed'
       else
@@ -558,7 +558,7 @@ class CatalogueV2 < SonataCatalogue
       end
 
     end
-    logger.debug "Catalogue: leaving DELETE /api/v2/slas/template-descriptors?#{query_string} with 'No SLAD Vendor, Name, Version specified'"
+    logger.debug "Catalogue: leaving DELETE /v2/slas/template-descriptors?#{query_string} with 'No SLAD Vendor, Name, Version specified'"
     json_error 400, 'No SLAD Vendor, Name, Version specified'
   end
 
@@ -569,7 +569,7 @@ class CatalogueV2 < SonataCatalogue
   # Delete a SLA by uuid
   delete '/slas/template-descriptors/:id/?' do
     unless params[:id].nil?
-      logger.debug "Catalogue: DELETE /api/v2/slas/template-descriptors/#{params[:id]}"
+      logger.debug "Catalogue: DELETE /v2/slas/template-descriptors/#{params[:id]}"
       begin
         sla = Slad.find(params[:id])
       rescue Mongoid::Errors::DocumentNotFound => e
@@ -577,14 +577,14 @@ class CatalogueV2 < SonataCatalogue
         json_error 404, "The SLAD ID #{params[:id]} does not exist" unless sla
       end
       if sla['state'] == 'unpublished' && sla['status'] == 'inactive'
-        logger.debug "Catalogue: leaving DELETE /api/v2/slas/template-descriptors?#{query_string}\" with SLAD #{sla}"
+        logger.debug "Catalogue: leaving DELETE /v2/slas/template-descriptors?#{query_string}\" with SLAD #{sla}"
         sla.destroy
         halt 200, 'OK: SLAD removed'
       else
         json_error 400, "The SLAD cannot be deleted cause of state or/and status"
       end
     end
-    logger.debug "Catalogue: leaving DELETE /api/v2/slas/template-descriptors/#{params[:id]} with 'No SLAD ID specified'"
+    logger.debug "Catalogue: leaving DELETE /v2/slas/template-descriptors/#{params[:id]} with 'No SLAD ID specified'"
     json_error 400, 'No SLAD ID specified'
   end
 end

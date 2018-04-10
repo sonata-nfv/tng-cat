@@ -42,7 +42,7 @@ class CatalogueV2 < SonataCatalogue
   get '/nsts/?' do
     params['offset'] ||= DEFAULT_OFFSET
     params['limit'] ||= DEFAULT_LIMIT
-    logger.info "Catalogue: entered GET /api/v2/nsts?#{query_string}"
+    logger.info "Catalogue: entered GET /v2/nsts?#{query_string}"
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
@@ -72,7 +72,7 @@ class CatalogueV2 < SonataCatalogue
       logger.info "Catalogue: NSTs=#{nsts}"
 
       if nsts && nsts.size.to_i > 0
-        logger.info "Catalogue: leaving GET /api/v2/nsts?#{query_string} with #{nsts}"
+        logger.info "Catalogue: leaving GET /v2/nsts?#{query_string} with #{nsts}"
 
         nsts_list = []
         checked_list = []
@@ -90,7 +90,7 @@ class CatalogueV2 < SonataCatalogue
           checked_list.push(nsts_name_vendor)
         end
       else
-        logger.info "Catalogue: leaving GET /api/v2/nsts?#{query_string} with 'No NSTs were found'"
+        logger.info "Catalogue: leaving GET /v2/nsts?#{query_string} with 'No NSTs were found'"
         nsts_list = []
 
       end
@@ -103,11 +103,11 @@ class CatalogueV2 < SonataCatalogue
       headers 'Record-Count' => nsts.count.to_s
       logger.info "Catalogue: NSTs=#{nsts}"
       if nsts && nsts.size.to_i > 0
-        logger.info "Catalogue: leaving GET /api/v2/nsts?#{query_string} with #{nsts}"
+        logger.info "Catalogue: leaving GET /v2/nsts?#{query_string} with #{nsts}"
         # Paginate results
         nsts = nsts.paginate(offset: params[:offset], limit: params[:limit])
       else
-        logger.info "Catalogue: leaving GET /api/v2/nsts?#{query_string} with 'No NSTs were found'"
+        logger.info "Catalogue: leaving GET /v2/nsts?#{query_string} with 'No NSTs were found'"
       end
     end
 
@@ -130,7 +130,7 @@ class CatalogueV2 < SonataCatalogue
   # Show a NST by internal ID (uuid)
   get '/nsts/:id/?' do
     unless params[:id].nil?
-      logger.debug "Catalogue: GET /api/v2/nsts/#{params[:id]}"
+      logger.debug "Catalogue: GET /v2/nsts/#{params[:id]}"
 
       begin
         nst = Nstd.find(params[:id])
@@ -138,7 +138,7 @@ class CatalogueV2 < SonataCatalogue
         logger.error e
         json_error 404, "The NST ID #{params[:id]} does not exist" unless nst
       end
-      logger.debug "Catalogue: leaving GET /api/v2/nsts/#{params[:id]}\" with NST #{nst}"
+      logger.debug "Catalogue: leaving GET /v2/nsts/#{params[:id]}\" with NST #{nst}"
 
       response = ''
       case request.content_type
@@ -152,7 +152,7 @@ class CatalogueV2 < SonataCatalogue
       halt 200, {'Content-type' => request.content_type}, response
 
     end
-    logger.debug "Catalogue: leaving GET /api/v2/nsts/#{params[:id]} with 'No NST ID specified'"
+    logger.debug "Catalogue: leaving GET /v2/nsts/#{params[:id]} with 'No NST ID specified'"
     json_error 400, 'No NST ID specified'
   end
 
@@ -252,7 +252,7 @@ class CatalogueV2 < SonataCatalogue
   # Update a NST by vendor, name and version in JSON or YAML format
   ## Catalogue - UPDATE
   put '/nsts/?' do
-    logger.info "Catalogue: entered PUT /api/v2/nsts?#{query_string}"
+    logger.info "Catalogue: entered PUT /v2/nsts?#{query_string}"
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
@@ -346,7 +346,7 @@ class CatalogueV2 < SonataCatalogue
     rescue Moped::Errors::OperationFailure => e
       json_return 200, 'Duplicated NST ID' if e.message.include? 'E11000'
     end
-    logger.debug "Catalogue: leaving PUT /api/v2/nsts?#{query_string}\" with NST #{new_nst}"
+    logger.debug "Catalogue: leaving PUT /v2/nsts?#{query_string}\" with NST #{new_nst}"
 
     response = ''
     case request.content_type
@@ -369,7 +369,7 @@ class CatalogueV2 < SonataCatalogue
     halt 415 unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
 
     unless params[:id].nil?
-      logger.debug "Catalogue: PUT /api/v2/nsts/#{params[:id]}"
+      logger.debug "Catalogue: PUT /v2/nsts/#{params[:id]}"
 
       #Delete key "captures" if present
       params.delete(:captures) if params.key?(:captures)
@@ -380,7 +380,7 @@ class CatalogueV2 < SonataCatalogue
       # Check for special case (:status param == <new_status>)
       if keyed_params.key?(:status)
         # Do update of Descriptor status -> update_nst_status
-        logger.info "Catalogue: entered PUT /api/v2/nsts/#{query_string}"
+        logger.info "Catalogue: entered PUT /v2/nsts/#{query_string}"
 
         # Validate NST
         # Retrieve stored version
@@ -475,7 +475,7 @@ class CatalogueV2 < SonataCatalogue
         rescue Moped::Errors::OperationFailure => e
           json_return 200, 'Duplicated NST ID' if e.message.include? 'E11000'
         end
-        logger.debug "Catalogue: leaving PUT /api/v2/nsts/#{params[:id]}\" with NST #{new_nst}"
+        logger.debug "Catalogue: leaving PUT /v2/nsts/#{params[:id]}\" with NST #{new_nst}"
 
         response = ''
         case request.content_type
@@ -489,7 +489,7 @@ class CatalogueV2 < SonataCatalogue
         halt 200, {'Content-type' => request.content_type}, response
       end
     end
-    logger.debug "Catalogue: leaving PUT /api/v2/nsts/#{params[:id]} with 'No NST ID specified'"
+    logger.debug "Catalogue: leaving PUT /v2/nsts/#{params[:id]} with 'No NST ID specified'"
     json_error 400, 'No NST ID specified'
   end
 
@@ -497,7 +497,7 @@ class CatalogueV2 < SonataCatalogue
   # @overload delete '/nsts/?'
   #	Delete a NST by vendor, name and version
   delete '/nsts/?' do
-    logger.info "Catalogue: entered DELETE /api/v2/nsts?#{query_string}"
+    logger.info "Catalogue: entered DELETE /v2/nsts?#{query_string}"
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
@@ -513,11 +513,11 @@ class CatalogueV2 < SonataCatalogue
       rescue Mongoid::Errors::DocumentNotFound => e
         json_error 404, "The NST Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist"
       end
-      logger.debug "Catalogue: leaving DELETE /api/v2/nsts?#{query_string}\" with NST #{nst}"
+      logger.debug "Catalogue: leaving DELETE /v2/nsts?#{query_string}\" with NST #{nst}"
       nst.destroy
       halt 200, 'OK: NST removed'
     end
-    logger.debug "Catalogue: leaving DELETE /api/v2/nsts?#{query_string} with 'No NST Vendor, Name, Version specified'"
+    logger.debug "Catalogue: leaving DELETE /v2/nsts?#{query_string} with 'No NST Vendor, Name, Version specified'"
     json_error 400, 'No NST Vendor, Name, Version specified'
   end
 
@@ -528,18 +528,18 @@ class CatalogueV2 < SonataCatalogue
   # Delete a NST by uuid
   delete '/nsts/:id/?' do
     unless params[:id].nil?
-      logger.debug "Catalogue: DELETE /api/v2/nsts/#{params[:id]}"
+      logger.debug "Catalogue: DELETE /v2/nsts/#{params[:id]}"
       begin
         nst = Nstd.find(params[:id])
       rescue Mongoid::Errors::DocumentNotFound => e
         logger.error e
         json_error 404, "The NST ID #{params[:id]} does not exist" unless nst
       end
-      logger.debug "Catalogue: leaving DELETE /api/v2/nsts/#{params[:id]}\" with NST #{nst}"
+      logger.debug "Catalogue: leaving DELETE /v2/nsts/#{params[:id]}\" with NST #{nst}"
       nst.destroy
       halt 200, 'OK: NST removed'
     end
-    logger.debug "Catalogue: leaving DELETE /api/v2/nsts/#{params[:id]} with 'No NST ID specified'"
+    logger.debug "Catalogue: leaving DELETE /v2/nsts/#{params[:id]} with 'No NST ID specified'"
     json_error 400, 'No NST ID specified'
   end
 end

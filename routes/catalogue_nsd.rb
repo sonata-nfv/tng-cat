@@ -601,7 +601,7 @@ class CatalogueV2 < SonataCatalogue
   get '/network-services/?' do
     params['offset'] ||= DEFAULT_OFFSET
     params['limit'] ||= DEFAULT_LIMIT
-    logger.info "Catalogue: entered GET /api/v2/network-services?#{query_string}"
+    logger.info "Catalogue: entered GET /v2/network-services?#{query_string}"
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
@@ -631,7 +631,7 @@ class CatalogueV2 < SonataCatalogue
       # nss = nss.sort({"version" => -1})
 
       if nss && nss.size.to_i > 0
-        logger.info "Catalogue: leaving GET /api/v2/network-services?#{query_string} with #{nss}"
+        logger.info "Catalogue: leaving GET /v2/network-services?#{query_string} with #{nss}"
 
         nss_list = []
         checked_list = []
@@ -653,7 +653,7 @@ class CatalogueV2 < SonataCatalogue
           checked_list.push(nss_name_vendor)
         end
       else
-        logger.info "Catalogue: leaving GET /api/v2/network-services?#{query_string} with 'No NSDs were found'"
+        logger.info "Catalogue: leaving GET /v2/network-services?#{query_string} with 'No NSDs were found'"
         nss_list = []
       end
       nss = apply_limit_and_offset(nss_list, offset=params[:offset], limit=params[:limit])
@@ -665,11 +665,11 @@ class CatalogueV2 < SonataCatalogue
       headers 'Record-Count' => nss.count.to_s
       logger.info "Catalogue: NSDs=#{nss}"
       if nss && nss.size.to_i > 0
-        logger.info "Catalogue: leaving GET /api/v2/network-services?#{query_string} with #{nss}"
+        logger.info "Catalogue: leaving GET /v2/network-services?#{query_string} with #{nss}"
         # Paginate results
         nss = nss.paginate(offset: params[:offset], limit: params[:limit])
       else
-        logger.info "Catalogue: leaving GET /api/v2/network-services?#{query_string} with 'No NSDs were found'"
+        logger.info "Catalogue: leaving GET /v2/network-services?#{query_string} with 'No NSDs were found'"
       end
     end
 
@@ -692,7 +692,7 @@ class CatalogueV2 < SonataCatalogue
   # Show a NS by internal ID (uuid)
   get '/network-services/:id/?' do
     unless params[:id].nil?
-      logger.debug "Catalogue: GET /api/v2/network-services/#{params[:id]}"
+      logger.debug "Catalogue: GET /v2/network-services/#{params[:id]}"
 
       begin
         ns = Nsd.find(params[:id])
@@ -700,7 +700,7 @@ class CatalogueV2 < SonataCatalogue
         logger.error e
         json_error 404, "The NSD ID #{params[:id]} does not exist" unless ns
       end
-      logger.debug "Catalogue: leaving GET /api/v2/network-services/#{params[:id]}\" with NSD #{ns}"
+      logger.debug "Catalogue: leaving GET /v2/network-services/#{params[:id]}\" with NSD #{ns}"
 
       response = ''
       case request.content_type
@@ -714,7 +714,7 @@ class CatalogueV2 < SonataCatalogue
       halt 200, {'Content-type' => request.content_type}, response
 
     end
-    logger.debug "Catalogue: leaving GET /api/v2/network-services/#{params[:id]} with 'No NSD ID specified'"
+    logger.debug "Catalogue: leaving GET /v2/network-services/#{params[:id]} with 'No NSD ID specified'"
     json_error 400, 'No NSD ID specified'
   end
 
@@ -814,7 +814,7 @@ class CatalogueV2 < SonataCatalogue
   # Update a NS by vendor, name and version in JSON or YAML format
   ## Catalogue - UPDATE
   put '/network-services/?' do
-    logger.info "Catalogue: entered PUT /api/v2/network-services?#{query_string}"
+    logger.info "Catalogue: entered PUT /v2/network-services?#{query_string}"
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
@@ -907,7 +907,7 @@ class CatalogueV2 < SonataCatalogue
     rescue Moped::Errors::OperationFailure => e
       json_return 200, 'Duplicated NS ID' if e.message.include? 'E11000'
     end
-    logger.debug "Catalogue: leaving PUT /api/v2/network-services?#{query_string}\" with NSD #{new_ns}"
+    logger.debug "Catalogue: leaving PUT /v2/network-services?#{query_string}\" with NSD #{new_ns}"
 
     response = ''
     case request.content_type
@@ -933,7 +933,7 @@ class CatalogueV2 < SonataCatalogue
     params.delete(:captures) if params.key?(:captures)
 
     unless params[:id].nil?
-      logger.debug "Catalogue: PUT /api/v2/network-services/#{params[:id]}"
+      logger.debug "Catalogue: PUT /v2/network-services/#{params[:id]}"
 
       # Transform 'string' params Hash into keys
       keyed_params = keyed_hash(params)
@@ -941,7 +941,7 @@ class CatalogueV2 < SonataCatalogue
       # Check for special case (:status param == <new_status>)
       if keyed_params.key?(:status)
         # Do update of Descriptor status -> update_ns_status
-        logger.info "Catalogue: entered PUT /api/v2/network-services/#{query_string}"
+        logger.info "Catalogue: entered PUT /v2/network-services/#{query_string}"
 
         # Validate NS
         # Retrieve stored version
@@ -1036,7 +1036,7 @@ class CatalogueV2 < SonataCatalogue
         rescue Moped::Errors::OperationFailure => e
           json_return 200, 'Duplicated NS ID' if e.message.include? 'E11000'
         end
-        logger.debug "Catalogue: leaving PUT /api/v2/network-services/#{params[:id]}\" with NSD #{new_ns}"
+        logger.debug "Catalogue: leaving PUT /v2/network-services/#{params[:id]}\" with NSD #{new_ns}"
 
         response = ''
         case request.content_type
@@ -1050,7 +1050,7 @@ class CatalogueV2 < SonataCatalogue
         halt 200, {'Content-type' => request.content_type}, response
       end
     end
-    logger.debug "Catalogue: leaving PUT /api/v2/network-services/#{params[:id]} with 'No NSD ID specified'"
+    logger.debug "Catalogue: leaving PUT /v2/network-services/#{params[:id]} with 'No NSD ID specified'"
     json_error 400, 'No NSD ID specified'
   end
 
@@ -1058,7 +1058,7 @@ class CatalogueV2 < SonataCatalogue
   # @overload delete '/network-services/?'
   #	Delete a NS by vendor, name and version
   delete '/network-services/?' do
-    logger.info "Catalogue: entered DELETE /api/v2/network-services?#{query_string}"
+    logger.info "Catalogue: entered DELETE /v2/network-services?#{query_string}"
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
@@ -1074,11 +1074,11 @@ class CatalogueV2 < SonataCatalogue
       rescue Mongoid::Errors::DocumentNotFound => e
         json_error 404, "The NSD Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist"
       end
-      logger.debug "Catalogue: leaving DELETE /api/v2/network-services?#{query_string}\" with NSD #{ns}"
+      logger.debug "Catalogue: leaving DELETE /v2/network-services?#{query_string}\" with NSD #{ns}"
       ns.destroy
       halt 200, 'OK: NSD removed'
     end
-    logger.debug "Catalogue: leaving DELETE /api/v2/network-services?#{query_string} with 'No NSD Vendor, Name, Version specified'"
+    logger.debug "Catalogue: leaving DELETE /v2/network-services?#{query_string} with 'No NSD Vendor, Name, Version specified'"
     json_error 400, 'No NSD Vendor, Name, Version specified'
   end
 
@@ -1089,18 +1089,18 @@ class CatalogueV2 < SonataCatalogue
   # Delete a NS by uuid
   delete '/network-services/:id/?' do
     unless params[:id].nil?
-      logger.debug "Catalogue: DELETE /api/v2/network-services/#{params[:id]}"
+      logger.debug "Catalogue: DELETE /v2/network-services/#{params[:id]}"
       begin
         ns = Nsd.find(params[:id])
       rescue Mongoid::Errors::DocumentNotFound => e
         logger.error e
         json_error 404, "The NSD ID #{params[:id]} does not exist" unless ns
       end
-      logger.debug "Catalogue: leaving DELETE /api/v2/network-services/#{params[:id]}\" with NSD #{ns}"
+      logger.debug "Catalogue: leaving DELETE /v2/network-services/#{params[:id]}\" with NSD #{ns}"
       ns.destroy
       halt 200, 'OK: NSD removed'
     end
-    logger.debug "Catalogue: leaving DELETE /api/v2/network-services/#{params[:id]} with 'No NSD ID specified'"
+    logger.debug "Catalogue: leaving DELETE /v2/network-services/#{params[:id]} with 'No NSD ID specified'"
     json_error 400, 'No NSD ID specified'
   end
 end

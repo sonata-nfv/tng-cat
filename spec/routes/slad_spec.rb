@@ -138,7 +138,7 @@ RSpec.describe CatalogueV2 do
     context 'update status to (UU)ID given' do
       before do
         headers = { 'CONTENT_TYPE' => 'application/json' }
-        put '/slas/template-descriptors/' + $slad_id.to_s + '?state=published', nil, headers
+        put '/slas/template-descriptors/' + $slad_id.to_s + '?published=true', nil, headers
       end
       subject { last_response }
       its(:status) { is_expected.to eq 200 }
@@ -149,7 +149,7 @@ RSpec.describe CatalogueV2 do
     context 'update status to (UU)ID given' do
       before do
         headers = { 'CONTENT_TYPE' => 'application/json' }
-        put '/slas/template-descriptors/' + $slad_id.to_s + '?state=unpublished&status=inactive', nil, headers
+        put '/slas/template-descriptors/' + $slad_id.to_s + '?published=false&status=inactive', nil, headers
       end
       subject { last_response }
       its(:status) { is_expected.to eq 200 }

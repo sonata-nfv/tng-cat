@@ -225,7 +225,7 @@ class CatalogueV2 < SonataCatalogue
       # Generate the UUID for the descriptor
       new_slad['_id'] = SecureRandom.uuid
       new_slad['status'] = 'active'
-      new_slad['state'] = 'unpublished'
+      new_slad['published'] = false
       new_slad['signature'] = nil
       new_slad['md5'] = checksum new_sla.to_s
       new_slad['username'] = username
@@ -337,7 +337,7 @@ class CatalogueV2 < SonataCatalogue
     new_slad['_id'] = SecureRandom.uuid # Unique UUIDs per SLAD entries
     new_slad['slad'] = new_sla
     new_slad['status'] = 'active'
-    new_slad['state'] = 'unpublished'
+    new_slad['published'] = false
     new_slad['signature'] = nil
     new_slad['md5'] = checksum new_sla.to_s
     new_slad['username'] = username
@@ -378,10 +378,10 @@ class CatalogueV2 < SonataCatalogue
       # Transform 'string' params Hash into keys
       keyed_params = keyed_hash(params)
 
-      if keyed_params.key?(:status) || keyed_params.key?(:state)
+      if keyed_params.key?(:status) || keyed_params.key?(:published)
         # Do update of Descriptor status -> update_sla_status
         logger.info "Catalogue: entered PUT /v2/slas/template-descriptors/#{query_string}"
-        valid_state = %w[published unpublished]
+        valid_published = %w[true false]
         valid_status = %w[active inactive]
         out_query1 = ''
         out_query2 = ''
@@ -396,16 +396,16 @@ class CatalogueV2 < SonataCatalogue
           json_error 404, 'This SLAD does not exists'
         end
         # Validate state
-        if keyed_params.key?(:state)
-          if valid_state.include? keyed_params[:state]
+        if keyed_params.key?(:published)
+          if valid_published.include? keyed_params[:published]
             begin
-              sla.update_attributes(state: keyed_params[:state])
-              out_query1 = 'state => ' + keyed_params[:state].to_s
+              sla.update_attributes(published: keyed_params[:published] == 'true')
+              out_query1 = 'published => ' + keyed_params[:published].to_s
             rescue Moped::Errors::OperationFailure => e
               json_error 400, 'ERROR: Operation failed'
             end
           else
-            json_error 400, "Invalid new state #{keyed_params[:state]}"
+            json_error 400, "Invalid new published state #{keyed_params[:published]}"
           end
         end
 
@@ -424,8 +424,6 @@ class CatalogueV2 < SonataCatalogue
             json_error 400, "Invalid new status #{keyed_params[:status]}"
           end
         end
-        logger.info "#{out_query1.empty?}"
-        logger.info "#{out_query2.empty?}"
 
         if out_query2.empty? ^ out_query1.empty?
           if out_query1.empty?
@@ -484,8 +482,8 @@ class CatalogueV2 < SonataCatalogue
           # Continue
         end
 
-        # Check if SLAD is state == published. Then, it cannot be edited
-        json_error 400, "The SLAD is published and cannot be edited" if sla['state'] == 'published'
+        # # Check if SLAD is state == published. Then, it cannot be edited
+        # json_error 400, "The SLAD is published and cannot be edited" if sla['state'] == 'published'
 
 
         if keyed_params.key?(:username)
@@ -500,7 +498,7 @@ class CatalogueV2 < SonataCatalogue
         new_slad['_id'] = SecureRandom.uuid # Unique UUIDs per SLAD entries
         new_slad['slad'] = new_sla
         new_slad['status'] = 'active'
-        new_slad['state'] = 'unpublished'
+        new_slad['published'] = false
         new_slad['signature'] = nil
         new_slad['md5'] = checksum new_sla.to_s
         new_slad['username'] = username
@@ -549,13 +547,13 @@ class CatalogueV2 < SonataCatalogue
         json_error 404, "The SLAD Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist"
       end
       # Check if SLAD is unpublished and inactive. Then, it cannot be deleted
-      if sla['state'] == 'unpublished' && sla['status'] == 'inactive'
-        logger.debug "Catalogue: leaving DELETE /v2/sla/template-descriptors?#{query_string}\" with SLAD #{sla}"
-        sla.destroy
-        halt 200, 'OK: SLAD removed'
-      else
-        json_error 400, "The SLAD cannot be deleted cause of state or/and status"
-      end
+      # if sla['published'] == false && sla['status'] == 'inactive'
+      logger.debug "Catalogue: leaving DELETE /v2/sla/template-descriptors?#{query_string}\" with SLAD #{sla}"
+      sla.destroy
+      halt 200, 'OK: SLAD removed'
+      # else
+      #   json_error 400, "The SLAD cannot be deleted cause of published or/and status"
+      # end
 
     end
     logger.debug "Catalogue: leaving DELETE /v2/slas/template-descriptors?#{query_string} with 'No SLAD Vendor, Name, Version specified'"
@@ -576,13 +574,13 @@ class CatalogueV2 < SonataCatalogue
         logger.error e
         json_error 404, "The SLAD ID #{params[:id]} does not exist" unless sla
       end
-      if sla['state'] == 'unpublished' && sla['status'] == 'inactive'
-        logger.debug "Catalogue: leaving DELETE /v2/slas/template-descriptors?#{query_string}\" with SLAD #{sla}"
-        sla.destroy
-        halt 200, 'OK: SLAD removed'
-      else
-        json_error 400, "The SLAD cannot be deleted cause of state or/and status"
-      end
+      # if sla['published'] == false && sla['status'] == 'inactive'
+      logger.debug "Catalogue: leaving DELETE /v2/slas/template-descriptors?#{query_string}\" with SLAD #{sla}"
+      sla.destroy
+      halt 200, 'OK: SLAD removed'
+      # else
+      #   json_error 400, "The SLAD cannot be deleted cause of published or/and status"
+      # end
     end
     logger.debug "Catalogue: leaving DELETE /v2/slas/template-descriptors/#{params[:id]} with 'No SLAD ID specified'"
     json_error 400, 'No SLAD ID specified'

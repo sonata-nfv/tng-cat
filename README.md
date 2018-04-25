@@ -70,37 +70,37 @@ Method GET:
 To receive all descriptors you can use
 
 ```sh
-curl http://localhost:4011/api/catalogues/v2/network-services
+curl -H "Content-type:application/x-yaml" http://localhost:4011/api/catalogues/v2/network-services
 ```
 ```sh
-curl http://localhost:4011/api/catalogues/v2/vnfs
+curl -H "Content-type:application/x-yaml" http://localhost:4011/api/catalogues/v2/vnfs
 ```
 ```sh
-curl http://localhost:4011/api/catalogues/v2/packages
+curl -H "Content-type:application/x-yaml" http://localhost:4011/api/catalogues/v2/packages
 ```
 ```sh
-curl http://localhost:4011/api/catalogues/v2/slas/template-descriptors
+curl -H "Content-type:application/x-yaml" http://localhost:4011/api/catalogues/v2/slas/template-descriptors
 ```
 ```sh
-curl http://localhost:4011/api/catalogues/v2/tests
+curl -H "Content-type:application/x-yaml" http://localhost:4011/api/catalogues/v2/tests
 ```
 
 To receive a descriptor by its ID:
 
 ```sh
-curl http://localhost:4011/api/catalogues/v2/network-services/{id}
+curl -H "Content-type:application/x-yaml" http://localhost:4011/api/catalogues/v2/network-services/{id}
 ```
 ```sh
-curl http://localhost:4011/api/catalogues/v2/vnfs/{id}
+curl -H "Content-type:application/x-yaml" http://localhost:4011/api/catalogues/v2/vnfs/{id}
 ```
 ```sh
-curl http://localhost:4011/api/catalogues/v2/packages/{id}
+curl -H "Content-type:application/x-yaml" http://localhost:4011/api/catalogues/v2/packages/{id}
 ```
 ```sh
-curl http://localhost:4011/api/catalogues/v2/slas/template-descriptors/{id}
+curl -H "Content-type:application/x-yaml" http://localhost:4011/api/catalogues/v2/slas/template-descriptors/{id}
 ```
 ```sh
-curl http://localhost:4011/api/catalogues/v2/tests/{id}
+curl -H "Content-type:application/x-yaml" http://localhost:4011/api/catalogues/v2/tests/{id}
 ```
 
 Method POST:
@@ -187,7 +187,7 @@ HTTP header 'Content-Type' must be set to 'application/zip'
 HTTP header 'Content-Disposition' must be set to 'attachment; filename=```name_of_the_package```'
 
 ```sh
-curl -X POST -H "Content-Type: application/zip" -H "Content-Disposition: attachment; filename=5gtango-ns-example.tgo" http://0.0.0.0:4011/api/catalogues/v2/tgo-packages
+curl -X POST -H "Content-Type: application/zip" -H "Content-Disposition: attachment; filename=5gtango-ns-example.tgo" --data-binary @5gtango-ns-example.tgo  http://localhost:4011/api/catalogues/v2/tgo-packages
 ```
 
 Method DELETE:

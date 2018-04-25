@@ -320,7 +320,7 @@ class CatalogueV2 < SonataCatalogue
         headers 'Filename' => (tgop['grid_fs_name'].to_s)
 
         logger.debug "Catalogue: leaving GET /v2/tgo-packages/#{params[:id]}"
-        halt 200, grid_file.data
+        halt 200, grid_fs.data
 
       when 'application/json'
         begin
@@ -342,7 +342,7 @@ class CatalogueV2 < SonataCatalogue
   # @overload post '/catalogues/tgo-package'
   # Post a tgo Package in binary-data
   post '/tgo-packages' do
-    logger.debug "Catalogue: entered POST /v2/son-packages?#{query_string}"
+    logger.debug "Catalogue: entered POST /v2/tgo-packages?#{query_string}"
     # Return if content-type is invalid
     halt 415 unless request.content_type == 'application/zip'
 
@@ -378,15 +378,15 @@ class CatalogueV2 < SonataCatalogue
 
     # Check duplicates
     # -> vendor, name, version
-    # Check if son-package already exists in the catalogue by vendor, name, version (name convention identifier)
+    # Check if tgo-package already exists in the catalogue by vendor, name, version (name convention identifier)
     # begin
     #   tgopkg = FileContainer.find_by({ 'vendor' => tgop_vendor, 'name' => tgop_name, 'version' => tgop_version })
-    #   json_return 200, 'Duplicated son-package Filename'
+    #   json_return 200, 'Duplicated tgo-package Filename'
     # rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
     # end
     # -> grid_fs_name
-    # Check if son-package already exists in the catalogue by filename (grid-fs-name identifier)
+    # Check if tgo-package already exists in the catalogue by filename (grid-fs-name identifier)
     begin
       tgopkg = FileContainer.find_by({ 'grid_fs_name' => filename })
       json_return 200, 'Duplicated tgo-package Filename'
@@ -421,7 +421,7 @@ class CatalogueV2 < SonataCatalogue
       file_container.signature = signature
       file_container.save
     end
-    logger.debug "Catalogue: leaving POST /v2/son-packages/ with #{grid_file.id}"
+    logger.debug "Catalogue: leaving POST /v2/tgo-packages/ with #{grid_file.id}"
     response = {"uuid" => tgop_id}
 
     # # Requirements:
@@ -456,7 +456,7 @@ class CatalogueV2 < SonataCatalogue
         # Do update of Son-Package meta-data
         logger.info "Catalogue: entered PUT /tgo-packages/#{query_string}"
 
-        # Validate son-package uuid
+        # Validate tgo-package uuid
         begin
           puts 'Searching ' + params[:tgop_uuid].to_s
           tgop = FileContainer.find_by({ '_id' => params[:id] })

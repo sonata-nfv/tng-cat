@@ -95,16 +95,16 @@ namespace :init do
     pld_sample = 'samples/sonata-demo/policy-descriptor/pld_example.yml'
 
 
-    sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ nsd1_sample } --connect-timeout 30 http://#{ server }/catalogues/api/v2/network-services"
-    sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ vtc_sample } --connect-timeout 30 http://#{ server }/catalogues/api/v2/vnfs"
-    sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ firewall_sample } --connect-timeout 30 http://#{ server }/catalogues/api/v2/vnfs"
-    sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ iperf_sample } --connect-timeout 30 http://#{ server }/catalogues/api/v2/vnfs"
-    sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ tcpdump_sample } --connect-timeout 30 http://#{ server }/catalogues/api/v2/vnfs"
-    sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ nsd_sample } --connect-timeout 30 http://#{ server }/catalogues/api/v2/network-services"
-    sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ pd_sample } --connect-timeout 30 http://#{ server }/catalogues/api/v2/packages"
-    sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ sla_sample } --connect-timeout 30 http://#{ server }/catalogues/api/v2/slas/template-descriptors"
-    sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ nstd_sample } --connect-timeout 30 http://#{ server }/catalogues/api/v2/nsts"
-    sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ pld_sample } --connect-timeout 30 http://#{ server }/catalogues/api/v2/policies"
+    sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ nsd1_sample } --connect-timeout 30 http://#{ server }/api/catalogues/v2/network-services"
+    sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ vtc_sample } --connect-timeout 30 http://#{ server }/api/catalogues/v2/vnfs"
+    sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ firewall_sample } --connect-timeout 30 http://#{ server }/api/catalogues/v2/vnfs"
+    sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ iperf_sample } --connect-timeout 30 http://#{ server }/api/catalogues/v2/vnfs"
+    sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ tcpdump_sample } --connect-timeout 30 http://#{ server }/api/catalogues/v2/vnfs"
+    sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ nsd_sample } --connect-timeout 30 http://#{ server }/api/catalogues/v2/network-services"
+    sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ pd_sample } --connect-timeout 30 http://#{ server }/api/catalogues/v2/packages"
+    sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ sla_sample } --connect-timeout 30 http://#{ server }/api/catalogues/v2/slas/template-descriptors"
+    sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ nstd_sample } --connect-timeout 30 http://#{ server }/api/catalogues/v2/nsts"
+    sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ pld_sample } --connect-timeout 30 http://#{ server }/api/cataloguesv2/policies"
 
   end
 end

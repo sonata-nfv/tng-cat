@@ -80,11 +80,11 @@ RSpec.describe CatalogueV2 do
     its(:status) { is_expected.to eq 200 }
   end
 
-  describe 'GET /api/v2/son-packages' do
+  describe 'GET tgo-packages' do
     context 'without (UU)ID given' do
       before do
         headers = { 'CONTENT_TYPE' => 'application/json' }
-        get '/son-packages', nil, headers
+        get '/tgo-packages', nil, headers
       end
       subject { last_response }
       its(:status) { is_expected.to eq 200 }
@@ -95,111 +95,123 @@ RSpec.describe CatalogueV2 do
   #    iperf-vnfd and tcpdump-vnfd; second one contains only tcpdump-vnfd
   #    according to next test that tries to delete the first one, tcpdump-vnfd should
   #    not be deleted according to intelligent delete feature
-  describe 'POST /api/v2/son-packages' do
+  describe 'POST /son-packages' do
     context 'post packages simulating gatekeeper operation (posting all descriptors)' do
       before do
         filenames = [ 'samples/dependencies_mapping/sonata-demo.son',
                       'samples/dependencies_mapping/sonata-demo-2.son',
-                      'samples/dependencies_mapping/sonata-demo-3.son' ]
+                      'samples/dependencies_mapping/5gtango-ns-package.tgo' ]
         $pd_uuids = []
         filenames.each do |filename|
           headers = { 'CONTENT_TYPE' => 'application/zip',
                       'HTTP_CONTENT_DISPOSITION' => "attachment; filename=#{filename}" }
-          response = post '/son-packages', File.binread(filename), headers
-          $sonp_uuids = JSON.parse(response.body)
-          content = xtract_sonp(filename)
-          content[:vnfds].each do |vnfd|
-            postvnf = post '/vnfs',
-                           vnfd,
-                           { 'CONTENT_TYPE' => 'application/x-yaml' }
-          end
-          content[:nsds].each do |nsd|
-            postnsd = post '/network-services',
-                           nsd,
-                           { 'CONTENT_TYPE' => 'application/x-yaml' }
-          end
-          postpd = post '/packages',
-                         content[:manifest],
-                         { 'CONTENT_TYPE' => 'application/x-yaml' }
-          $pd_uuids << YAML.load(postpd.body)['uuid']
+          response = post '/tgo-packages', File.binread(filename), headers
+          $tgop_uuids = JSON.parse(response.body)
+          # content = xtract_sonp(filename)
+          # content[:vnfds].each do |vnfd|
+          #   postvnf = post '/vnfs',
+          #                  vnfd,
+          #                  { 'CONTENT_TYPE' => 'application/x-yaml' }
+          # end
+          # content[:nsds].each do |nsd|
+          #   postnsd = post '/network-services',
+          #                  nsd,
+          #                  { 'CONTENT_TYPE' => 'application/x-yaml' }
+          # end
+          # postpd = post '/packages',
+          #                content[:manifest],
+          #                { 'CONTENT_TYPE' => 'application/x-yaml' }
+          # $pd_uuids << YAML.load(postpd.body)['uuid']
         end
       end
       subject { last_response }
       its(:status) { is_expected.to eq 201 }
+
     end
   end
 
-  # Tries to disable first package posted in previous test resulting
-  #    in the deletion of
-  #    {"disabled":
-  #    {"vnfds":[{"vendor":"eu.sonata-nfv","version":"0.3","name":"firewall-vnf"},
-  #    {"vendor":"eu.sonata-nfv","version":"0.2","name":"iperf-vnf"}],
-  #    "nsds":[{"vendor":"eu.sonata-nfv.service-descriptor","version":"0.2.1","name":"sonata-demo"}]}}
-  # But preventing tcpdump-vnfd disable because second package posted before has a dependency on it
-  describe 'PUT /api/v2/packages' do
-    context 'disabling pds' do
+
+  describe 'GET tgo-packages' do
+    context 'with uuid given' do
       before do
-        puts 'Disabling sonata-demo.son'
-        disable_response = put '/packages/' + $pd_uuids[0] + '/status',
-                           '{ "status": "inactive" }',
-                           { 'CONTENT_TYPE' => 'application/json' }
-        puts disable_response.body
-        puts
-        expect(disable_response.status).to eq(200)
-        result = JSON.parse(disable_response.body)
-        expect(result['result']['disable']['vnfds'].length).to eq(1)
-        # Since the only VNF in sonata-demo.son not included in sonata-demo-2.son
-        #    and sonata-demo-3.son is iperf-vnf
-        expect(result['result']['disable']['vnfds'][0]['name']).to eq('iperf-vnf')
-        expect(result['result']['disable']['nsds'].length).to eq(1)
-        expect(result['result']['disable']['nsds'][0]['name']).to eq('sonata-demo')
+        headers = { 'CONTENT_TYPE' => 'application/json' }
+        get '/tgo-packages?' + $tgop_uuids[0].to_s, nil, headers
       end
       subject { last_response }
       its(:status) { is_expected.to eq 200 }
     end
   end
-
-  # Tries to disable second package posted in previous test resulting
-  describe 'PUT /api/v2/packages' do
-    context 'disabling pds' do
-      before do
-        puts 'Disabling sonata-demo-2.son'
-        disable_response = put '/packages/' + $pd_uuids[1] + '/status',
-                           '{ "status": "inactive" }',
-                           { 'CONTENT_TYPE' => 'application/json' }
-        puts disable_response.body
-        puts
-        expect(disable_response.status).to eq(200)
-        result = JSON.parse(disable_response.body)
-        expect(result['result']['disable']['vnfds'].length).to eq(1)
-        # Since sonata-demo.son is disabled, tcpdump-vnf can now be safely disabled
-        #    when disabling sonata-demo-2.son
-        expect(result['result']['disable']['vnfds'][0]['name']).to eq('tcpdump-vnf')
-        expect(result['result']['disable']['nsds'].length).to eq(0)
-        expect(result['result']['cant_disable']['nsds'].length).to eq(1)
-        # Since sonata-demo-3.son depends on sonata-demo-2 it can't be disabled
-        expect(result['result']['cant_disable']['nsds'][0]['name']).to eq('sonata-demo-2')
-      end
-      subject { last_response }
-      its(:status) { is_expected.to eq 200 }
-    end
-  end
-
-  # Tries to enable second package posted in previous test resulting
-  describe 'PUT /api/v2/packages' do
-    context 'enabling pds' do
-      before do
-        puts 'Enabling sonata-demo-2.son'
-        enable_response = put '/packages/' + $pd_uuids[1] + '/status',
-                           '{ "status": "active" }',
-                           { 'CONTENT_TYPE' => 'application/json' }
-        puts enable_response.body
-        puts
-      end
-      subject { last_response }
-      its(:status) { is_expected.to eq 200 }
-    end
-  end
+  # # Tries to disable first package posted in previous test resulting
+  # #    in the deletion of
+  # #    {"disabled":
+  # #    {"vnfds":[{"vendor":"eu.sonata-nfv","version":"0.3","name":"firewall-vnf"},
+  # #    {"vendor":"eu.sonata-nfv","version":"0.2","name":"iperf-vnf"}],
+  # #    "nsds":[{"vendor":"eu.sonata-nfv.service-descriptor","version":"0.2.1","name":"sonata-demo"}]}}
+  # # But preventing tcpdump-vnfd disable because second package posted before has a dependency on it
+  # describe 'PUT /api/v2/packages' do
+  #   context 'disabling pds' do
+  #     before do
+  #       puts 'Disabling sonata-demo.son'
+  #       disable_response = put '/packages/' + $pd_uuids[0] + '/status',
+  #                          '{ "status": "inactive" }',
+  #                          { 'CONTENT_TYPE' => 'application/json' }
+  #       puts disable_response.body
+  #       puts
+  #       expect(disable_response.status).to eq(200)
+  #       result = JSON.parse(disable_response.body)
+  #       expect(result['result']['disable']['vnfds'].length).to eq(1)
+  #       # Since the only VNF in sonata-demo.son not included in sonata-demo-2.son
+  #       #    and sonata-demo-3.son is iperf-vnf
+  #       expect(result['result']['disable']['vnfds'][0]['name']).to eq('iperf-vnf')
+  #       expect(result['result']['disable']['nsds'].length).to eq(1)
+  #       expect(result['result']['disable']['nsds'][0]['name']).to eq('sonata-demo')
+  #     end
+  #     subject { last_response }
+  #     its(:status) { is_expected.to eq 200 }
+  #   end
+  # end
+  #
+  # # Tries to disable second package posted in previous test resulting
+  # describe 'PUT /api/v2/packages' do
+  #   context 'disabling pds' do
+  #     before do
+  #       puts 'Disabling sonata-demo-2.son'
+  #       disable_response = put '/packages/' + $pd_uuids[1] + '/status',
+  #                          '{ "status": "inactive" }',
+  #                          { 'CONTENT_TYPE' => 'application/json' }
+  #       puts disable_response.body
+  #       puts
+  #       expect(disable_response.status).to eq(200)
+  #       result = JSON.parse(disable_response.body)
+  #       expect(result['result']['disable']['vnfds'].length).to eq(1)
+  #       # Since sonata-demo.son is disabled, tcpdump-vnf can now be safely disabled
+  #       #    when disabling sonata-demo-2.son
+  #       expect(result['result']['disable']['vnfds'][0]['name']).to eq('tcpdump-vnf')
+  #       expect(result['result']['disable']['nsds'].length).to eq(0)
+  #       expect(result['result']['cant_disable']['nsds'].length).to eq(1)
+  #       # Since sonata-demo-3.son depends on sonata-demo-2 it can't be disabled
+  #       expect(result['result']['cant_disable']['nsds'][0]['name']).to eq('sonata-demo-2')
+  #     end
+  #     subject { last_response }
+  #     its(:status) { is_expected.to eq 200 }
+  #   end
+  # end
+  #
+  # # Tries to enable second package posted in previous test resulting
+  # describe 'PUT /api/v2/packages' do
+  #   context 'enabling pds' do
+  #     before do
+  #       puts 'Enabling sonata-demo-2.son'
+  #       enable_response = put '/packages/' + $pd_uuids[1] + '/status',
+  #                          '{ "status": "active" }',
+  #                          { 'CONTENT_TYPE' => 'application/json' }
+  #       puts enable_response.body
+  #       puts
+  #     end
+  #     subject { last_response }
+  #     its(:status) { is_expected.to eq 200 }
+  #   end
+  # end
 
   # # Tries to delete first package posted in previous test resulting
   # #    in the deletion of

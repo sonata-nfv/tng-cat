@@ -232,17 +232,17 @@ class CatalogueV1 < SonataCatalogue
 end
 
 class CatalogueV2 < SonataCatalogue
-  ### SONP API METHODS ###
+  ### TGOP API METHODS ###
 
-  # @method get_son_package_list
-  # @overload get '/catalogues/son-packages/?'
-  #	Returns a list of son-packages
-  #	-> List many son-packages
-  get '/son-packages/?' do
+  # @method get_tgo_package_list
+  # @overload get '/catalogues/tgo-packages/?'
+  #	Returns a list of tgo-packages
+  #	-> List many tgo-packages
+  get '/tgo-packages/?' do
     params['offset'] ||= DEFAULT_OFFSET
     params['limit'] ||= DEFAULT_LIMIT
 
-    logger.info "Catalogue: entered GET /v2/son-packages?#{query_string}"
+    logger.info "Catalogue: entered GET /v2/tgo-packages?#{query_string}"
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
@@ -275,7 +275,7 @@ class CatalogueV2 < SonataCatalogue
     file_list = FileContainer.where(new_params)
     # Set total count for results
     headers 'Record-Count' => file_list.count.to_s
-    logger.info "Catalogue: leaving GET /v2/son-packages?#{query_string} with #{file_list}"
+    logger.info "Catalogue: leaving GET /v2/tgo-packages?#{query_string} with #{file_list}"
 
     # Paginate results
     file_list = file_list.paginate(offset: params[:offset], limit: params[:limit])
@@ -292,66 +292,65 @@ class CatalogueV2 < SonataCatalogue
     halt 200, {'Content-type' => request.content_type}, response
   end
 
-  # @method get_son_package_id
-  # @overload get '/catalogues/sonp-packages/:id/?'
-  #	  Get a son-package
-  #	  @param :id [Symbol] son-package ID
-  # son-package internal database identifier
-  get '/son-packages/:id/?' do
+  # @method get_tgo_package_id
+  # @overload get '/catalogues/tgo-packages/:id/?'
+  #	  Get a tgo-package
+  #	  @param :id [Symbol] tgo-package ID
+  # tgo-package internal database identifier
+  get '/tgo-packages/:id/?' do
     # Dir.chdir(File.dirname(__FILE__))
-    logger.debug "Catalogue: entered GET /v2/son-packages/#{params[:id]}"
+    logger.debug "Catalogue: entered GET /v2/tgo-packages/#{params[:id]}"
 
     # Check headers
     case request.content_type
       when 'application/zip'
         begin
-          sonp = FileContainer.find_by({ '_id' => params[:id] })
-          p 'Filename: ', sonp['grid_fs_name']
-          p 'grid_fs_id: ', sonp['grid_fs_id']
+          tgop = FileContainer.find_by({ '_id' => params[:id] })
+          p 'Filename: ', tgop['grid_fs_name']
+          p 'grid_fs_id: ', tgop['grid_fs_id']
         rescue Mongoid::Errors::DocumentNotFound => e
           logger.error e
           halt 404
         end
 
         grid_fs = Mongoid::GridFs
-        grid_file = grid_fs.get(sonp['grid_fs_id'])
+        grid_file = grid_fs.get(tgop['grid_fs_id'])
 
         # Set custom header with package Filename
-        headers 'Filename' => (sonp['grid_fs_name'].to_s)
+        headers 'Filename' => (tgop['grid_fs_name'].to_s)
 
-        logger.debug "Catalogue: leaving GET /v2/son-packages/#{params[:id]}"
-        halt 200, grid_file.data
+        logger.debug "Catalogue: leaving GET /v2/tgo-packages/#{params[:id]}"
+        halt 200, grid_fs.data
 
       when 'application/json'
         begin
-          sonp = FileContainer.find_by('_id' => params[:id])
+          tgop = FileContainer.find_by('_id' => params[:id])
         rescue Mongoid::Errors::DocumentNotFound => e
           logger.error e
-          json_error 404, "The son-package ID #{params[:id]} does not exist" unless sonp
+          json_error 404, "The tgo-package ID #{params[:id]} does not exist" unless tgop
         end
 
-        logger.debug "Catalogue: leaving GET /v2/son-packages/#{params[:id]}"
-        halt 200, {'Content-type' => 'application/json'}, sonp.to_json
+        logger.debug "Catalogue: leaving GET /v2/tgo-packages/#{params[:id]}"
+        halt 200, {'Content-type' => 'application/json'}, tgop.to_json
 
       else
         halt 415
     end
   end
 
-  # @method post_son_package
-  # @overload post '/catalogues/son-package'
-  # Post a son Package in binary-data
-  post '/son-packages' do
-    # logger.debug "Catalogue: entered POST /api/v2/son-packages/"
-    logger.debug "Catalogue: entered POST /v2/son-packages?#{query_string}"
+  # @method post_tgo_package
+  # @overload post '/catalogues/tgo-package'
+  # Post a tgo Package in binary-data
+  post '/tgo-packages' do
+    logger.debug "Catalogue: entered POST /v2/tgo-packages?#{query_string}"
     # Return if content-type is invalid
     halt 415 unless request.content_type == 'application/zip'
 
     att = request.env['HTTP_CONTENT_DISPOSITION']
-    # sonp_vendor = request.env['HTTP_VENDOR']
-    # sonp_name = request.env['HTTP_NAME']
-    # sonp_version = request.env['HTTP_VERSION']
-    # sonp_username = request.env['HTTP_USERNAME']
+    # tgop_vendor = request.env['HTTP_VENDOR']
+    # tgop_name = request.env['HTTP_NAME']
+    # tgop_version = request.env['HTTP_VERSION']
+    # tgop_username = request.env['HTTP_USERNAME']
 
     unless att
       error = "HTTP Content-Disposition is missing"
@@ -379,18 +378,18 @@ class CatalogueV2 < SonataCatalogue
 
     # Check duplicates
     # -> vendor, name, version
-    # Check if son-package already exists in the catalogue by vendor, name, version (name convention identifier)
+    # Check if tgo-package already exists in the catalogue by vendor, name, version (name convention identifier)
     # begin
-    #   sonpkg = FileContainer.find_by({ 'vendor' => sonp_vendor, 'name' => sonp_name, 'version' => sonp_version })
-    #   json_return 200, 'Duplicated son-package Filename'
+    #   tgopkg = FileContainer.find_by({ 'vendor' => tgop_vendor, 'name' => tgop_name, 'version' => tgop_version })
+    #   json_return 200, 'Duplicated tgo-package Filename'
     # rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
     # end
     # -> grid_fs_name
-    # Check if son-package already exists in the catalogue by filename (grid-fs-name identifier)
+    # Check if tgo-package already exists in the catalogue by filename (grid-fs-name identifier)
     begin
-      sonpkg = FileContainer.find_by({ 'grid_fs_name' => filename })
-      json_return 200, 'Duplicated son-package Filename'
+      tgopkg = FileContainer.find_by({ 'grid_fs_name' => filename })
+      json_return 200, 'Duplicated tgo-package Filename'
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
     end
@@ -409,30 +408,30 @@ class CatalogueV2 < SonataCatalogue
       username = nil
     end
 
-    sonp_id = SecureRandom.uuid
+    tgop_id = SecureRandom.uuid
     FileContainer.new.tap do |file_container|
-      file_container._id = sonp_id
+      file_container._id = tgop_id
       file_container.grid_fs_id = grid_file.id
-      # file_container.vendor = sonp_vendor
-      # file_container.name = sonp_name
-      # file_container.version = sonp_version
+      # file_container.vendor = tgop_vendor
+      # file_container.name = tgop_name
+      # file_container.version = tgop_version
       file_container.grid_fs_name = filename
       file_container.md5 = grid_file.md5
       file_container.username = username
       file_container.signature = signature
       file_container.save
     end
-    logger.debug "Catalogue: leaving POST /v2/son-packages/ with #{grid_file.id}"
-    response = {"uuid" => sonp_id}
+    logger.debug "Catalogue: leaving POST /v2/tgo-packages/ with #{grid_file.id}"
+    response = {"uuid" => tgop_id}
 
-    # Requirements:
-    # sonp_id, pd_name.trio, nsds_name.trio, vnfds_name.trio
-    begin
-      Dependencies_mapping.create!(son_package_dep_mapping(file, sonp_id))
-    rescue => e
-      logger.error e.message
-      halt 400, {'Content-type' => 'text/plain'}, e.message
-    end
+    # # Requirements:
+    # # tgop_id, pd_name.trio, nsds_name.trio, vnfds_name.trio
+    # begin
+    #   Dependencies_mapping.create!(son_package_dep_mapping(file, tgop_id))
+    # rescue => e
+    #   logger.error e.message
+    #   halt 400, {'Content-type' => 'text/plain'}, e.message
+    # end
     halt 201, {'Content-type' => 'application/json'}, response.to_json
   end
 
@@ -440,12 +439,12 @@ class CatalogueV2 < SonataCatalogue
   # @overload put '/catalogues/son-packages/:id/?'
   #	Update a son-package in JSON or YAML format
   ## Catalogue - UPDATE
-  put '/son-packages/:id/?' do
+  put '/tgo-packages/:id/?' do
     # Return if content-type is invalid
     halt 415 unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
 
     unless params[:id].nil?
-      logger.debug "Catalogue: PUT /son-packages/#{params[:id]}"
+      logger.debug "Catalogue: PUT /tgo-packages/#{params[:id]}"
 
       #Delete key "captures" if present
       params.delete(:captures) if params.key?(:captures)
@@ -455,65 +454,65 @@ class CatalogueV2 < SonataCatalogue
       if [:vendor, :name, :version].all? {|s| keyed_params.key? s }
         # if keyed_params.key?(:vendor, :name, :version)
         # Do update of Son-Package meta-data
-        logger.info "Catalogue: entered PUT /son-packages/#{query_string}"
+        logger.info "Catalogue: entered PUT /tgo-packages/#{query_string}"
 
-        # Validate son-package uuid
+        # Validate tgo-package uuid
         begin
-          puts 'Searching ' + params[:sonp_uuid].to_s
-          sonp = FileContainer.find_by({ '_id' => params[:id] })
-          p 'Filename: ', sonp['grid_fs_name']
-          puts 'son-package is found'
+          puts 'Searching ' + params[:tgop_uuid].to_s
+          tgop = FileContainer.find_by({ '_id' => params[:id] })
+          p 'Filename: ', tgop['grid_fs_name']
+          puts 'tgo-package is found'
         rescue Mongoid::Errors::DocumentNotFound => e
-          json_error 404, 'Submitted son-package UUID not exists'
+          json_error 404, 'Submitted tgo-package UUID not exists'
         end
 
-        begin
-          puts 'Searching ' + params[:id].to_s
-          son_dep_mapping = Dependencies_mapping.find_by({ 'son_package_uuid' => params[:id]})
-          p 'Dependencies mapping ', params[:id]
-          puts 'Dependencies mapping found'
-        rescue Mongoid::Errors::DocumentNotFound => e
-          json_error 404, 'Submitted dependencies mapping not exists'
-        end
+        # begin
+        #   puts 'Searching ' + params[:id].to_s
+        #   tgo_dep_mapping = Dependencies_mapping.find_by({ 'tgo_package_uuid' => params[:id]})
+        #   p 'Dependencies mapping ', params[:id]
+        #   puts 'Dependencies mapping found'
+        # rescue Mongoid::Errors::DocumentNotFound => e
+        #   json_error 404, 'Submitted dependencies mapping not exists'
+        # end
 
         # Add new son-package attribute fields
         begin
-          sonp.update_attributes(vendor: keyed_params[:vendor], name: keyed_params[:name],
+          tgop.update_attributes(vendor: keyed_params[:vendor], name: keyed_params[:name],
                                  version: keyed_params[:version])
-          son_dep_mapping.update('pd' => {vendor: keyed_params[:vendor], name: keyed_params[:name],
-                                          version: keyed_params[:version]})
+          # tgo_dep_mapping.update('pd' => {vendor: keyed_params[:vendor], name: keyed_params[:name],
+          #                                 version: keyed_params[:version]})
         rescue Moped::Errors::OperationFailure => e
           json_error 400, 'ERROR: Operation failed'
         end
 
-        halt 200, "File son-package updated attributes: #{keyed_params[:vendor]}, #{keyed_params[:name]}, #{keyed_params[:version]}"
+        halt 200, "File tgo-package updated attributes: #{keyed_params[:vendor]}, #{keyed_params[:name]}, #{keyed_params[:version]}"
       end
     end
   end
 
-  # @method delete_son_package_id
-  # @overload delete '/catalogues/son-packages/:id/?'
-  #	  Delete a son-package by its ID
-  #	  @param :id [Symbol] son-package ID
-  delete '/son-packages/:id/?' do
+  # @method delete_tgo_package_id
+  # @overload delete '/catalogues/tgo-packages/:id/?'
+  #	  Delete a tgo-package by its ID
+  #	  @param :id [Symbol] tgo-package ID
+  delete '/tgo-packages/:id/?' do
     unless params[:id].nil?
-      logger.debug "Catalogue: entered DELETE /v2/son-packages/#{params[:id]}"
+      logger.debug "Catalogue: entered DELETE /v2/tgo-packages/#{params[:id]}"
       begin
-        sonp = FileContainer.find_by('_id' => params[:id])
+        tgop = FileContainer.find_by('_id' => params[:id])
       rescue Mongoid::Errors::DocumentNotFound => e
         logger.error e
-        json_error 404, "The son-package ID #{params[:id]} does not exist" unless sonp
+        json_error 404, "The son-package ID #{params[:id]} does not exist" unless tgop
       end
 
       # Remove files from grid
       grid_fs = Mongoid::GridFs
-      grid_fs.delete(sonp['grid_fs_id'])
-      sonp.destroy
+      grid_fs.delete(tgop['grid_fs_id'])
+      tgop.destroy
 
-      logger.debug "Catalogue: leaving DELETE /v2/son-packages/#{params[:id]}\" with son-package #{sonp}"
-      halt 200, 'OK: son-package removed'
+      logger.debug "Catalogue: leaving DELETE /v2/son-packages/#{params[:id]}\" with tgo-package #{tgop}"
+      halt 200, 'OK: tgo-package removed'
     end
-    logger.debug "Catalogue: leaving DELETE /v2/son-packages/#{params[:id]} with 'No son-package ID specified'"
-    json_error 400, 'No son-package ID specified'
+    logger.debug "Catalogue: leaving DELETE /v2/son-packages/#{params[:id]} with 'No tgo-package ID specified'"
+    json_error 400, 'No tgo-package ID specified'
   end
 end

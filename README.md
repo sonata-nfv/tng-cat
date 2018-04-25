@@ -1,8 +1,8 @@
-[![Build Status](http://jenkins.sonata-nfv.eu/buildStatus/icon?job=son-catalogue-repos)](http://jenkins.sonata-nfv.eu/job/son-catalogue-repos)
+[![Build Status](http://jenkins.sonata-nfv.eu/buildStatus/icon?job=tng-cat)](http://jenkins.sonata-nfv.eu/job/tng-cat)
 
 # TNG Catalogue
 This repository contains the development for the [5GTANGO](https://5gtango.eu/) 's Service Platform Catalogue. It holds the API implementation for the Service Platform Catalogue component.
-The Catalogue now integrates the SDK [tng-catalogue](https://github.com/sonata-nfv/tng-cat) in the Service Platform. It is closely related to the [tng-schema](https://github.com/sonata-nfv/tng-schema) repository that holds the schema for the various descriptors, such as the VNFD and the NSD.
+The Catalogue now integrates the SDK [tng-catalogue](https://github.com/sonata-nfv/tng-cat) in the Service Platform. It is closely related to the [tng-schema](https://github.com/sonata-nfv/tng-schema) repository that holds the schema for the various descriptors.
 
 ## Development
 To contribute to the development of the 5GTANGO Catalogue, you may use the very same development workflow as for any other 5GTANGOO Github project. That is, you have to fork the repository and create pull requests.
@@ -10,7 +10,7 @@ To contribute to the development of the 5GTANGO Catalogue, you may use the very 
 ### Dependencies
 It is recommended to use Ubuntu 16.04.4 LTS (Trusty Tahr).
 
-This code has been run on Ruby 2.1.
+This code has been run on Ruby 2.3.
 
 A connection to a MongoDB is required, this code has been run using MongoDB version 3.2.1.
 
@@ -70,37 +70,37 @@ Method GET:
 To receive all descriptors you can use
 
 ```sh
-curl http://localhost:4011/catalogues/api/v2/network-services
+curl http://localhost:4011/api/catalogues/v2/network-services
 ```
 ```sh
-curl http://localhost:4011/catalogues/api/v2/vnfs
+curl http://localhost:4011/api/catalogues/v2/vnfs
 ```
 ```sh
-curl http://localhost:4011/catalogues/api/v2/packages
+curl http://localhost:4011/api/catalogues/v2/packages
 ```
 ```sh
-curl http://localhost:4011/catalogues/api/v2/sla/template-descriptors
+curl http://localhost:4011/api/catalogues/v2/slas/template-descriptors
 ```
 ```sh
-curl http://localhost:4011/catalogues/api/v2/tests
+curl http://localhost:4011/api/catalogues/v2/tests
 ```
 
 To receive a descriptor by its ID:
 
 ```sh
-curl http://localhost:4011/catalogues/api/v2/network-services/9f18bc1b-b18d-483b-88da-a600e9255016
+curl http://localhost:4011/api/catalogues/v2/network-services/{id}
 ```
 ```sh
-curl http://localhost:4011/catalogues/api/v2/vnfs/9f18bc1b-b18d-483b-88da-a600e9255017
+curl http://localhost:4011/api/catalogues/v2/vnfs/{id}
 ```
 ```sh
-curl http://localhost:4011/catalogues/api/v2/packages/9f18bc1b-b18d-483b-88da-a600e9255018
+curl http://localhost:4011/api/catalogues/v2/packages/{id}
 ```
 ```sh
-curl http://localhost:4011/catalogues/api/v2/sla/template-descriptors/9f18bc1b-b18d-483b-88da-a600e9255018
+curl http://localhost:4011/api/catalogues/v2/slas/template-descriptors/{id}
 ```
 ```sh
-curl http://localhost:4011/catalogues/api/v2/tests/9f18bc1b-b18d-483b-88da-a600e9255018
+curl http://localhost:4011/api/catalogues/v2/tests/{id}
 ```
 
 Method POST:
@@ -108,19 +108,19 @@ Method POST:
 To send a descriptor
 
 ```sh
-curl -X POST --data-binary @nsd_sample.yaml -H "Content-type:application/x-yaml" http://localhost:4011/catalogues/api/v2/network-services
+curl -X POST --data-binary @nsd_example.yml -H "Content-type:application/x-yaml" http://localhost:4011/api/catalogues/v2/network-services
 ```
 ```sh
-curl -X POST --data-binary @vnfd_sample.yaml -H "Content-type:application/x-yaml" http://localhost:4011/catalogues/api/v2/vnfs
+curl -X POST --data-binary @vnfd_example.yml -H "Content-type:application/x-yaml" http://localhost:4011/api/catalogues/v2/vnfs
 ```
 ```sh
-curl -X POST --data-binary @pd_sample.yaml -H "Content-type:application/x-yaml" http://localhost:4011/catalogues/api/v2/packages
+curl -X POST --data-binary @pd_example.yml -H "Content-type:application/x-yaml" http://localhost:4011/api/catalogues/v2/packages
 ```
 ```sh
-curl -X POST --data-binary @sla-template-example.yaml -H "Content-type:application/x-yaml" http://localhost:4011/catalogues/api/v2/sla/template-descriptors
+curl -X POST --data-binary @sla-template-example.yml -H "Content-type:application/x-yaml" http://localhost:4011/api/catalogues/v2/sla/template-descriptors
 ```
 ```sh
-curl -X POST --data-binary @test_sample.yaml -H "Content-type:application/x-yaml" http://localhost:4011/catalogues/api/v2/tests
+curl -X POST --data-binary @testd_example.yml -H "Content-type:application/x-yaml" http://localhost:4011/api/catalogues/v2/tests
 ```
 
 Method PUT:
@@ -128,19 +128,19 @@ Method PUT:
 To update a descriptor is similar to the POST method, but it is required that a older version of the descriptor is stored in the Catalogues
 
 ```sh
-curl -X PUT --data-binary @nsd_sample.yaml -H "Content-type:application/x-yaml" http://localhost:4011/catalogues/api/v2/network-services
+curl -X PUT --data-binary @nsd_example.yml -H "Content-type:application/x-yaml" http://localhost:4011/api/catalogues/v2/network-services
 ```
 ```sh
-curl -X PUT --data-binary @vnfd_sample.yaml -H "Content-type:application/x-yaml" http://localhost:4011/catalogues/api/v2/vnfs
+curl -X PUT --data-binary @vnfd_example.yml -H "Content-type:application/x-yaml" http://localhost:4011/api/catalogues/v2/vnfs
 ```
 ```sh
-curl -X PUT --data-binary @pd_sample.yaml -H "Content-type:application/x-yaml" http://localhost:4011/catalogues/api/v2/packages
+curl -X PUT --data-binary @pd_example.yml -H "Content-type:application/x-yaml" http://localhost:4011/api/catalogues/api/v2/packages
 ```
 ```sh
-curl -X PUT --data-binary @sla-template-example.yaml -H "Content-type:application/x-yaml" http://localhost:4011/catalogues/api/v2/sla/template-descriptors
+curl -X PUT --data-binary @sla-template-example.yml -H "Content-type:application/x-yaml" http://localhost:4011/api/catalogues/api/v2/sla/template-descriptors
 ```
 ```sh
-curl -X PUT --data-binary @test-descriptor-sample.yaml -H "Content-type:application/x-yaml" http://localhost:4011/catalogues/api/v2/tests
+curl -X PUT --data-binary @testd_example.yml -H "Content-type:application/x-yaml" http://localhost:4011/api/catalogues/api/v2/tests
 ```
 
 Method DELETE:
@@ -148,19 +148,19 @@ Method DELETE:
 To remove a descriptor by its ID
 
 ```sh
-curl -X DELETE http://localhost:4011/catalogues/network-services/api/v2/9f18bc1b-b18d-483b-88da-a600e9255016
+curl -X DELETE http://localhost:4011/api/catalogues/network-services/v2/{id}
 ```
 ```sh
-curl -X DELETE http://localhost:4011/catalogues/vnfs/api/v2/9f18bc1b-b18d-483b-88da-a600e9255017
+curl -X DELETE http://localhost:4011/api/catalogues/vnfs/v2/{id}
 ```
 ```sh
-curl -X DELETE http://localhost:4011/catalogues/packages/api/v2/9f18bc1b-b18d-483b-88da-a600e9255018
+curl -X DELETE http://localhost:4011/api/catalogues/packages/v2/{id}
 ```
 ```sh
-curl -X DELETE http://localhost:4011/catalogues/sla/template-descriptors/api/v2/9f18bc1b-b18d-483b-88da-a600e9255018
+curl -X DELETE http://localhost:4011/api/catalogues/slas/template-descriptors/v2/{id}
 ```
 ```sh
-curl -X DELETE http://localhost:4011/catalogues/tests/api/v2/9f18bc1b-b18d-483b-88da-a600e9255018
+curl -X DELETE http://localhost:4011/api/catalogues/tests/v2/{id}
 ```
 
 The API for 5GTANGO packages (tng-package) files works very similar to the API for the descriptors.
@@ -170,13 +170,13 @@ Method GET:
 To receive a list of stored packages
 
 ```sh
-curl http://localhost:4011/catalogues/api/v2/tng-packages
+curl http://localhost:4011/api/catalogues/v2/tgo-packages
 ```
 
 To receive a package file
 
 ```sh
-curl http://localhost:4011/catalogues/api/v2/tng-packages/9f18bc1b-b18d-483b-88da-a600e9255000
+curl http://localhost:4011/api/catalogues/v2/tgo-packages/{id}
 ```
 Method POST:
 
@@ -187,7 +187,7 @@ HTTP header 'Content-Type' must be set to 'application/zip'
 HTTP header 'Content-Disposition' must be set to 'attachment; filename=```name_of_the_package```'
 
 ```sh
-curl -X POST -H "Content-Type: application/zip" -H "Content-Disposition: attachment; filename=sonata_example.tng" -F "@sonata-demo.tng" "http://0.0.0.0:4011/catalogues/api/v2/tng-packages"
+curl -X POST -H "Content-Type: application/zip" -H "Content-Disposition: attachment; filename=5gtango-ns-example.tgo" http://0.0.0.0:4011/api/catalogues/v2/tgo-packages
 ```
 
 Method DELETE:
@@ -195,7 +195,7 @@ Method DELETE:
 To remove a package file by its ID
 
 ```sh
-curl -X DELETE http://localhost:4011/catalogues/api/v2/tng-packages/9f18bc1b-b18d-483b-88da-a600e9255000
+curl -X DELETE http://localhost:4011/api/catalogues/v2/tgo-packages/{id}
 ```
 
 ### Pushing 'tango-demo' files to Catalogue

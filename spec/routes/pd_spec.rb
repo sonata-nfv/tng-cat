@@ -288,6 +288,19 @@ RSpec.describe CatalogueV2 do
     end
   end
 
+  # describe 'DELETE /api/v2/packages/:uuid' do
+  #   context 'with (UU)ID given' do
+  #     before do
+  #       response = delete '/packages/' + $pd_id.to_s
+  #       puts response.body
+  #     end
+  #     subject { last_response }
+  #     # No dependency mapping found, expect 500
+  #     its(:status) { is_expected.to eq 500 }
+  #   end
+  # end
+  #
+
   describe 'DELETE /api/v2/packages/:uuid' do
     context 'with (UU)ID given' do
       before do
@@ -296,7 +309,7 @@ RSpec.describe CatalogueV2 do
       end
       subject { last_response }
       # No dependency mapping found, expect 500
-      its(:status) { is_expected.to eq 500 }
+      its(:status) { is_expected.to eq 200 }
     end
   end
 end

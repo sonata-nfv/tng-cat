@@ -65,6 +65,7 @@ For testing the Catalogues, you can use 'curl' tool to send a request descriptor
 The Catalogues' API now supports API versioning. New API v2 has been introduced in release v2.0 which implements some structure changes in the descriptors.
 The API v1 is deprecated and is no longer supported by the 5GTANGO Service Platform. It is recommended to use v2 only in a MongoDB database.
 
+Below, the CRUD methods of the Catalogues are presented. Note that the attached files should be in the current directory. In any other occasion, the examples, used below to reference the operations, are in the directory "samples/".
 Method GET:
 
 To receive all descriptors you can use
@@ -117,7 +118,7 @@ curl -X POST --data-binary @vnfd_example.yml -H "Content-type:application/x-yaml
 curl -X POST --data-binary @pd_example.yml -H "Content-type:application/x-yaml" http://localhost:4011/api/catalogues/v2/packages
 ```
 ```sh
-curl -X POST --data-binary @sla-template-example.yml -H "Content-type:application/x-yaml" http://localhost:4011/api/catalogues/v2/sla/template-descriptors
+curl -X POST --data-binary @sla-template-example.yml -H "Content-type:application/x-yaml" http://localhost:4011/api/catalogues/v2/slas/template-descriptors
 ```
 ```sh
 curl -X POST --data-binary @testd_example.yml -H "Content-type:application/x-yaml" http://localhost:4011/api/catalogues/v2/tests
@@ -134,13 +135,13 @@ curl -X PUT --data-binary @nsd_example.yml -H "Content-type:application/x-yaml" 
 curl -X PUT --data-binary @vnfd_example.yml -H "Content-type:application/x-yaml" http://localhost:4011/api/catalogues/v2/vnfs
 ```
 ```sh
-curl -X PUT --data-binary @pd_example.yml -H "Content-type:application/x-yaml" http://localhost:4011/api/catalogues/api/v2/packages
+curl -X PUT --data-binary @pd_example.yml -H "Content-type:application/x-yaml" http://localhost:4011/api/catalogues/v2/packages
 ```
 ```sh
-curl -X PUT --data-binary @sla-template-example.yml -H "Content-type:application/x-yaml" http://localhost:4011/api/catalogues/api/v2/sla/template-descriptors
+curl -X PUT --data-binary @sla-template-example.yml -H "Content-type:application/x-yaml" http://localhost:4011/api/catalogues/v2/slas/template-descriptors
 ```
 ```sh
-curl -X PUT --data-binary @testd_example.yml -H "Content-type:application/x-yaml" http://localhost:4011/api/catalogues/api/v2/tests
+curl -X PUT --data-binary @testd_example.yml -H "Content-type:application/x-yaml" http://localhost:4011/api/catalogues/v2/tests
 ```
 
 Method DELETE:
@@ -148,19 +149,19 @@ Method DELETE:
 To remove a descriptor by its ID
 
 ```sh
-curl -X DELETE http://localhost:4011/api/catalogues/network-services/v2/{id}
+curl -X DELETE http://localhost:4011/api/catalogues/v2/network-services/{id}
 ```
 ```sh
-curl -X DELETE http://localhost:4011/api/catalogues/vnfs/v2/{id}
+curl -X DELETE http://localhost:4011/api/catalogues/v2/vnfs/{id}
 ```
 ```sh
-curl -X DELETE http://localhost:4011/api/catalogues/packages/v2/{id}
+curl -X DELETE http://localhost:4011/api/catalogues/v2/packages/{id}
 ```
 ```sh
-curl -X DELETE http://localhost:4011/api/catalogues/slas/template-descriptors/v2/{id}
+curl -X DELETE http://localhost:4011/api/catalogues/v2/slas/template-descriptors/{id}
 ```
 ```sh
-curl -X DELETE http://localhost:4011/api/catalogues/tests/v2/{id}
+curl -X DELETE http://localhost:4011/api/catalogues/v2/tests/{id}
 ```
 
 The API for 5GTANGO packages (tng-package) files works very similar to the API for the descriptors.

@@ -66,6 +66,7 @@ The Catalogues' API now supports API versioning. New API v2 has been introduced 
 The API v1 is deprecated and is no longer supported by the 5GTANGO Service Platform. It is recommended to use v2 only in a MongoDB database.
 
 Below, the CRUD methods of the Catalogues are presented. Note that the attached files should be in the current directory. In any other occasion, the examples, used below to reference the operations, are in the directory "samples/".
+
 Method GET:
 
 To receive all descriptors you can use
@@ -174,10 +175,10 @@ To receive a list of stored packages
 curl http://localhost:4011/api/catalogues/v2/tgo-packages
 ```
 
-To receive a package file
+To receive a package file in the current directory
 
 ```sh
-curl http://localhost:4011/api/catalogues/v2/tgo-packages/{id}
+curl -H "Content-Type:application/zip" http://localhost:4011/api/catalogues/v2/tgo-packages/{id}
 ```
 Method POST:
 

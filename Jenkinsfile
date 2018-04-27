@@ -47,7 +47,7 @@ pipeline {
         }
       }
     }
-  }
+
 
   stage('Deployment in Integration') {
     parallel {
@@ -73,14 +73,21 @@ pipeline {
     when {
        branch 'master'
     }
-    stage('tng-cat') {
-        steps {
-        sh 'docker tag registry.sonata-nfv.eu:5000/tng-cat:latest registry.sonata-nfv.eu:5000/tng-cat:int'
-        sh 'docker push  registry.sonata-nfv.eu:5000/tng-cat:int'
+    parallel {
+        stage('Publishing containers to int') {
+            steps {
+            echo 'Promoting containers to integration'
+            }
+         }
+        stage('tng-cat') {
+            steps {
+            sh 'docker tag registry.sonata-nfv.eu:5000/tng-cat:latest registry.sonata-nfv.eu:5000/tng-cat:int'
+            sh 'docker push  registry.sonata-nfv.eu:5000/tng-cat:int'
+            }
         }
     }
   }
-
+  }
   post {
     always {
       junit(allowEmptyResults: true, testResults: 'spec/reports/*.xml')

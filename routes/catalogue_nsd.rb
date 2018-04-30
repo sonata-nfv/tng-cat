@@ -660,6 +660,7 @@ class CatalogueV2 < SonataCatalogue
 
     else
       # Do the query
+      keyed_params = parse_keys_dict(:nsd, keyed_params)
       nss = Nsd.where(keyed_params)
       # Set total count for results
       headers 'Record-Count' => nss.count.to_s
@@ -762,14 +763,14 @@ class CatalogueV2 < SonataCatalogue
     begin
       ns = Nsd.find_by({ 'nsd.name' => new_ns['name'], 'nsd.vendor' => new_ns['vendor'],
                          'nsd.version' => new_ns['version'] })
-      json_return 200, 'Duplicated NS Name, Vendor and Version'
+      halt 409, "Duplicate with NSD ID => #{ns['_id']}"
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
     end
     # Check if NSD has an ID (it should not) and if it already exists in the catalogue
     begin
       ns = Nsd.find_by({ '_id' => new_ns['_id'] })
-      json_return 200, 'Duplicated NS ID'
+      halt 409, 'Duplicated NS ID'
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
     end
@@ -781,16 +782,21 @@ class CatalogueV2 < SonataCatalogue
     end
 
     # Save to DB
+    new_nsd = {}
+    new_nsd['nsd'] = new_ns
+    # Generate the UUID for the descriptor
+    new_nsd['_id'] = SecureRandom.uuid
+    new_nsd['status'] = 'active'
+    # Signature will be supported
+    new_nsd['signature'] = nil
+    new_nsd['md5'] = checksum new_ns.to_s
+    new_nsd['username'] = username
+
+    # First, Refresh dictionary about the new entry
+    update_entr_dict(new_nsd, :nsd)
+
+    # Then, create descriptor
     begin
-      new_nsd = {}
-      new_nsd['nsd'] = new_ns
-      # Generate the UUID for the descriptor
-      new_nsd['_id'] = SecureRandom.uuid
-      new_nsd['status'] = 'active'
-      # Signature will be supported
-      new_nsd['signature'] = nil
-      new_nsd['md5'] = checksum new_ns.to_s
-      new_nsd['username'] = username
       ns = Nsd.create!(new_nsd)
     rescue Moped::Errors::OperationFailure => e
       json_return 200, 'Duplicated NS ID' if e.message.include? 'E11000'
@@ -902,6 +908,10 @@ class CatalogueV2 < SonataCatalogue
     new_nsd['md5'] = checksum new_ns.to_s
     new_nsd['username'] = username
 
+    # First, Refresh dictionary about the new entry
+    update_entr_dict(new_nsd, :nsd)
+
+    # Then, create descriptor
     begin
       new_ns = Nsd.create!(new_nsd)
     rescue Moped::Errors::OperationFailure => e
@@ -1031,6 +1041,10 @@ class CatalogueV2 < SonataCatalogue
         new_nsd['md5'] = checksum new_ns.to_s
         new_nsd['username'] = username
 
+        # First, Refresh dictionary about the new entry
+        update_entr_dict(new_nsd, :nsd)
+
+        # Then, create descriptor
         begin
           new_ns = Nsd.create!(new_nsd)
         rescue Moped::Errors::OperationFailure => e
@@ -1076,6 +1090,8 @@ class CatalogueV2 < SonataCatalogue
       end
       logger.debug "Catalogue: leaving DELETE /v2/network-services?#{query_string}\" with NSD #{ns}"
       ns.destroy
+      # Delete entry in dict mapping
+      del_ent_dict(ns, :nsd)
       halt 200, 'OK: NSD removed'
     end
     logger.debug "Catalogue: leaving DELETE /v2/network-services?#{query_string} with 'No NSD Vendor, Name, Version specified'"
@@ -1098,6 +1114,8 @@ class CatalogueV2 < SonataCatalogue
       end
       logger.debug "Catalogue: leaving DELETE /v2/network-services/#{params[:id]}\" with NSD #{ns}"
       ns.destroy
+      # Delete entry in dict mapping
+      del_ent_dict(ns, :nsd)
       halt 200, 'OK: NSD removed'
     end
     logger.debug "Catalogue: leaving DELETE /v2/network-services/#{params[:id]} with 'No NSD ID specified'"

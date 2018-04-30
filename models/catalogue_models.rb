@@ -241,3 +241,13 @@ class Pld
   field :username, type: String
   validates :pld, presence: true
 end
+
+# Class Dict for Inverted Index
+class Dict
+  include Mongoid::Document
+  include Mongoid::Timestamps
+  include Mongoid::Pagination
+  include Mongoid::Attributes::Dynamic
+
+  store_in collection: 'dictionary'
+end

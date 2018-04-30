@@ -72,7 +72,7 @@ RSpec.describe CatalogueV2 do
       it 'Submit a duplicated testd' do
         headers = { 'CONTENT_TYPE' => 'application/json' }
         post '/tests', test_descriptor, headers
-        expect(last_response.status).to eq(200)
+        expect(last_response.status).to eq(409)
       end
     end
   end
@@ -111,11 +111,11 @@ RSpec.describe CatalogueV2 do
     end
   end
 
-  describe 'GET /api/v2/tests' do
-    context 'with name parameter given' do
+  describe 'GET /api/v2/tests/' do
+    context 'with test_tag parameter given' do
       before do
         headers = { 'CONTENT_TYPE' => 'application/json' }
-        get '/tests?' + $testd_name.to_s, nil, headers
+        get '/tests?test_tag=io_bandwidth', nil,  headers
       end
       subject { last_response }
       its(:status) { is_expected.to eq 200 }

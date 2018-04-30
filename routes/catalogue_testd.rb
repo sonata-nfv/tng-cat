@@ -97,8 +97,8 @@ class CatalogueV2 < SonataCatalogue
 
     else
       # Do the query
+      keyed_params = parse_keys_dict(:testd, keyed_params)
       tests = Testd.where(keyed_params)
-
       # Set total count for results
       headers 'Record-Count' => tests.count.to_s
       logger.info "Catalogue: TESTDs=#{tests}"
@@ -201,14 +201,14 @@ class CatalogueV2 < SonataCatalogue
     begin
       test = Testd.find_by({ 'testd.name' => new_test['name'], 'testd.vendor' => new_test['vendor'],
                            'testd.version' => new_test['version'] })
-      json_return 200, 'Duplicated TEST Name, Vendor and Version'
+      halt 409, "Duplicated TEST with ID => #{test['_id']}"
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
     end
     # Check if Test Descriptor has an ID (it should not) and if it already exists in the catalogue
     begin
       test = Testd.find_by({ '_id' => new_test['_id'] })
-      json_return 200, 'Duplicated TEST ID'
+      halt 409, 'Duplicated TEST ID'
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
     end
@@ -220,15 +220,19 @@ class CatalogueV2 < SonataCatalogue
     end
 
     # Save to DB
+    new_testd = {}
+    new_testd['testd'] = new_test
+    # Generate the UUID for the descriptor
+    new_testd['_id'] = SecureRandom.uuid
+    new_testd['status'] = 'active'
+    new_testd['signature'] = nil
+    new_testd['md5'] = checksum new_test.to_s
+    new_testd['username'] = username
+
+    # First, Refresh dictionary about the new entry
+    update_entr_dict(new_testd, :testd)
+
     begin
-      new_testd = {}
-      new_testd['testd'] = new_test
-      # Generate the UUID for the descriptor
-      new_testd['_id'] = SecureRandom.uuid
-      new_testd['status'] = 'active'
-      new_testd['signature'] = nil
-      new_testd['md5'] = checksum new_test.to_s
-      new_testd['username'] = username
       test = Testd.create!(new_testd)
     rescue Moped::Errors::OperationFailure => e
       json_return 200, 'Duplicated TEST ID' if e.message.include? 'E11000'
@@ -340,6 +344,9 @@ class CatalogueV2 < SonataCatalogue
     new_testd['signature'] = nil
     new_testd['md5'] = checksum new_test.to_s
     new_testd['username'] = username
+
+    # First, Refresh dictionary about the new entry
+    update_entr_dict(new_testd, :testd)
 
     begin
       new_test = Testd.create!(new_testd)
@@ -470,6 +477,9 @@ class CatalogueV2 < SonataCatalogue
         new_testd['md5'] = checksum new_test.to_s
         new_testd['username'] = username
 
+        # First, Refresh dictionary about the new entry
+        update_entr_dict(new_testd, :testd)
+
         begin
           new_test = Testd.create!(new_testd)
         rescue Moped::Errors::OperationFailure => e
@@ -514,6 +524,8 @@ class CatalogueV2 < SonataCatalogue
         json_error 404, "The TESTD Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist"
       end
       logger.debug "Catalogue: leaving DELETE /v2/tests?#{query_string}\" with TESTD #{test}"
+      # Delete entry in dict mapping
+      del_ent_dict(test, :testd)
       test.destroy
       halt 200, 'OK: TESTD removed'
     end
@@ -536,6 +548,8 @@ class CatalogueV2 < SonataCatalogue
         json_error 404, "The TESTD ID #{params[:id]} does not exist" unless test
       end
       logger.debug "Catalogue: leaving DELETE /v2/tests/#{params[:id]}\" with TESTD #{test}"
+      # Delete entry in dict mapping
+      del_ent_dict(test, :testd)
       test.destroy
       halt 200, 'OK: TESTD removed'
     end

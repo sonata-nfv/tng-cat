@@ -403,7 +403,7 @@ class CatalogueV2 < SonataCatalogue
     # Check if tgo-package already exists in the catalogue by filename (grid-fs-name identifier)
     begin
       tgopkg = FileContainer.find_by({ 'grid_fs_name' => filename })
-      json_return 200, 'Duplicated tgo-package Filename'
+      halt 409, "Duplicated tgo-package ID => #{tgopkg['_id']}"
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
     end

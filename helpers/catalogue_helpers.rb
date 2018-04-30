@@ -212,22 +212,60 @@ class SonataCatalogue < Sinatra::Application
     Hash[hash.map { |(k, v)| [k.to_sym, v] }]
   end
 
+  def clean_brack(string_with_brack)
+    string_with_brack.split(/\(([^\)]+)\)|\[([^\)]+)\]|\{([^\)]+)\}/)[-1].scan(/\s+|\w+|"[^"]*"/)
+        .reject { |token| token =~ /^\s+$/ }.map { |token| token.sub(/^"/, "").sub(/"$/, "") }
+  end
+
+  def modify_operators(key_partitioned, value)
+    key = key_partitioned[0]
+    if %w(in nin).include? key_partitioned[-1]
+      value = clean_brack(value)
+    end
+    value = {'$' + key_partitioned[-1] => value}
+    [key, value]
+  end
+
   def add_descriptor_level(descriptor_type, parameters)
     new_parameters = {}
-    meta_data = %w(offset limit _id uuid status state signature md5 updated_at created_at)
-    parameters.each { |k, v|
-      if meta_data.include? k
+    meta_data = %w(offset limit _id uuid status state signature username md5 updated_at created_at)
+    operators = %w(eq gt gte lt lte ne nin in)
+    begin
+      parameters.each { |k, v|
         if k == 'uuid'
-          new_parameters.store( '_id', v)
+          new_parameters.store('_id', v)
         else
-          new_parameters.store( k, v)
+          k, v = modify_operators(k.rpartition('.'), v) if operators.include? k.rpartition('.')[-1]
+          if meta_data.include? k
+            cur_key = k
+          else
+            cur_key = descriptor_type.to_s + '.' + k
+          end
+          if new_parameters.key? cur_key; new_parameters[cur_key].merge! v else new_parameters.store(cur_key, v) end
         end
-      else
-        new_parameters.store((descriptor_type.to_s + '.' + k), v)
-      end
-    }
-    parameters = keyed_hash(new_parameters)
+      }
+    rescue TypeError, NoMethodError
+      json_error 400, 'Query is not feasible. For comparison operators in the same field, use only comparison prefixes'
+    end
+    keyed_hash(new_parameters)
   end
+
+  # def add_descriptor_level(descriptor_type, parameters)
+  #   new_parameters = {}
+  #   meta_data = %w(offset limit _id uuid status state signature md5 updated_at created_at)
+  #   parameters.each { |k, v|
+  #     if meta_data.include? k
+  #       if k == 'uuid'
+  #         new_parameters.store( '_id', v)
+  #       else
+  #         new_parameters.store( k, v)
+  #       end
+  #     else
+  #       new_parameters.store((descriptor_type.to_s + '.' + k), v)
+  #     end
+  #   }
+  #   parameters = keyed_hash(new_parameters)
+  # end
 
   class Pair
     attr_accessor :one, :two
@@ -678,6 +716,153 @@ class SonataCatalogue < Sinatra::Application
       halt 404, JSON.generate(result: { enable: { vnfds: pdep_mapping.vnfds,
                                                 nsds: pdep_mapping.nsds } },
                               not_found: { vnfds: not_found_vnfds, nsds: not_found_nsds })
+    end
+  end
+
+  def number?(object)
+    true if Float(object)
+  rescue
+    false
+  end
+
+  def compare_objects(method, first_obj, second_obj)
+    state = if number? second_obj
+              map_operators(method, Float(first_obj), Float(second_obj))
+            else
+              map_operators(method, first_obj, second_obj)
+            end
+    state
+  rescue ArgumentError
+    json_error 404, 'No ability of comparing different types of objects'
+  end
+
+  def map_operators(method, first_n, second_n)
+    case method
+      when 'eq'
+        first_n == second_n
+      when 'gt'
+        first_n > second_n
+      when 'gte'
+        first_n >= second_n
+      when 'lt'
+        first_n < second_n
+      when 'lte'
+        first_n <= second_n
+      when 'neq'
+        first_n != second_n
+      when 'in'
+        second_n.include? first_n
+      when 'nin'
+        !(second_n.include? first_n)
+    end
+  end
+
+  # Transform the params for search into sequence of stored ids
+  # @param [Dict] params from CURL
+  # @param [Dict] keyed_params from CURL
+  # @param [Symbol] type_of_descriptor is valid symbol from the hosted type of descriptors
+  # @return [Object] keyed_params is dict with replaced the values of the inverted index
+  def parse_keys_dict(type_of_descriptor, keyed_params)
+    paths_dict =  parse_dict(type_of_descriptor)
+    cur_array_id = []
+    array_id = []
+    cur_bool = true
+    keyed_params.each do |key, value|
+      keys = key.to_s.split('.')[-1]
+      if paths_dict.key? keys.to_sym
+        keyed_params.delete((type_of_descriptor.to_s + '.' + keys).to_sym)
+        value.class == String ?
+            Dict.all.each {|field_of_dict| cur_array_id += field_of_dict[keys][value] unless field_of_dict[keys][value].empty?}:
+            Dict.all.each do |field_of_dict|
+              field_of_dict.as_document[keys].keys.each do |key_field_dict|
+                value.each {|key, value| cur_bool &= compare_objects(key.split('$')[-1], key_field_dict, value)}
+                cur_array_id += field_of_dict[keys][key_field_dict] if cur_bool
+                cur_bool = true
+              end
+            end
+      end
+      array_id = cur_array_id.select{ |e| cur_array_id.count(e) >= keyed_params.length }.uniq
+    end
+    keyed_params[:'_id'.in] = array_id unless array_id == 1 || array_id.empty?
+    keyed_params
+  end
+
+  def insert_val_dict(init, key, value, desc)
+    if init.empty? || !(init.key? key.to_s)
+      init[key.to_s + '.' + value.to_s] = desc['_id']
+    else
+      init[key.to_s + '.' + value.to_s].merge!(desc['_id'])
+    end
+    init
+  end
+
+
+  # Update dictionary with appropriate entries of new descriptors
+  # @param [Symbol] type_of_descriptor is symbol referencing the type of descriptor
+  # @param [Hash] desc is the new descriptor to be hosted
+  # @param [Hash] init is an empty hash for storing the params for query
+  # @return init is the parameters for query
+  def update_dict(type_of_descriptor,desc,init)
+    paths_dict = parse_dict(type_of_descriptor)
+    paths_dict.each do |key,value|
+      path = JsonPath.new(value)
+      next unless path.on(desc).any?
+      path.on(desc).each do |value_of_field|
+        if value_of_field.is_a? Array
+          value_of_field.each {|value_of_array| init = insert_val_dict(init, key, value_of_array, desc) }
+        else
+          init = insert_val_dict(init, key, value_of_field, desc)
+        end
+      end
+    end
+    init
+  end
+
+  # Return of the appropriate dictionary
+  # @param [Symbol] type_of_descriptor
+  # @return [Hash] is the inverted index for every descriptor
+  def parse_dict(type_of_descriptor)
+    dict = {vnfd: {
+        memory_size: '$..memory.size',
+        storage_size: '$..storage.size',
+    },
+            testd: {
+                test_tag: '$..test_tag'
+
+            },
+            nsd: {
+                testing_tags: '$..testing_tags'
+            },
+            slad: {
+                ns_id: '$..ns_id'
+            },
+            nstd: {},
+            pld: {},
+            pd: {}
+    }
+    dict[type_of_descriptor]
+  end
+
+  def del_ent_dict(desc_as_doc, type_of_desc)
+    doc = Hash.new()
+    desc = desc_as_doc.as_document
+    doc = update_dict(type_of_desc,desc,doc)
+    desc = Dict.all.pull(doc) if doc.any?
+    doc.each do |key, value|
+      desc = Dict.where(key => []).unset(key)
+      desc = Dict.where(key.split('.').first => {}).unset(key.split('.').first)
+    end
+  end
+
+  def update_entr_dict(desc_as_doc, type_of_desc)
+    doc = Hash.new()
+    begin
+      desc = Dict.create!() if Dict.count == 0
+      doc = update_dict(type_of_desc, desc_as_doc, doc)
+      desc = Dict.all.push(doc) if doc.any?
+    rescue Moped::Errors::OperationFailure => e
+      logger.error e
+      json_error 404, 'Unable to refresh dictionary' unless desc
     end
   end
 

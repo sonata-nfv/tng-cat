@@ -98,6 +98,7 @@ class CatalogueV2 < SonataCatalogue
     # else
 
     # Do the query
+    keyed_params = parse_keys_dict(:pld, keyed_params)
     policies = Pld.where(keyed_params)
     # Set total count for results
     headers 'Record-Count' => policies.count.to_s
@@ -196,14 +197,14 @@ class CatalogueV2 < SonataCatalogue
     # Check if PLD already exists in the catalogue by name
     begin
       pl = Pld.find_by({ 'pld.name' => new_pl['name'] })
-      json_return 200, 'Duplicated Policy Name'
+      halt 409, "Duplicate with PD ID => #{pl['_id']}"
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
     end
     # Check if PLD has an ID (it should not) and if it already exists in the catalogue
     begin
       pl = Pld.find_by({ '_id' => new_pl['_id'] })
-      json_return 200, 'Duplicated Policy ID'
+      halt 409, 'Duplicated Policy ID'
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
     end
@@ -215,15 +216,19 @@ class CatalogueV2 < SonataCatalogue
     end
 
     # Save to DB
+    new_pld = {}
+    new_pld['pld'] = new_pl
+    # Generate the UUID for the descriptor
+    new_pld['_id'] = SecureRandom.uuid
+    new_pld['status'] = 'active'
+    new_pld['signature'] = nil
+    new_pld['md5'] = checksum new_pl.to_s
+    new_pld['username'] = username
+
+    # First, Refresh dictionary about the new entry
+    update_entr_dict(new_pld, :pld)
+
     begin
-      new_pld = {}
-      new_pld['pld'] = new_pl
-      # Generate the UUID for the descriptor
-      new_pld['_id'] = SecureRandom.uuid
-      new_pld['status'] = 'active'
-      new_pld['signature'] = nil
-      new_pld['md5'] = checksum new_pl.to_s
-      new_pld['username'] = username
       pl = Pld.create!(new_pld)
     rescue Moped::Errors::OperationFailure => e
       json_return 200, 'Duplicated Policy ID' if e.message.include? 'E11000'
@@ -331,6 +336,9 @@ class CatalogueV2 < SonataCatalogue
     new_pld['signature'] = nil
     new_pld['md5'] = checksum new_pl.to_s
     new_pld['username'] = username
+
+    # First, Refresh dictionary about the new entry
+    update_entr_dict(new_pld, :pld)
 
     begin
       new_pl = Pld.create!(new_pld)
@@ -458,6 +466,9 @@ class CatalogueV2 < SonataCatalogue
         new_pld['md5'] = checksum new_pl.to_s
         new_pld['username'] = username
 
+        # First, Refresh dictionary about the new entry
+        update_entr_dict(new_pld, :pld)
+
         begin
           new_pl = Pld.create!(new_pld)
         rescue Moped::Errors::OperationFailure => e
@@ -501,6 +512,8 @@ class CatalogueV2 < SonataCatalogue
         json_error 404, "The PLD Name #{keyed_params[:name]} does not exist"
       end
       logger.debug "Catalogue: leaving DELETE /v2/policies?#{query_string}\" with PLD #{pl}"
+      # Delete entry in dict mapping
+      del_ent_dict(pl, :pld)
       pl.destroy
       halt 200, 'OK: PLD removed'
     end
@@ -523,6 +536,8 @@ class CatalogueV2 < SonataCatalogue
         json_error 404, "The PLD ID #{params[:id]} does not exist" unless pl
       end
       logger.debug "Catalogue: leaving DELETE /v2/policies/#{params[:id]}\" with PLD #{pl}"
+      # Delete entry in dict mapping
+      del_ent_dict(pl, :pld)
       pl.destroy
       halt 200, 'OK: PLD removed'
     end

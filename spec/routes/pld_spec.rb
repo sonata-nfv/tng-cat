@@ -72,7 +72,7 @@ RSpec.describe CatalogueV2 do
       it 'Submit a duplicated policy descriptor' do
         headers = { 'CONTENT_TYPE' => 'application/json' }
         post '/policies', policy_descriptor, headers
-        expect(last_response.status).to eq(200)
+        expect(last_response.status).to eq(409)
       end
     end
   end

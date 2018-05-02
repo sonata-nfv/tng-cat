@@ -191,7 +191,7 @@ RSpec.describe CatalogueV2 do
       it 'Submit a duplicated vnfd' do
         headers = { 'CONTENT_TYPE' => 'application/json' }
         post '/vnfs', vnf_descriptor, headers
-        expect(last_response.status).to eq(200)
+        expect(last_response.status).to eq(409)
       end
     end
   end

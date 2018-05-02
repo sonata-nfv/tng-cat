@@ -98,6 +98,7 @@ class CatalogueV2 < SonataCatalogue
 
     else
       # Do the query
+      keyed_params = parse_keys_dict(:nstd, keyed_params)
       nsts = Nstd.where(keyed_params)
       # Set total count for results
       headers 'Record-Count' => nsts.count.to_s
@@ -201,14 +202,14 @@ class CatalogueV2 < SonataCatalogue
     begin
       nst = Nstd.find_by({ 'nstd.name' => new_nst['name'], 'nstd.vendor' => new_nst['vendor'],
                            'nstd.version' => new_nst['version'] })
-      json_return 200, 'Duplicated NST Name, Vendor and Version'
+      halt 409, "Duplicate with NSTD ID => #{nst['_id']}"
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
     end
     # Check if NST has an ID (it should not) and if it already exists in the catalogue
     begin
       nst = Nstd.find_by({ '_id' => new_nst['_id'] })
-      json_return 200, 'Duplicated NST ID'
+      halt 409, 'Duplicated NST ID'
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
     end
@@ -220,15 +221,19 @@ class CatalogueV2 < SonataCatalogue
     end
 
     # Save to DB
+    new_nstd = {}
+    new_nstd['nstd'] = new_nst
+    # Generate the UUID for the descriptor
+    new_nstd['_id'] = SecureRandom.uuid
+    new_nstd['status'] = 'active'
+    new_nstd['signature'] = nil
+    new_nstd['md5'] = checksum new_nst.to_s
+    new_nstd['username'] = username
+
+    # First, Refresh dictionary about the new entry
+    update_entr_dict(new_nstd, :nstd)
+
     begin
-      new_nstd = {}
-      new_nstd['nstd'] = new_nst
-      # Generate the UUID for the descriptor
-      new_nstd['_id'] = SecureRandom.uuid
-      new_nstd['status'] = 'active'
-      new_nstd['signature'] = nil
-      new_nstd['md5'] = checksum new_nst.to_s
-      new_nstd['username'] = username
       nst = Nstd.create!(new_nstd)
     rescue Moped::Errors::OperationFailure => e
       json_return 200, 'Duplicated NST ID' if e.message.include? 'E11000'
@@ -340,6 +345,9 @@ class CatalogueV2 < SonataCatalogue
     new_nstd['signature'] = nil
     new_nstd['md5'] = checksum new_nst.to_s
     new_nstd['username'] = username
+
+    # First, Refresh dictionary about the new entry
+    update_entr_dict(new_nstd, :nstd)
 
     begin
       new_nst = Nstd.create!(new_nstd)
@@ -470,6 +478,9 @@ class CatalogueV2 < SonataCatalogue
         new_nstd['md5'] = checksum new_nst.to_s
         new_nstd['username'] = username
 
+        # First, Refresh dictionary about the new entry
+        update_entr_dict(new_nstd, :nstd)
+
         begin
           new_nst = Nstd.create!(new_nstd)
         rescue Moped::Errors::OperationFailure => e
@@ -514,6 +525,8 @@ class CatalogueV2 < SonataCatalogue
         json_error 404, "The NST Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist"
       end
       logger.debug "Catalogue: leaving DELETE /v2/nsts?#{query_string}\" with NST #{nst}"
+      # Delete entry in dict mapping
+      del_ent_dict(nst, :nstd)
       nst.destroy
       halt 200, 'OK: NST removed'
     end
@@ -536,6 +549,8 @@ class CatalogueV2 < SonataCatalogue
         json_error 404, "The NST ID #{params[:id]} does not exist" unless nst
       end
       logger.debug "Catalogue: leaving DELETE /v2/nsts/#{params[:id]}\" with NST #{nst}"
+      # Delete entry in dict mapping
+      del_ent_dict(nst, :nstd)
       nst.destroy
       halt 200, 'OK: NST removed'
     end

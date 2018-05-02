@@ -38,6 +38,7 @@ require 'sinatra/config_file'
 require 'yaml'
 require 'json-schema'
 require 'open-uri'
+require 'jsonpath'
 
 # Require the bundler gem and then call Bundler.require to load in all gems
 # listed in Gemfile.
@@ -76,7 +77,7 @@ configure do
   # STDOUT.sync = true
   retries = 0
   code = 503
-  while retries <= 6 do
+  while retries <= -1 do
     # turn keycloak realm pub key into an actual openssl compat pub key
     logger.debug "RETRY=#{retries}"
     code, keycloak_key = get_public_key(settings.auth_address,

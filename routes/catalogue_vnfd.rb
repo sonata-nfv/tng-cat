@@ -637,6 +637,7 @@ class CatalogueV2 < SonataCatalogue
 
     else
       # Do the query
+      keyed_params = parse_keys_dict(:vnfd, keyed_params)
       vnfs = Vnfd.where(keyed_params)
       # Set total count for results
       headers 'Record-Count' => vnfs.count.to_s
@@ -740,14 +741,14 @@ class CatalogueV2 < SonataCatalogue
     begin
       vnf = Vnfd.find_by({ 'vnfd.name' => new_vnf['name'], 'vnfd.vendor' => new_vnf['vendor'],
                            'vnfd.version' => new_vnf['version'] })
-      json_return 200, 'Duplicated VNF Name, Vendor and Version'
+      halt 409, "Duplicated VNF with ID => #{vnf['_id']}"
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
     end
     # Check if VNFD has an ID (it should not) and if it already exists in the catalogue
     begin
       vnf = Vnfd.find_by({ '_id' => new_vnf['_id'] })
-      json_return 200, 'Duplicated VNF ID'
+      halt 409, 'Duplicated VNF ID'
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
     end
@@ -759,15 +760,19 @@ class CatalogueV2 < SonataCatalogue
     end
 
     # Save to DB
+    new_vnfd = {}
+    new_vnfd['vnfd'] = new_vnf
+    # Generate the UUID for the descriptor
+    new_vnfd['_id'] = SecureRandom.uuid
+    new_vnfd['status'] = 'active'
+    new_vnfd['signature'] = nil
+    new_vnfd['md5'] = checksum new_vnf.to_s
+    new_vnfd['username'] = username
+
+    # First, Refresh dictionary about the new entry
+    update_entr_dict(new_vnfd, :vnfd)
+
     begin
-      new_vnfd = {}
-      new_vnfd['vnfd'] = new_vnf
-      # Generate the UUID for the descriptor
-      new_vnfd['_id'] = SecureRandom.uuid
-      new_vnfd['status'] = 'active'
-      new_vnfd['signature'] = nil
-      new_vnfd['md5'] = checksum new_vnf.to_s
-      new_vnfd['username'] = username
       vnf = Vnfd.create!(new_vnfd)
     rescue Moped::Errors::OperationFailure => e
       json_return 200, 'Duplicated VNF ID' if e.message.include? 'E11000'
@@ -879,6 +884,9 @@ class CatalogueV2 < SonataCatalogue
     new_vnfd['signature'] = nil
     new_vnfd['md5'] = checksum new_vnf.to_s
     new_vnfd['username'] = username
+
+    # First, Refresh dictionary about the new entry
+    update_entr_dict(new_vnfd, :vnfd)
 
     begin
       new_vnf = Vnf.create!(new_vnfd)
@@ -1009,6 +1017,9 @@ class CatalogueV2 < SonataCatalogue
         new_vnfd['md5'] = checksum new_vnf.to_s
         new_vnfd['username'] = username
 
+        # First, Refresh dictionary about the new entry
+        update_entr_dict(new_vnfd, :vnfd)
+
         begin
           new_vnf = Vnfd.create!(new_vnfd)
         rescue Moped::Errors::OperationFailure => e
@@ -1053,6 +1064,8 @@ class CatalogueV2 < SonataCatalogue
         json_error 404, "The VNFD Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist"
       end
       logger.debug "Catalogue: leaving DELETE /v2/vnfs?#{query_string}\" with VNFD #{vnf}"
+      # Delete entry in dict mapping
+      del_ent_dict(vnf, :vnfd)
       vnf.destroy
       halt 200, 'OK: VNFD removed'
     end
@@ -1075,6 +1088,8 @@ class CatalogueV2 < SonataCatalogue
         json_error 404, "The VNFD ID #{params[:id]} does not exist" unless vnf
       end
       logger.debug "Catalogue: leaving DELETE /v2/vnfs/#{params[:id]}\" with VNFD #{vnf}"
+      # Delete entry in dict mapping
+      del_ent_dict(vnf, :vnfd)
       vnf.destroy
       halt 200, 'OK: VNFD removed'
     end

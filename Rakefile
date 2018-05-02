@@ -104,7 +104,8 @@ namespace :init do
     sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ pd_sample } --connect-timeout 30 http://#{ server }/api/catalogues/v2/packages"
     sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ sla_sample } --connect-timeout 30 http://#{ server }/api/catalogues/v2/slas/template-descriptors"
     sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ nstd_sample } --connect-timeout 30 http://#{ server }/api/catalogues/v2/nsts"
-    sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ pld_sample } --connect-timeout 30 http://#{ server }/api/cataloguesv2/policies"
+    sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ pld_sample } --connect-timeout 30 http://#{ server }/api/catalogues/v2/policies"
+    sh "curl -X POST -H \"Content-Type: application/x-yaml\" --data-binary @#{ test_sample } --connect-timeout 30 http://#{ server }/api/catalogues/v2/tests"
 
   end
 end

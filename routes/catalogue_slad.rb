@@ -97,6 +97,7 @@ class CatalogueV2 < SonataCatalogue
 
     else
       # Do the query
+      keyed_params = parse_keys_dict(:slad, keyed_params)
       slas = Slad.where(keyed_params)
       # Set total count for results
       headers 'Record-Count' => slas.count.to_s
@@ -200,14 +201,14 @@ class CatalogueV2 < SonataCatalogue
     begin
       sla = Slad.find_by({ 'slad.name' => new_sla['name'], 'slad.vendor' => new_sla['vendor'],
                            'slad.version' => new_sla['version'] })
-      json_return 200, 'Duplicated SLA Name, Vendor and Version'
+      halt 409, "Duplicate with SLA Template ID => #{sla['_id']}"
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
     end
     # Check if SLAD has an ID (it should not) and if it already exists in the catalogue
     begin
       sla = Slad.find_by({ '_id' => new_sla['_id'] })
-      json_return 200, 'Duplicated SLA ID'
+      halt 409, 'Duplicated SLA ID'
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
     end
@@ -219,16 +220,21 @@ class CatalogueV2 < SonataCatalogue
     end
 
     # Save to DB
+
+    new_slad = {}
+    new_slad['slad'] = new_sla
+    # Generate the UUID for the descriptor
+    new_slad['_id'] = SecureRandom.uuid
+    new_slad['status'] = 'active'
+    new_slad['published'] = false
+    new_slad['signature'] = nil
+    new_slad['md5'] = checksum new_sla.to_s
+    new_slad['username'] = username
+
+    # First, Refresh dictionary about the new entry
+    update_entr_dict(new_slad, :slad)
+
     begin
-      new_slad = {}
-      new_slad['slad'] = new_sla
-      # Generate the UUID for the descriptor
-      new_slad['_id'] = SecureRandom.uuid
-      new_slad['status'] = 'active'
-      new_slad['published'] = false
-      new_slad['signature'] = nil
-      new_slad['md5'] = checksum new_sla.to_s
-      new_slad['username'] = username
       sla = Slad.create!(new_slad)
     rescue Moped::Errors::OperationFailure => e
       json_return 200, 'Duplicated SLA ID' if e.message.include? 'E11000'
@@ -341,6 +347,9 @@ class CatalogueV2 < SonataCatalogue
     new_slad['signature'] = nil
     new_slad['md5'] = checksum new_sla.to_s
     new_slad['username'] = username
+
+    # First, Refresh dictionary about the new entry
+    update_entr_dict(new_slad, :slad)
 
     begin
       new_sla = Slad.create!(new_slad)
@@ -503,6 +512,9 @@ class CatalogueV2 < SonataCatalogue
         new_slad['md5'] = checksum new_sla.to_s
         new_slad['username'] = username
 
+        # First, Refresh dictionary about the new entry
+        update_entr_dict(new_slad, :slad)
+
         begin
           new_sla = Slad.create!(new_slad)
         rescue Moped::Errors::OperationFailure => e
@@ -547,14 +559,11 @@ class CatalogueV2 < SonataCatalogue
         json_error 404, "The SLAD Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist"
       end
       # Check if SLAD is unpublished and inactive. Then, it cannot be deleted
-      # if sla['published'] == false && sla['status'] == 'inactive'
       logger.debug "Catalogue: leaving DELETE /v2/sla/template-descriptors?#{query_string}\" with SLAD #{sla}"
+      # Delete entry in dict mapping
+      del_ent_dict(sla, :slad)
       sla.destroy
       halt 200, 'OK: SLAD removed'
-      # else
-      #   json_error 400, "The SLAD cannot be deleted cause of published or/and status"
-      # end
-
     end
     logger.debug "Catalogue: leaving DELETE /v2/slas/template-descriptors?#{query_string} with 'No SLAD Vendor, Name, Version specified'"
     json_error 400, 'No SLAD Vendor, Name, Version specified'
@@ -574,13 +583,11 @@ class CatalogueV2 < SonataCatalogue
         logger.error e
         json_error 404, "The SLAD ID #{params[:id]} does not exist" unless sla
       end
-      # if sla['published'] == false && sla['status'] == 'inactive'
       logger.debug "Catalogue: leaving DELETE /v2/slas/template-descriptors?#{query_string}\" with SLAD #{sla}"
+      # Delete entry in dict mapping
+      del_ent_dict(sla, :slad)
       sla.destroy
       halt 200, 'OK: SLAD removed'
-      # else
-      #   json_error 400, "The SLAD cannot be deleted cause of published or/and status"
-      # end
     end
     logger.debug "Catalogue: leaving DELETE /v2/slas/template-descriptors/#{params[:id]} with 'No SLAD ID specified'"
     json_error 400, 'No SLAD ID specified'

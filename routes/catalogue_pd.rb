@@ -685,6 +685,7 @@ class CatalogueV2 < SonataCatalogue
 
     else
       # Do the query
+      keyed_params = parse_keys_dict(:pd, keyed_params)
       pks = Pkgd.where(keyed_params)
       # Set total count for results
       headers 'Record-Count' => pks.count.to_s
@@ -788,14 +789,14 @@ class CatalogueV2 < SonataCatalogue
     begin
       pks = Pkgd.find_by({ 'pd.name' => new_pks['name'], 'pd.vendor' => new_pks['vendor'],
                            'pd.version' => new_pks['version'] })
-      json_return 200, 'Duplicated Package Name, Vendor and Version'
+      halt 409, "Duplicate with Package ID => #{pks['_id']}"
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
     end
     # Check if PD has an ID (it should not) and if it already exists in the catalogue
     begin
       pks = Pkgd.find_by({ '_id' => new_pks['_id'] })
-      json_return 200, 'Duplicated Package ID'
+      halt 409, 'Duplicated Package ID'
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
     end
@@ -807,15 +808,19 @@ class CatalogueV2 < SonataCatalogue
     end
 
     # Save to DB
+    new_pd = {}
+    new_pd['pd'] = new_pks
+    # Generate the UUID for the descriptor
+    new_pd['_id'] = SecureRandom.uuid
+    new_pd['status'] = 'active'
+    new_pd['signature'] = nil
+    new_pd['md5'] = checksum new_pks.to_s
+    new_pd['username'] = username
+
+    # First, Refresh dictionary about the new entry
+    update_entr_dict(new_pd, :pd)
+
     begin
-      new_pd = {}
-      new_pd['pd'] = new_pks
-      # Generate the UUID for the descriptor
-      new_pd['_id'] = SecureRandom.uuid
-      new_pd['status'] = 'active'
-      new_pd['signature'] = nil
-      new_pd['md5'] = checksum new_pks.to_s
-      new_pd['username'] = username
       pks = Pkgd.create!(new_pd)
     rescue Moped::Errors::OperationFailure => e
       json_return 200, 'Duplicated Package ID' if e.message.include? 'E11000'
@@ -927,6 +932,9 @@ class CatalogueV2 < SonataCatalogue
     new_pd['signature'] = nil
     new_pd['md5'] = checksum new_pks.to_s
     new_pd['username'] = username
+
+    # First, Refresh dictionary about the new entry
+    update_entr_dict(new_pd, :pd)
 
     begin
       new_pks = Pkgd.create!(new_pd)
@@ -1093,6 +1101,9 @@ class CatalogueV2 < SonataCatalogue
         new_pd['md5'] = checksum new_pks.to_s
         new_pd['username'] = username
 
+        # First, Refresh dictionary about the new entry
+        update_entr_dict(new_pd, :pd)
+
         begin
           new_pks = Pkgd.create!(new_pd)
         rescue Moped::Errors::OperationFailure => e
@@ -1182,6 +1193,8 @@ class CatalogueV2 < SonataCatalogue
         json_error 404, "The PD Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist"
       end
       # intelligent_delete(pks)
+      # Delete entry in dict mapping
+      del_ent_dict(pks, :pd)
       pks.destroy
       logger.debug "Catalogue: leaving DELETE v2/packages?#{query_string}\" with PD #{pks}"
       halt 200, 'OK: PD ID Removed'
@@ -1205,6 +1218,8 @@ class CatalogueV2 < SonataCatalogue
         json_error 404, "The PD ID #{params[:id]} does not exist" unless pks
       end
       # intelligent_delete(pks)
+      # Delete entry in dict mapping
+      del_ent_dict(pks, :pd)
       pks.destroy
       logger.debug "Catalogue: leaving DELETE v2/packages?#{query_string}\" with PD #{pks}"
       halt 200, 'OK: PD ID Removed'

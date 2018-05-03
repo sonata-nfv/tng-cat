@@ -189,8 +189,22 @@ HTTP header 'Content-Type' must be set to 'application/zip'
 HTTP header 'Content-Disposition' must be set to 'attachment; filename=```name_of_the_package```'
 
 ```sh
-curl -X POST -H "Content-Type: application/zip" -H "Content-Disposition: attachment; filename=5gtango-ns-example.tgo" --data-binary @5gtango-ns-example.tgo  http://localhost:4011/api/catalogues/v2/tgo-packages
+curl -X POST -H "Content-Type: application/zip" -H "Content-Disposition: attachment; filename=5gtango-test-package.tgo" --data-binary @5gtango-test-package.tgo  http://localhost:4011/api/catalogues/v2/tgo-packages
 ```
+
+The same approach is followed for the upload of arbitrary files
+```sh
+curl -X POST -H "Content-Type: application/octet-stream" -H "Content-Disposition: attachment; filename=Example.cfg" --data-binary @Example.cfg  http://localhost:4011/api/catalogues/v2/files
+```
+
+In order to associate the package with its content, it needs the provision of  a file including the {name, vendor, version} trios of the Package, VNF and NS descriptors along with the {file_uuid, file_name} pair of every arbitrary file in the package.
+The validity of the mapping file is done by examining the existence of every entity mentioned inside. In order to send this type of file:
+```
+curl -X POST -H "Content-Type: application/json" --data-binary @package_mapping_file.json  http://localhost:4011/api/catalogues/v2/tgo-packages/mappings
+```
+
+
+
 
 Method DELETE:
 
@@ -199,6 +213,12 @@ To remove a package file by its ID
 ```sh
 curl -X DELETE http://localhost:4011/api/catalogues/v2/tgo-packages/{id}
 ```
+
+The same approach is followed for the upload of arbitrary files
+```sh
+curl -X DELETE http://localhost:4011/api/catalogues/v2/files/{id}
+```
+
 
 ### Pushing 'tango-demo' files to Catalogue
 

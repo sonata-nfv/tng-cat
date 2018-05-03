@@ -52,7 +52,7 @@ class SonataCatalogue < Sinatra::Application
       logger.error "read config error: #{e}"
     end
 
-    return config['address'], config['port']
+    [config['address'], config['port']]
   end
 
   # Checks if a JSON message is valid
@@ -68,7 +68,7 @@ class SonataCatalogue < Sinatra::Application
       logger.error "JSON parsing: #{e}"
       return message, e.to_s + "\n"
     end
-    return parsed_message, nil
+    [parsed_message, nil]
   end
 
   # Checks if a YAML message is valid
@@ -84,7 +84,7 @@ class SonataCatalogue < Sinatra::Application
       logger.error "YAML parsing: #{e}"
       return message, e.to_s + "\n"
     end
-    return parsed_message, nil
+    [parsed_message, nil]
   end
 
   # Translates a message from YAML to JSON
@@ -305,69 +305,56 @@ class SonataCatalogue < Sinatra::Application
   # Check if it's a valid dependency mapping descriptor
   # @param [Hash] desc The descriptor
   # @return [Boolean] true if descriptor contains name-vendor-version info
-  def valid_dep_mapping_descriptor?(desc)
-    (desc['name'] && desc['vendor'] && desc['version'])
+  def trio_dep_mapping_hash?(desc, value)
+    { desc + '.name' => value['name'], desc + '.vendor' => value['vendor'],
+      desc + '.version' => value['version'] }
   end
 
-  # Rebuild and evaluate the package in order to generate
-  #     the dependencies mapping record name-vendor-version based;
-  #     Supported sonata package descriptor files:
-  #     https://github.com/sonata-nfv/son-schema/tree/master/package-descriptor
-  #     also expected a directory 'service_descriptors' holding the nsds
-  #     and a 'function_descriptos' folder containing the vnfds
-  # @param [StringIO] sonpfile The sonata package file contents
-  # @param [String] sonp_id The sonata package file id
-  # @return [Hash] Document containing the dependencies mapping
-  def son_package_dep_mapping(sonpfile, sonp_id)
-    mapping = { pd: {}, nsds: [], vnfds: [], deps: [] }
-    Zip::InputStream.open(sonpfile) do |io|
-      while (entry = io.get_next_entry)
-        dirname = Pathname(File.path(entry.name)).split.first.to_s
-        if dirname.casecmp('META-INF') == 0
-          if File.basename(entry.name).casecmp('MANIFEST.MF') == 0
-            desc, errors = parse_yaml(io.read)
-            if valid_dep_mapping_descriptor? desc
-              mapping[:pd] = { vendor: desc['vendor'],
-                               version: desc['version'],
-                               name: desc['name'] }
-              if !desc['package_dependencies'].nil?
-                desc['package_dependencies'].each do |pdep|
-                  if valid_dep_mapping_descriptor? pdep
-                    mapping[:deps] << { vendor: pdep['vendor'],
-                                        version: pdep['version'],
-                                        name: pdep['name'] }
-                  end
-                end
-              end
-            end
+  def examine_descs(content, coll, desc, info)
+    content.each do |value|
+      begin
+        coll.find_by(trio_dep_mapping_hash?(desc, value))
+      rescue Mongoid::Errors::DocumentNotFound
+        halt 400, "#{info} with {name => #{value['name']}, vendor => #{value['vendor']}, version => #{value['version']}} not found in the Catalogue"
+      end
+    end
+  end
+
+
+  # Evaluate the package mapping file in order to provide independency of the catalogues
+  # from the type of the package. Also, check the existence of
+  # every descriptor and file inside the Catalogues. Schema can be found inside the
+  # @param [StringIO] mapping_file The mapping file
+  # @return [Boolean] Document containing the dependencies mapping
+  def tgo_package_dep_mapping(mapping_file)
+    mapping_file.each do |field, content|
+      case field
+        when 'pd'
+          if !content.empty?
+            Pkgd.find_by(trio_dep_mapping_hash?('pd', content))
+          else
+            halt 400, 'Empty package trio'
           end
-        elsif dirname.casecmp('SERVICE_DESCRIPTORS') == 0
-          if !entry.name_is_directory?
-            desc, errors = parse_yaml(io.read)
-            if valid_dep_mapping_descriptor? desc
-              mapping[:nsds] << { vendor: desc['vendor'],
-                                  version: desc['version'],
-                                  name: desc['name'] }
-            end
-          end
-        elsif dirname.casecmp('FUNCTION_DESCRIPTORS') == 0
-          if !entry.name_is_directory?
-            desc, errors = parse_yaml(io.read)
-            if valid_dep_mapping_descriptor? desc
-              mapping[:vnfds] << { vendor: desc['vendor'],
-                                   version: desc['version'],
-                                   name: desc['name'] }
+        when 'vnfds'
+          examine_descs(content, Vnfd,'vnfd', 'VNF Descriptor')
+        when 'nsds'
+          examine_descs(content, Nsd, 'nsd', 'NS Descriptor')
+        when 'testds'
+          examine_descs(content, Testd, 'testd', 'TEST Descriptor')
+        when 'files'
+          content.each do |field|
+            begin
+              FileContainer.find_by('grid_fs_name' => field['file_name'],
+                                      '_id' => field['file_uuid'] )
+            rescue Mongoid::Errors::DocumentNotFound
+              halt 400, "File with {name => #{field['file_name']}, uuid => #{field['file_uuid']}} not found in the Catalogue"
             end
           end
         end
-      end
     end
-    mapping_id = SecureRandom.uuid
-    mapping['_id'] = mapping_id
-    mapping['son_package_uuid'] = sonp_id
-    mapping['status'] = 'active'
-    mapping
+    true
   end
+
 
   # Method returning packages depending on a descriptor
   # @param [Symbol] desc_type descriptor type (:vnfds, :nsds, :deps)
@@ -395,7 +382,7 @@ class SonataCatalogue < Sinatra::Application
         end
       end
     end
-    return false
+    false
   end
 
   # # # Method returning boolean depending if there is some instance of a descriptor
@@ -454,7 +441,7 @@ class SonataCatalogue < Sinatra::Application
       end
     end
     return true if resp_rep.success?
-    return false
+    false
   end
 
 
@@ -546,7 +533,7 @@ class SonataCatalogue < Sinatra::Application
         descriptor.destroy
       end
     end
-    return not_found
+    not_found
   end
 
   # Method deleting nsds from name, vendor, version
@@ -565,7 +552,7 @@ class SonataCatalogue < Sinatra::Application
         descriptor.destroy
       end
     end
-    return not_found
+    not_found
   end
 
   # Method deleting pd and also dependencies mapping
@@ -599,7 +586,7 @@ class SonataCatalogue < Sinatra::Application
         descriptor.update('status' => status)
       end
     end
-    return not_found
+    not_found
   end
 
   # Method Set status of nsds from name, vendor, version
@@ -619,7 +606,7 @@ class SonataCatalogue < Sinatra::Application
         descriptor.update('status' => status)
       end
     end
-    return not_found
+    not_found
   end
 
   # Method Set status of a pd

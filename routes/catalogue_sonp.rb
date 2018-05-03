@@ -233,9 +233,14 @@ end
 
 class CatalogueV2 < SonataCatalogue
   ### TGOP API METHODS ###
+  #
+
+  get '/ping/?' do
+    halt 200, "{OK: 5GTANGO Catalogue is instanced}"
+  end
 
   # @method get_tgo_package_list
-  # @overload get '/catalogues/tgo-packages/?'
+  # @overload get '/cataloges/tgo-packages/?'
   #	Returns a list of tgo-packages
   #	-> List many tgo-packages
   get '/tgo-packages/?' do
@@ -426,9 +431,7 @@ class CatalogueV2 < SonataCatalogue
     FileContainer.new.tap do |file_container|
       file_container._id = tgop_id
       file_container.grid_fs_id = grid_file.id
-      # file_container.vendor = tgop_vendor
-      # file_container.name = tgop_name
-      # file_container.version = tgop_version
+      file_container.mapping = {}
       file_container.grid_fs_name = filename
       file_container.md5 = grid_file.md5
       file_container.username = username
@@ -449,13 +452,125 @@ class CatalogueV2 < SonataCatalogue
     halt 201, {'Content-type' => 'application/json'}, response.to_json
   end
 
+  # @method post_tgo_package
+  # @overload post '/catalogues/tgo-package'
+  # Post a tgo Package in binary-data
+  post '/files' do
+    logger.debug "Catalogue: entered POST /v2/files?#{query_string}"
+    # Return if content-type is invalid
+    halt 415 unless request.content_type == 'application/octet-stream'
+
+    att = request.env['HTTP_CONTENT_DISPOSITION']
+
+    unless att
+      error = "HTTP Content-Disposition is missing"
+      halt 400, error.to_json
+    end
+    if request.env['HTTP_SIGNATURE']
+      signature = request.env['HTTP_SIGNATURE']
+    else
+      signature = nil
+    end
+
+    #Delete key "captures" if present
+    params.delete(:captures) if params.key?(:captures)
+
+    # Transform 'string' params Hash into keys
+    keyed_params = keyed_hash(params)
+    filename = att.match(/filename=(\"?)(.+)\1/)[2]
+
+    # Reads body data
+    file, errors = request.body
+    halt 400, errors.to_json if errors
+
+    begin
+      file = Files.find_by({ 'grid_fs_name' => filename })
+      halt 409, "Duplicated file ID => #{file['_id']}"
+    rescue Mongoid::Errors::DocumentNotFound => e
+      # Continue
+    end
+
+    grid_fs = Mongoid::GridFs
+
+    grid_file = grid_fs.put(file,
+                            filename: filename,
+                            content_type: 'application/octet-stream',
+    # _id: SecureRandom.uuid,
+                            )
+
+    if keyed_params.key?(:username)
+      username = keyed_params[:username]
+    else
+      username = nil
+    end
+
+    file_id = SecureRandom.uuid
+    Files.new.tap do |file|
+      file._id = file_id
+      file.grid_fs_id = grid_file.id
+      file.grid_fs_name = filename
+      file.md5 = grid_file.md5
+      file.username = username
+      file.signature = signature
+      file.save
+    end
+    logger.debug "Catalogue: leaving POST /v2/files/ with #{grid_file.id}"
+    response = {"uuid" => file_id}
+
+    halt 201, {'Content-type' => 'application/json'}, response.to_json
+  end
+
+
+  # @method post_tgo_package/mappings
+  post '/tgo-packages/mappings' do
+    logger.debug "Catalogue: entered POST /v2/tgo-packages/mappings"
+    halt 415 unless request.content_type == 'application/x-yaml' or request.content_type == 'application/json'
+
+    # Compatibility support for YAML content-type
+    case request.content_type
+      when 'application/x-yaml'
+        # Validate YAML format
+        mapping, errors = parse_yaml(request.body.read)
+        halt 400, 'Error in parsing file' if errors
+
+        # Translate from YAML format to JSON format
+        new_mapping_json = yaml_to_json(mapping)
+
+        # Validate JSON format
+        new_mapping, errors = parse_json(new_mapping_json)
+
+      else
+        # Compatibility support for JSON content-type
+        # Parses and validates JSON format
+        new_mapping, errors = parse_json(request.body.read)
+    end
+    halt 400, 'Error in parsing file' if errors
+
+    # Check if a package matches with the uuid with the uuid from the mapping file
+    begin
+      tgopkg = FileContainer.find_by('_id' => new_mapping['tgo_package_uuid'])
+    rescue Mongoid::Errors::DocumentNotFound
+      halt 400, "Package with {id => #{new_mapping['tgo_package_uuid']}} not found"
+    end
+
+    begin
+      if tgo_package_dep_mapping(new_mapping)
+        new_mapping.delete('tgo_package_uuid')
+        tgopkg.update_attributes(mapping: new_mapping)
+      end
+    rescue Moped::Errors::OperationFailure => e
+      json_error 400, 'ERROR: Operation of updating mappings failed'
+    end
+    halt 200, "Updated mappings of #{new_mapping['tgo_package_uuid']}"
+  end
+
   # @method update_son_package_id
   # @overload put '/catalogues/son-packages/:id/?'
   #	Update a son-package in JSON or YAML format
   ## Catalogue - UPDATE
   put '/tgo-packages/:id/?' do
     # Return if content-type is invalid
-    halt 415 unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+    halt 415 unless request.content_type == 'application/x-yaml' or request.content_type == 'application/json'
 
     unless params[:id].nil?
       logger.debug "Catalogue: PUT /tgo-packages/#{params[:id]}"

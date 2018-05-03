@@ -95,12 +95,10 @@ RSpec.describe CatalogueV2 do
   #    iperf-vnfd and tcpdump-vnfd; second one contains only tcpdump-vnfd
   #    according to next test that tries to delete the first one, tcpdump-vnfd should
   #    not be deleted according to intelligent delete feature
-  describe 'POST /son-packages' do
+  describe 'POST /tgo-packages' do
     context 'post packages simulating gatekeeper operation (posting all descriptors)' do
       before do
-        filenames = [ 'samples/dependencies_mapping/sonata-demo.son',
-                      'samples/dependencies_mapping/sonata-demo-2.son',
-                      'samples/dependencies_mapping/5gtango-ns-package.tgo' ]
+        filenames = ['samples/dependencies_mapping/5gtango-test-package.tgo']
         $pd_uuids = []
         filenames.each do |filename|
           headers = { 'CONTENT_TYPE' => 'application/zip',

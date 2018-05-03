@@ -148,7 +148,7 @@ end
 
 # Class model for binary data storage on database
 # require 'mongoid/grid_fs'
-# Sonata API v2 class for Catalogue son-packages
+# Sonata API v2 class for Catalogue tgo-packages
 class FileContainer
   require 'mongoid/grid_fs'
 
@@ -156,34 +156,54 @@ class FileContainer
   include Mongoid::Timestamps
   include Mongoid::Pagination
   include Mongoid::Attributes::Dynamic
-  store_in collection: 'file_containers'
+  store_in collection: 'package_containers'
 
+
+  # embeds_one :dependencies_mapping, class_name: "Dependencies_mapping"
   field :grid_fs_id, type: String
   field :grid_fs_name, type: String
-  # field :vendor, type: String
-  # field :name, type: String
-  # field :version, type: String
+  field :mapping, type: Hash
   field :signature, type: String
   field :md5, type: String
   field :username, type: String
 end
 
-# Sonata class for Catalogue Element Dependencies
-class Dependencies_mapping
+class Files
+  require 'mongoid/grid_fs'
+
   include Mongoid::Document
   include Mongoid::Timestamps
   include Mongoid::Pagination
   include Mongoid::Attributes::Dynamic
-  store_in collection: 'mapping_db'
+  store_in collection: 'files'
 
-  field :son_package_uuid, type: String
-  field :pd, type: Hash
-  field :nsds, type: Array
-  field :vnfds, type: Array
-  field :deps, type: Array
-  field :status, type: String
-  validates :son_package_uuid, :pd, :nsds, :vnfds, :status, :presence => true
+
+  # embeds_one :dependencies_mapping, class_name: "Dependencies_mapping"
+  field :grid_fs_id, type: String
+  field :grid_fs_name, type: String
+  field :signature, type: String
+  field :md5, type: String
+  field :username, type: String
 end
+
+# # Sonata class for Catalogue Element Dependencies
+# class Dependencies_mapping
+#   include Mongoid::Document
+#   include Mongoid::Timestamps
+#   include Mongoid::Pagination
+#   include Mongoid::Attributes::Dynamic
+#   # store_in collection: 'mapping_db'
+#
+#   field :tgo_package_uuid, type: String
+#   field :pd, type: Hash
+#   field :nsds, type: Array
+#   field :vnfds, type: Array
+#   field :deps, type: Array
+#   field :testds, type: Array
+#   # embedded_in :fileContainer, inverse_of: :dependencies_mapping
+#   # field :status, type: String
+#   validates :tgo_package_uuid, :pd, :nsds, :vnfds, :testds, :presence => true
+# end
 
 
 # Class Slad for service level agreement descriptors

@@ -189,12 +189,13 @@ class CatalogueV2 < SonataCatalogue
     file, errors = request.body
     halt 400, errors.to_json if errors
 
-    begin
-      file = Files.find_by({ 'grid_fs_name' => filename })
-      halt 409, "Duplicated file ID => #{file['_id']}"
-    rescue Mongoid::Errors::DocumentNotFound => e
-      # Continue
-    end
+    # For first version of 5GTANGO avoid the intelligent reuse of files
+    # begin
+    #   file = Files.find_by({ 'grid_fs_name' => filename })
+    #   halt 409, "Duplicated file ID => #{file['_id']}"
+    # rescue Mongoid::Errors::DocumentNotFound => e
+    #   # Continue
+    # end
 
     grid_fs = Mongoid::GridFs
 

@@ -344,7 +344,7 @@ class SonataCatalogue < Sinatra::Application
         when 'files'
           content.each do |field|
             begin
-              FileContainer.find_by('grid_fs_name' => field['file_name'],
+              Files.find_by('grid_fs_name' => field['file_name'],
                                       '_id' => field['file_uuid'] )
             rescue Mongoid::Errors::DocumentNotFound
               halt 400, "File with {name => #{field['file_name']}, uuid => #{field['file_uuid']}} not found in the Catalogue"

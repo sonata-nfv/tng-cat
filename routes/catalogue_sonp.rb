@@ -324,7 +324,7 @@ class CatalogueV2 < SonataCatalogue
         # Set custom header with package Filename
         headers 'Filename' => (tgop['grid_fs_name'].to_s)
 
-        grid_file.data # big huge blob
+        # grid_file.data # big huge blob
         # temp = Tempfile.new("#{tgop['grid_fs_name'].to_s}", 'wb')
         # path_file = File.basename(temp.path)
         # grid_file.each do |chunk|
@@ -332,14 +332,15 @@ class CatalogueV2 < SonataCatalogue
         # end
         # temp.close
         # Client file recovery
-        str_name = tgop['grid_fs_name'].split('.')
-        str_name[0] << "_" + Time.now.to_i.to_s.delete(" ")
-        temp = File.new(str_name.join("."), 'wb')
-        temp.write(grid_file.data)
-        temp.close
+        # str_name = tgop['grid_fs_name'].split('.')
+        # str_name[0] << "_" + Time.now.to_i.to_s.delete(" ")
+        # temp = File.new("../" + str_name.join("."), 'wb')
+        # temp.write(grid_file.data)
+        # temp.close
 
         logger.debug "Catalogue: leaving GET /tgo-packages/#{params[:id]}"
-        halt 200, "{Name => #{File.basename(temp.path)}}"
+        halt 200, grid_file.data
+        # halt 200, "{Name => #{File.basename(temp.path)}}"
 
       when 'application/json'
         begin

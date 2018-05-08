@@ -1,19 +1,24 @@
 ---
 descriptor_schema: "https://raw.githubusercontent.com/sonata-nfv/tng-schema/master/policy-descriptor/policy-schema.yml"
 
-name: "samplepolicyv1"
-
+name: "policy-example"
+vendor: "tango"
+version: "0.1"
+network_service:
+  vendor: "tango"
+  name: "default-nsd"
+  version: "0.9"
 policyRules:
   - name: "highTranscodingRateRule"
     salience: 1
-    inertia:
+    inertia: 
       value: 30
       duration_unit: "m"
-    duration:
+    duration: 
       value: 10
       duration_unit: "m"
     aggregation : "avg"
-    conditions:
+    conditions: 
       condition: AND
       rules:
        - id: vnf1.CPULoad
@@ -34,11 +39,11 @@ policyRules:
        value: "3"
        target: "vnf1"
   - name: "lowTranscodingRateRule"
-    duration:
+    duration: 
       value: 10
       duration_unit: "m"
     aggregation : "avg"
-    conditions:
+    conditions: 
       condition: AND
       rules:
         - id: VirtualLinkA.EndToEndDelay
@@ -69,10 +74,11 @@ policyRules:
      - action_type: "LifecycleManagement"
        name: "restart"
        target: "vnf1"
-       stability_period:
+       stability_period: 
          value: 30
          duration_unit: "m"
      - action_type: "Profile"
        name: "setProfile"
        profile_tag: "Green"
        target: "vnf1"
+

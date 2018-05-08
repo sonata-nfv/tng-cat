@@ -59,15 +59,13 @@ docker-compose up
 ```  
   
 The Catalogue's API allows the use of CRUD operations to send, retrieve, update and delete descriptors and tng files. The available descriptors include Network Service (NSD), Virtualized Network Function (VNFD), Package (PD), Service Level Agreements (SLAD), Test (TESTD), Network Slice Templates (NST) and Policy (PLD) Descriptors.
-The Catalogue also support storage for 5GTANGO packages (tng-packages), the binary files that contain the descriptors.  
-For testing the Catalogues, you can use 'curl' tool to send a request descriptors to the API. It is required to set the HTTP header 'Content-type' field to 'application/json' or 'application/x-yaml' according to your desired format.  
+The Catalogue also support storage for 5GTANGO packages (tng-packages), the binary files that contain the descriptors.  For testing the Catalogues, you can use 'curl' tool to send a request descriptors to the API. 
   
-The Catalogues' API now supports API versioning. New API v2 has been introduced in release v2.0 which implements some structure changes in the descriptors.  
-The API v1 is deprecated and is no longer supported by the 5GTANGO Service Platform. It is recommended to use v2 only in a MongoDB database.  
   
 Below, the CRUD methods of the Catalogues are presented. Note that the attached files should be in the current directory. In any other occasion, the examples, used below to reference the operations, are in the directory "samples/".  
 
-  | Action | HTTP Method | Endpoint |  
+
+| Action | HTTP Method | Endpoint |  
 | -------------------------- | -------- | --------------------------------------- |  
 | List all the available descriptors | `GET` | `curl -H <Content-Type> http://localhost:4011/api/catalogues/v2/{collection}` |  
 | List all descriptors matching a specific filter(s) | `GET` | `curl -H <Content-Type> http://localhost:4011/api/catalogues/v2/{collection}?{attributeName}={value}` |  
@@ -80,7 +78,8 @@ Below, the CRUD methods of the Catalogues are presented. Note that the attached 
 where `{collection}` denotes the type of collection and is one of the `network-services`, `vnfs`, `packages`, `slas/template-descriptors`, `tests`, `nsts`, `policies` and `<Content-Type>` header can be `"Content-Type: application/x-yaml"` or `"Content-Type: application/json"`. Examples can be found in the relative [wiki page](https://github.com/sonata-nfv/tng-cat/wiki/Examples)
   
 The API for 5GTANGO packages (tgo-package) and arbitrary files works very similar to the API for the descriptors.  
-   | Action | HTTP Method | Endpoint |  
+
+| Action | HTTP Method | Endpoint |  
 | -------------------------- | -------- | --------------------------------------- |  
 | List the metadata of all stored packages/files | `GET` | `curl -H <Content-Type> http://localhost:4011/api/catalogues/v2/{collection}` (see Note 1)|  
 | List metadata of a specific packages/files| `GET` | `curl -H <Content-Type> http://localhost:4011/api/catalogues/v2/{collection}/{id}` (see Note 2) |  

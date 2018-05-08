@@ -63,64 +63,65 @@ class CatalogueV2 < SonataCatalogue
     [:offset, :limit].each { |k| keyed_params.delete(k) }
 
     # Check for special case (:version param == last)
-    # if keyed_params.key?(:'pld.version') && keyed_params[:'pld.version'] == 'last'
-    #   # Do query for last version -> get_pld_pl_vendor_last_version
-    #   keyed_params.delete(:'pld.version')
-    #
-    #   policies = Pld.where((keyed_params)).sort({ 'pld.version' => -1 }) #.limit(1).first()
-    #   logger.info "Catalogue: PLDs=#{policies}"
-    #
-    #   if policies && policies.size.to_i > 0
-    #     logger.info "Catalogue: leaving GET /api/v2/policies?#{query_string} with #{policies}"
-    #
-    #     policies_list = []
-    #     checked_list = []
-    #
-    #     policies_name_vendor = Pair.new(policies.first.pold['name'], policies.first.pold['vendor'])
-    #     checked_list.push(policies_name_vendor)
-    #     policies_list.push(policies.first)
-    #
-    #     policies.each do |pold|
-    #       if (pold.pold['name'] != policies_name_vendor.one) || (pold.pold['vendor'] != policies_name_vendor.two)
-    #         policies_name_vendor = Pair.new(pold.pold['name'], pold.pold['vendor'])
-    #       end
-    #       policies_list.push(pold) unless checked_list.any? { |pair| pair.one == policies_name_vendor.one &&
-    #           pair.two == policies_name_vendor.two }
-    #       checked_list.push(policies_name_vendor)
-    #     end
-    #   else
-    #     logger.info "Catalogue: leaving GET /api/v2/policies?#{query_string} with 'No PLDs were found'"
-    #     policies_list = []
-    #
-    #   end
-    #   policies = apply_limit_and_offset(policies_list, offset=params[:offset], limit=params[:limit])
-    #
-    # else
+    if keyed_params.key?(:'pld.version') && keyed_params[:'pld.version'] == 'last'
+      # Do query for last version -> get_pld_pl_vendor_last_version
+      keyed_params.delete(:'pld.version')
 
-    # Do the query
-    keyed_params = parse_keys_dict(:pld, keyed_params)
-    policies = Pld.where(keyed_params)
-    # Set total count for results
-    headers 'Record-Count' => policies.count.to_s
-    logger.info "Catalogue: PLDs=#{policies}"
-    if policies && policies.size.to_i > 0
-      logger.info "Catalogue: leaving GET v2/policies?#{query_string} with #{policies}"
-      # Paginate results
-      policies = policies.paginate(offset: params[:offset], limit: params[:limit])
-    else
-      logger.info "Catalogue: leaving GET v2/policies?#{query_string} with 'No PLDs were found'"
-    end
+      policies = Pld.where((keyed_params)).sort({ 'pld.version' => -1 }) #.limit(1).first()
+      logger.info "Catalogue: PLDs=#{policies}"
 
-    response = ''
-    case request.content_type
-      when 'application/json'
-        response = policies.to_json
-      when 'application/x-yaml'
-        response = json_to_yaml(policies.to_json)
+      if policies && policies.size.to_i > 0
+        logger.info "Catalogue: leaving GET /api/v2/policies?#{query_string} with #{policies}"
+
+        policies_list = []
+        checked_list = []
+
+        policies_name_vendor = Pair.new(policies.first.pold['name'], policies.first.pold['vendor'])
+        checked_list.push(policies_name_vendor)
+        policies_list.push(policies.first)
+
+        policies.each do |pold|
+          if (pold.pold['name'] != policies_name_vendor.one) || (pold.pold['vendor'] != policies_name_vendor.two)
+            policies_name_vendor = Pair.new(pold.pold['name'], pold.pold['vendor'])
+          end
+          policies_list.push(pold) unless checked_list.any? { |pair| pair.one == policies_name_vendor.one &&
+              pair.two == policies_name_vendor.two }
+          checked_list.push(policies_name_vendor)
+        end
       else
-        halt 415
+        logger.info "Catalogue: leaving GET /api/v2/policies?#{query_string} with 'No PLDs were found'"
+        policies_list = []
+
+      end
+      policies = apply_limit_and_offset(policies_list, offset=params[:offset], limit=params[:limit])
+
+    else
+
+      #Do the query
+      keyed_params = parse_keys_dict(:pld, keyed_params)
+      policies = Pld.where(keyed_params)
+      # Set total count for results
+      headers 'Record-Count' => policies.count.to_s
+      logger.info "Catalogue: PLDs=#{policies}"
+      if policies && policies.size.to_i > 0
+        logger.info "Catalogue: leaving GET v2/policies?#{query_string} with #{policies}"
+        # Paginate results
+        policies = policies.paginate(offset: params[:offset], limit: params[:limit])
+      else
+        logger.info "Catalogue: leaving GET v2/policies?#{query_string} with 'No PLDs were found'"
+      end
+
+      response = ''
+      case request.content_type
+        when 'application/json'
+          response = policies.to_json
+        when 'application/x-yaml'
+          response = json_to_yaml(policies.to_json)
+        else
+          halt 415
+      end
+      halt 200, {'Content-type' => request.content_type}, response
     end
-    halt 200, {'Content-type' => request.content_type}, response
   end
 
   # @method get_policies_id
@@ -193,10 +194,13 @@ class CatalogueV2 < SonataCatalogue
     keyed_params = keyed_hash(params)
 
     # Validate Policy
+    json_error 400, 'ERROR: Policy Vendor not found' unless new_pl.has_key?('vendor')
     json_error 400, 'ERROR: Policy Name not found' unless new_pl.has_key?('name')
-    # Check if PLD already exists in the catalogue by name
+    json_error 400, 'ERROR: Policy Version not found' unless new_pl.has_key?('version')
+    # Check if PLD already exists in the catalogue by name, vendor and version
     begin
-      pl = Pld.find_by({ 'pld.name' => new_pl['name'] })
+      pl = Pld.find_by({ 'pld.name' => new_pl['name'], 'pld.vendor' => new_pl['vendor'],
+                           'pld.version' => new_pl['version'] })
       halt 409, "Duplicate with PD ID => #{pl['_id']}"
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
@@ -290,8 +294,10 @@ class CatalogueV2 < SonataCatalogue
     end
 
     # Validate Policy
-    # Check if mandatory field Name is included
+    # Check if mandatory field Vendor, Name, Version are included
+    json_error 400, 'ERROR: Policy Vendor not found' unless new_pl.has_key?('vendor')
     json_error 400, 'ERROR: Policy Name not found' unless new_pl.has_key?('name')
+    json_error 400, 'ERROR: Policy Version not found' unless new_pl.has_key?('version')
 
     # Set headers
     case request.content_type
@@ -303,20 +309,22 @@ class CatalogueV2 < SonataCatalogue
     headers[:params] = params unless params.empty?
 
     # Retrieve stored version
-    if keyed_params[:name].nil?
-      json_error 400, 'Update Name parameter are null'
+    if keyed_params[:vendor].nil? && keyed_params[:name].nil? && keyed_params[:version].nil?
+      json_error 400, 'Update Vendor, Name and Version parameters are null'
     else
       begin
-        pl = Pld.find_by('pld.name' => keyed_params[:name])
+        pl = Pld.find_by({ 'pld.vendor' => keyed_params[:vendor], 'pld.name' => keyed_params[:name],
+                            'pld.version' => keyed_params[:version] })
         puts 'Policy is found'
       rescue Mongoid::Errors::DocumentNotFound => e
-        json_error 404, "The Name #{keyed_params[:name]} does not exist"
+        json_error 404, "The PLD Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist"
       end
     end
     # Check if Policy already exists in the catalogue by Name
     begin
-      pl = Pld.find_by('pld.name' => new_pl['name'])
-      json_return 200, 'Duplicated Policy Name'
+      pl = Pld.find_by({ 'pld.name' => new_pl['name'], 'pld.vendor' => new_pl['vendor'],
+                           'pld.version' => new_pl['version'] })
+      json_return 200, 'Duplicated Policy Name, Vendor and Version'
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
     end
@@ -431,7 +439,9 @@ class CatalogueV2 < SonataCatalogue
 
         # Validate Policy Descriptor
         # Check if mandatory field Name is included
+        json_error 400, 'ERROR: Policy Vendor not found' unless new_pl.has_key?('vendor')
         json_error 400, 'ERROR: Policy Name not found' unless new_pl.has_key?('name')
+        json_error 400, 'ERROR: Policy Version not found' unless new_pl.has_key?('version')
 
         # Retrieve stored version
         begin
@@ -444,8 +454,9 @@ class CatalogueV2 < SonataCatalogue
 
         # Check if PLD already exists in the catalogue by name
         begin
-          pl = Pld.find_by( 'pld.name' => new_pl['name'])
-          json_return 200, 'Duplicated Policy Name'
+          pl = Pld.find_by({ 'pld.name' => new_pl['name'], 'pld.vendor' => new_pl['vendor'],
+                               'pld.version' => new_pl['version']})
+          json_return 200, 'Duplicated Policy Name, Vendor and Version'
         rescue Mongoid::Errors::DocumentNotFound => e
           # Continue
         end
@@ -494,7 +505,7 @@ class CatalogueV2 < SonataCatalogue
 
   # @method delete_pld_sp_policy
   # @overload delete '/policies/?'
-  #	Delete a policy by name
+  #	Delete a policy by name, vendor and version
   delete '/policies/?' do
     logger.info "Catalogue: entered DELETE /v2/policies?#{query_string}"
 
@@ -504,12 +515,14 @@ class CatalogueV2 < SonataCatalogue
     # Transform 'string' params Hash into keys
     keyed_params = keyed_hash(params)
 
-    unless keyed_params[:name].nil?
+    unless keyed_params[:vendor].nil? && keyed_params[:name].nil? && keyed_params[:version].nil?
       begin
-        pl = Pld.find_by('pld.name' => keyed_params[:name])
+        pl = Pld.find_by({ 'pld.vendor' => keyed_params[:vendor], 'pld.name' => keyed_params[:name],
+                            'pld.version' => keyed_params[:version] })
+
         puts 'Policy is found'
       rescue Mongoid::Errors::DocumentNotFound => e
-        json_error 404, "The PLD Name #{keyed_params[:name]} does not exist"
+        json_error 404, "The PLD Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist"
       end
       logger.debug "Catalogue: leaving DELETE /v2/policies?#{query_string}\" with PLD #{pl}"
       # Delete entry in dict mapping
@@ -518,7 +531,7 @@ class CatalogueV2 < SonataCatalogue
       halt 200, 'OK: PLD removed'
     end
     logger.debug "Catalogue: leaving DELETE /v2/policies?#{query_string} with 'No PLD Name specified'"
-    json_error 400, 'No PLD Name specified'
+    json_error 400, 'No PLD Vendor, Name, Version specified'
   end
 
   # @method delete_pld_sp_pl_id

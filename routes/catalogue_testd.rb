@@ -99,7 +99,6 @@ class CatalogueV2 < SonataCatalogue
       # Do the query
       keyed_params = parse_keys_dict(:testd, keyed_params)
       tests = Testd.where(keyed_params)
-      logger.info "#{keyed_params}"
       # Set total count for results
       headers 'Record-Count' => tests.count.to_s
       logger.info "Catalogue: TESTDs=#{tests}"

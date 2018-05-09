@@ -40,8 +40,8 @@ class CatalogueV2 < SonataCatalogue
   #	Returns a list of NSTs
   # -> List many descriptors
   get '/nsts/?' do
-    params['offset'] ||= DEFAULT_OFFSET
-    params['limit'] ||= DEFAULT_LIMIT
+    params['page_number'] ||= DEFAULT_PAGE_NUMBER
+    params['page_size'] ||= DEFAULT_PAGE_SIZE
     logger.info "Catalogue: entered GET /v2/nsts?#{query_string}"
 
     #Delete key "captures" if present
@@ -60,8 +60,8 @@ class CatalogueV2 < SonataCatalogue
     end
     headers[:params] = params unless params.empty?
 
-    # Get rid of :offset and :limit
-    [:offset, :limit].each { |k| keyed_params.delete(k) }
+    # Get rid of :page_number and :page_size
+    [:page_number, :page_size].each { |k| keyed_params.delete(k) }
 
     # Check for special case (:version param == last)
     if keyed_params.key?(:'nstd.version') && keyed_params[:'nstd.version'] == 'last'
@@ -94,7 +94,7 @@ class CatalogueV2 < SonataCatalogue
         nsts_list = []
 
       end
-      nsts = apply_limit_and_offset(nsts_list, offset=params[:offset], limit=params[:limit])
+      nsts = apply_limit_and_offset(nsts_list, page_number=params[:page_number], page_size=params[:page_size])
 
     else
       # Do the query
@@ -106,7 +106,7 @@ class CatalogueV2 < SonataCatalogue
       if nsts && nsts.size.to_i > 0
         logger.info "Catalogue: leaving GET /v2/nsts?#{query_string} with #{nsts}"
         # Paginate results
-        nsts = nsts.paginate(offset: params[:offset], limit: params[:limit])
+        nsts = nsts.paginate(page_number: params[:page_number], page_size: params[:page_size])
       else
         logger.info "Catalogue: leaving GET /v2/nsts?#{query_string} with 'No NSTs were found'"
       end

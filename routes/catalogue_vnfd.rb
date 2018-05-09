@@ -43,8 +43,8 @@ class CatalogueV1 < SonataCatalogue
   #	Returns a list of VNFs
   # -> List many descriptors
   get '/vnfs/?' do
-    params['offset'] ||= DEFAULT_OFFSET
-    params['limit'] ||= DEFAULT_LIMIT
+    params['page_number'] ||= DEFAULT_PAGE_NUMBER
+    params['page_size'] ||= DEFAULT_PAGE_SIZE
 
     # uri = Addressable::URI.new
     # uri.query_values = params
@@ -65,8 +65,8 @@ class CatalogueV1 < SonataCatalogue
     end
     headers[:params] = params unless params.empty?
 
-    # Get rid of :offset and :limit
-    [:offset, :limit].each { |k| keyed_params.delete(k) }
+    # Get rid of :page_number and :limit
+    [:page_number, :page_size].each { |k| keyed_params.delete(k) }
     # puts 'keyed_params(1)', keyed_params
 
     # Check for special case (:version param == last)
@@ -85,7 +85,7 @@ class CatalogueV1 < SonataCatalogue
         logger.info "Catalogue: leaving GET /vnfs?#{query_string} with #{vnfs}"
 
         # Paginate results
-        # vnfs = vnfs.paginate(:offset => params[:offset], :limit => params[:limit]).sort({"version" => -1})
+        # vnfs = vnfs.paginate(:page_number => params[:page_number], :page_size => params[:page_size]).sort({"version" => -1})
 
         vnfs_list = []
         checked_list = []
@@ -111,8 +111,8 @@ class CatalogueV1 < SonataCatalogue
         # json_error 404, "No VNFDs were found"
         vnfs_list = []
       end
-      # vnfs = vnfs_list.paginate(:page => params[:offset], :per_page =>params[:limit])
-      vnfs = apply_limit_and_offset(vnfs_list, offset=params[:offset], limit=params[:limit])
+      # vnfs = vnfs_list.paginate(:page => params[:page_number], :per_page =>params[:page_size])
+      vnfs = apply_limit_and_offset(vnfs_list, page_number=params[:page_number], page_size=params[:page_size])
 
     else
       # Do the query
@@ -123,7 +123,7 @@ class CatalogueV1 < SonataCatalogue
         logger.info "Catalogue: leaving GET /vnfs?#{query_string} with #{vnfs}"
 
         # Paginate results
-        vnfs = vnfs.paginate(offset: params[:offset], limit: params[:limit])
+        vnfs = vnfs.paginate(page_number: params[:page_number], page_size: params[:page_size])
 
       else
         logger.info "Catalogue: leaving GET /vnfs?#{query_string} with 'No VNFDs were found'"
@@ -578,8 +578,8 @@ class CatalogueV2 < SonataCatalogue
   #	Returns a list of VNFs
   # -> List many descriptors
   get '/vnfs/?' do
-    params['offset'] ||= DEFAULT_OFFSET
-    params['limit'] ||= DEFAULT_LIMIT
+    params['page_number'] ||= DEFAULT_PAGE_NUMBER
+    params['page_size'] ||= DEFAULT_PAGE_SIZE
     logger.info "Catalogue: entered GET /v2/vnfs?#{query_string}"
 
     #Delete key "captures" if present
@@ -598,8 +598,8 @@ class CatalogueV2 < SonataCatalogue
     end
     headers[:params] = params unless params.empty?
 
-    # Get rid of :offset and :limit
-    [:offset, :limit].each { |k| keyed_params.delete(k) }
+    # Get rid of :page_number and :page_size
+    [:page_number, :page_size].each { |k| keyed_params.delete(k) }
 
     # Check for special case (:version param == last)
     if keyed_params.key?(:'vnfd.version') && keyed_params[:'vnfd.version'] == 'last'
@@ -633,7 +633,7 @@ class CatalogueV2 < SonataCatalogue
         vnfs_list = []
 
       end
-      vnfs = apply_limit_and_offset(vnfs_list, offset=params[:offset], limit=params[:limit])
+      vnfs = apply_limit_and_offset(vnfs_list, page_number=params[:page_number], page_size=params[:page_size])
 
     else
       # Do the query
@@ -645,7 +645,7 @@ class CatalogueV2 < SonataCatalogue
       if vnfs && vnfs.size.to_i > 0
         logger.info "Catalogue: leaving GET /v2/vnfs?#{query_string} with #{vnfs}"
         # Paginate results
-        vnfs = vnfs.paginate(offset: params[:offset], limit: params[:limit])
+        vnfs = vnfs.paginate(page_number: params[:page_number], page_size: params[:page_size])
       else
         logger.info "Catalogue: leaving GET /v2/vnfs?#{query_string} with 'No VNFDs were found'"
       end

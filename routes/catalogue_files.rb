@@ -44,8 +44,8 @@ class CatalogueV2 < SonataCatalogue
   #	Returns a list of files
   #	-> List many files
   get '/files/?' do
-    params['offset'] ||= DEFAULT_OFFSET
-    params['limit'] ||= DEFAULT_LIMIT
+    params['page_number'] ||= DEFAULT_PAGE_NUMBER
+    params['page_size'] ||= DEFAULT_PAGE_SIZE
 
     logger.info "Catalogue: entered GET /v2/files?#{query_string}"
 
@@ -63,8 +63,8 @@ class CatalogueV2 < SonataCatalogue
         headers = { 'Accept' => 'application/json', 'Content-Type' => 'application/json' }
     end
     headers[:params] = params unless params.empty?
-    # Get rid of :offset and :limit
-    [:offset, :limit].each { |k| keyed_params.delete(k) }
+    # Get rid of :page_number and :page_size
+    [:page_number, :page_size].each { |k| keyed_params.delete(k) }
 
     # Translate 'uuid' field to '_id'
     new_params = {}
@@ -83,7 +83,8 @@ class CatalogueV2 < SonataCatalogue
     logger.info "Catalogue: leaving GET /v2/files?#{query_string} with #{file_list}"
 
     # Paginate results
-    file_list = file_list.paginate(offset: params[:offset], limit: params[:limit])
+    file_list = file_list.paginate(page_number: params[:page_number],
+                                   page_size: params[:page_size])
 
     response = ''
     case request.content_type

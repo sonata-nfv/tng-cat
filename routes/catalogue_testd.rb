@@ -39,8 +39,8 @@ class CatalogueV2 < SonataCatalogue
   #	Returns a list of Test Descriptors
   # -> List many descriptors
   get '/tests/?' do
-    params['offset'] ||= DEFAULT_OFFSET
-    params['limit'] ||= DEFAULT_LIMIT
+    params['page_number'] ||= DEFAULT_PAGE_NUMBER
+    params['page_size'] ||= DEFAULT_PAGE_SIZE
     logger.info "Catalogue: entered GET /v2/tests?#{query_string}"
 
     #Delete key "captures" if present
@@ -59,8 +59,8 @@ class CatalogueV2 < SonataCatalogue
     end
     headers[:params] = params unless params.empty?
 
-    # Get rid of :offset and :limit
-    [:offset, :limit].each { |k| keyed_params.delete(k) }
+    # Get rid of :page_number and :page_number
+    [:page_number, :page_size].each { |k| keyed_params.delete(k) }
 
     # Check for special case (:version param == last)
     if keyed_params.key?(:'testd.version') && keyed_params[:'testd.version'] == 'last'
@@ -93,19 +93,20 @@ class CatalogueV2 < SonataCatalogue
         tests_list = []
 
       end
-      tests = apply_limit_and_offset(tests_list, offset=params[:offset], limit=params[:limit])
+      tests = apply_limit_and_offset(tests_list, page_number=params[:page_number], page_size=params[:page_size])
 
     else
       # Do the query
       keyed_params = parse_keys_dict(:testd, keyed_params)
       tests = Testd.where(keyed_params)
+      logger.info "#{keyed_params}"
       # Set total count for results
       headers 'Record-Count' => tests.count.to_s
       logger.info "Catalogue: TESTDs=#{tests}"
       if tests && tests.size.to_i > 0
         logger.info "Catalogue: leaving GET /v2/tests?#{query_string} with #{tests}"
         # Paginate results
-        tests = tests.paginate(offset: params[:offset], limit: params[:limit])
+        tests = tests.paginate(page_number: params[:page_number], page_size: params[:page_size])
       else
         logger.info "Catalogue: leaving GET /v2/tests?#{query_string} with 'No TESTDs were found'"
       end

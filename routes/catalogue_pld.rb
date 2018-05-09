@@ -39,8 +39,8 @@ class CatalogueV2 < SonataCatalogue
   #	Returns a list of policies
   # -> List many descriptors
   get '/policies/?' do
-    params['offset'] ||= DEFAULT_OFFSET
-    params['limit'] ||= DEFAULT_LIMIT
+    params['page_number'] ||= DEFAULT_PAGE_NUMBER
+    params['page_size'] ||= DEFAULT_PAGE_SIZE
     logger.info "Catalogue: entered GET v2/policies?#{query_string}"
 
     #Delete key "captures" if present
@@ -59,8 +59,8 @@ class CatalogueV2 < SonataCatalogue
     end
     headers[:params] = params unless params.empty?
 
-    # Get rid of :offset and :limit
-    [:offset, :limit].each { |k| keyed_params.delete(k) }
+    # Get rid of :page_number and :page_size
+    [:page_number, :page_size].each { |k| keyed_params.delete(k) }
 
     # Check for special case (:version param == last)
     if keyed_params.key?(:'pld.version') && keyed_params[:'pld.version'] == 'last'
@@ -93,7 +93,7 @@ class CatalogueV2 < SonataCatalogue
         policies_list = []
 
       end
-      policies = apply_limit_and_offset(policies_list, offset=params[:offset], limit=params[:limit])
+      policies = apply_limit_and_offset(policies_list, page_number=params[:page_number], page_size=params[:page_size])
 
     else
 
@@ -106,7 +106,7 @@ class CatalogueV2 < SonataCatalogue
       if policies && policies.size.to_i > 0
         logger.info "Catalogue: leaving GET v2/policies?#{query_string} with #{policies}"
         # Paginate results
-        policies = policies.paginate(offset: params[:offset], limit: params[:limit])
+        policies = policies.paginate(page_number: params[:page_number], page_size: params[:page_size])
       else
         logger.info "Catalogue: leaving GET v2/policies?#{query_string} with 'No PLDs were found'"
       end

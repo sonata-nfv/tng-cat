@@ -80,8 +80,8 @@ class SonataCatalogue < Sinatra::Application
     # authorized?
   end
 
-  DEFAULT_OFFSET = '0'
-  DEFAULT_LIMIT = '10'
+  DEFAULT_PAGE_NUMBER = '0'
+  DEFAULT_PAGE_SIZE = '10'
   DEFAULT_MAX_LIMIT = '100'
 
   # @method get_root

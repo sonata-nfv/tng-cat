@@ -40,8 +40,8 @@ class CatalogueV2 < SonataCatalogue
   #	Returns a list of SLA template descriptors
   # -> List many descriptors
   get '/slas/template-descriptors/?' do
-    params['offset'] ||= DEFAULT_OFFSET
-    params['limit'] ||= DEFAULT_LIMIT
+    params['page_number'] ||= DEFAULT_PAGE_NUMBER
+    params['page_size'] ||= DEFAULT_PAGE_SIZE
     logger.info "Catalogue: entered GET /v2/slas/template-descriptors?#{query_string}"
 
     #Delete key "captures" if present
@@ -60,8 +60,8 @@ class CatalogueV2 < SonataCatalogue
     end
     headers[:params] = params unless params.empty?
 
-    # Get rid of :offset and :limit
-    [:offset, :limit].each { |k| keyed_params.delete(k) }
+    # Get rid of :page_number and :page_size
+    [:page_number, :page_size].each { |k| keyed_params.delete(k) }
 
     # Check for special case (:version param == last)
     if keyed_params.key?(:'slad.version') && keyed_params[:'slad.version'] == 'last'
@@ -93,7 +93,7 @@ class CatalogueV2 < SonataCatalogue
         slas_list = []
 
       end
-      slas = apply_limit_and_offset(slas_list, offset=params[:offset], limit=params[:limit])
+      slas = apply_limit_and_offset(slas_list, page_number=params[:page_number], page_size=params[:page_size])
 
     else
       # Do the query
@@ -105,7 +105,7 @@ class CatalogueV2 < SonataCatalogue
       if slas && slas.size.to_i > 0
         logger.info "Catalogue: leaving GET /v2/slas/template-descriptors?#{query_string} with #{slas}"
         # Paginate results
-        slas = slas.paginate(offset: params[:offset], limit: params[:limit])
+        slas = slas.paginate(page_number: params[:page_number], page_size: params[:page_size])
       else
         logger.info "Catalogue: leaving GET /v2/slas/template-descriptors?#{query_string} with 'No SLADs were found'"
       end

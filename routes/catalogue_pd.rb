@@ -43,8 +43,8 @@ class CatalogueV1 < SonataCatalogue
   #	Returns a list of all Packages
   # -> List many descriptors
   get '/packages/?' do
-    params['offset'] ||= DEFAULT_OFFSET
-    params['limit'] ||= DEFAULT_LIMIT
+    params['page_number'] ||= DEFAULT_PAGE_NUMBER
+    params['page_size'] ||= DEFAULT_PAGE_SIZE
 
     # uri = Addressable::URI.new
     # uri.query_values = params
@@ -65,8 +65,8 @@ class CatalogueV1 < SonataCatalogue
     end
     headers[:params] = params unless params.empty?
 
-    # Get rid of :offset and :limit
-    [:offset, :limit].each { |k| keyed_params.delete(k) }
+    # Get rid of :page_number and :page_size
+    [:page_number, :page_size].each { |k| keyed_params.delete(k) }
     # puts 'keyed_params(1)', keyed_params
 
     # Check for special case (:version param == last)
@@ -85,7 +85,7 @@ class CatalogueV1 < SonataCatalogue
         logger.info "Catalogue: leaving GET /packages?#{query_string} with #{pks}"
 
         # Paginate results
-        # pks = pks.paginate(:offset => params[:offset], :limit => params[:limit]).sort({"version" => -1})
+        # pks = pks.paginate(:page_number => params[:page_number], :page_size => params[:page_size]).sort({"version" => -1})
 
         pks_list = []
         checked_list = []
@@ -112,8 +112,8 @@ class CatalogueV1 < SonataCatalogue
         # json_error 404, "No PDs were found"
         pks_list = []
       end
-      # pks = pks_list.paginate(:page => params[:offset], :per_page =>params[:limit])
-      pks = apply_limit_and_offset(pks_list, params[:offset], params[:limit])
+      # pks = pks_list.paginate(:page => params[:page_number], :per_page =>params[:page_size])
+      pks = apply_limit_and_offset(pks_list, params[:page_number], params[:page_size])
 
     else
       # Do the query
@@ -124,7 +124,7 @@ class CatalogueV1 < SonataCatalogue
         logger.info "Catalogue: leaving GET /packages?#{query_string} with #{pks}"
 
         # Paginate results
-        pks = pks.paginate(offset: params[:offset], limit: params[:limit])
+        pks = pks.paginate(page_number: params[:page_number], page_size: params[:page_size])
 
       else
         logger.info "Catalogue: leaving GET /packages?#{query_string} with 'No PDs were found'"
@@ -625,8 +625,8 @@ class CatalogueV2 < SonataCatalogue
   #	Returns a list of all Packages
   # -> List many descriptors
   get '/packages/?' do
-    params['offset'] ||= DEFAULT_OFFSET
-    params['limit'] ||= DEFAULT_LIMIT
+    params['page_number'] ||= DEFAULT_PAGE_NUMBER
+    params['page_size'] ||= DEFAULT_PAGE_SIZE
 
     logger.info "Catalogue: entered GET /v2/packages?#{query_string}"
 
@@ -646,8 +646,8 @@ class CatalogueV2 < SonataCatalogue
     end
     headers[:params] = params unless params.empty?
 
-    # Get rid of :offset and :limit
-    [:offset, :limit].each { |k| keyed_params.delete(k) }
+    # Get rid of :page_number and :page_size
+    [:page_number, :page_size].each { |k| keyed_params.delete(k) }
 
     # Check for special case (:version param == last)
     if keyed_params.key?(:'pd.version') && keyed_params[:'pd.version'] == 'last'
@@ -681,7 +681,8 @@ class CatalogueV2 < SonataCatalogue
         logger.info "Catalogue: leaving GET /v2/packages?#{query_string} with 'No PDs were found'"
         pks_list = []
       end
-      pks = apply_limit_and_offset(pks_list, offset=params[:offset], limit=params[:limit])
+      pks = apply_limit_and_offset(pks_list, page_number=params[:page_number],
+                                   page_size=params[:page_size])
 
     else
       # Do the query
@@ -693,7 +694,7 @@ class CatalogueV2 < SonataCatalogue
       if pks && pks.size.to_i > 0
         logger.info "Catalogue: leaving GET /v2/packages?#{query_string} with #{pks}"
         # Paginate results
-        pks = pks.paginate(offset: params[:offset], limit: params[:limit])
+        pks = pks.paginate(page_number: params[:page_number], page_size: params[:page_size])
       else
         logger.info "Catalogue: leaving GET /v2/packages?#{query_string} with 'No PDs were found'"
       end

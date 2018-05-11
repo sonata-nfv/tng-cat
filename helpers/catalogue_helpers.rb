@@ -310,60 +310,65 @@ class SonataCatalogue < Sinatra::Application
       desc + '.version' => value['version'] }
   end
 
-  def examine_descs(content, coll, desc, info)
+  def examine_descs_arr(content, coll, desc, info)
     content.each do |value|
       begin
         coll.find_by(trio_dep_mapping_hash?(desc, value))
       rescue Mongoid::Errors::DocumentNotFound
-        halt 400, "#{info} with {name => #{value['name']}, vendor => #{value['vendor']}, version => #{value['version']}} not found in the Catalogue"
+        json_error 400, "#{info} with {name => #{value['name']}, vendor => #{value['vendor']}, version => #{value['version']}} not found in the Catalogue"
       end
     end
   end
 
+
+  def examine_descs_hash(content, coll, desc, info)
+    begin
+      desc_exam = coll.find_by(trio_dep_mapping_hash?(desc, content))
+    rescue Mongoid::Errors::DocumentNotFound
+      json_error 400, "#{info} with {name => #{content['name']}, vendor => #{content['vendor']}, version => #{content['version']}} not found in the Catalogue"
+    end
+    desc_exam
+  end
 
   # Evaluate the package mapping file in order to provide independency of the catalogues
   # from the type of the package. Also, check the existence of
   # every descriptor and file inside the Catalogues. Schema can be found inside the
   # @param [StringIO] mapping_file The mapping file
   # @return [Boolean] Document containing the dependencies mapping
-  def tgo_package_dep_mapping(mapping_file,tgopkg)
-    pkg_desc = []
+  def tgo_package_dep_mapping(mapping_file, tgopkg)
+    pkg_desc = {}
     mapping_file.each do |field, content|
       case field
         when 'pd'
           if content.empty?
-            halt 400, 'Empty package trio'
+            json_error 400, 'Empty package descriptor trio'
           else
-            pkg_desc << Pkgd.find_by(trio_dep_mapping_hash?('pd', content))
+            pkg_desc = examine_descs_hash(content, Pkgd, 'pd', 'PD Descriptor')
           end
         when 'vnfds'
-          examine_descs(content, Vnfd,'vnfd', 'VNF Descriptor')
+          examine_descs_arr(content, Vnfd,'vnfd', 'VNF Descriptor')
         when 'nsds'
-          examine_descs(content, Nsd, 'nsd', 'NS Descriptor')
+          examine_descs_arr(content, Nsd, 'nsd', 'NS Descriptor')
         when 'testds'
-          examine_descs(content, Testd, 'testd', 'TEST Descriptor')
+          examine_descs_arr(content, Testd, 'testd', 'TEST Descriptor')
         when 'files'
           content.each do |field|
             begin
-              Files.find_by('grid_fs_name' => field['file_name'],
+              Files.find_by('file_name' => field['file_name'],
                                       '_id' => field['file_uuid'] )
             rescue Mongoid::Errors::DocumentNotFound
-              halt 400, "File with {name => #{field['file_name']}, uuid => #{field['file_uuid']}} not found in the Catalogue"
+              json_error 400, "File with {name => #{field['file_name']}, uuid => #{field['file_uuid']}} not found in the Catalogue"
             end
           end
         end
     end
-    
-    pkg_desc.each do |pkg|
-      if pkg['package_name'].nil? && pkg['package_id'].nil?
-        pkg.update_attributes(package_id: tgopkg['_id'],
-                              package_name: tgopkg['package_name'])
-      else
-        halt 400, "Package Desriptor {id => #{pkg['_id']}} already mapped to package"
-      end
+    if pkg_desc['package_name'].nil? && pkg_desc['package_id'].nil?
+      pkg_desc.update_attributes(package_id: tgopkg['_id'],
+                            package_name: tgopkg['package_name'])
+    else
+      json_error 400, "Package Desriptor {id => #{pkg_desc['_id']}} already mapped to package"
     end
-
-  true
+    true
   end
 
 

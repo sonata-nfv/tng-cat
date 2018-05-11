@@ -98,13 +98,16 @@ RSpec.describe CatalogueV2 do
   describe 'POST /tgo-packages' do
     context 'post packages simulating gatekeeper operation (posting all descriptors)' do
       before do
-        filenames = ['samples/dependencies_mapping/5gtango-test-package.tgo']
+        filenames = %w[samples/dependencies_mapping/5gtango-test-package.tgo
+                     samples/dependencies_mapping/5gtango-ns-package.tgo]
         $pd_uuids = []
+        $tgop_uuids = []
         filenames.each do |filename|
           headers = { 'CONTENT_TYPE' => 'application/zip',
                       'HTTP_CONTENT_DISPOSITION' => "attachment; filename=#{filename}" }
           response = post '/tgo-packages', File.binread(filename), headers
-          $tgop_uuids = JSON.parse(response.body)
+          tgo_body = JSON.parse(response.body)
+          $tgop_uuids << tgo_body['uuid']
         end
       end
       subject { last_response }
@@ -113,6 +116,99 @@ RSpec.describe CatalogueV2 do
     end
   end
 
+  let(:package_descriptor) {Rack::Test::UploadedFile.new('samples/dependencies_mapping/NAPD.json','application/json', true)}
+  describe 'POST \'/api/v2/packages\'' do
+    context 'with correct parameters' do
+      it 'Submit a pd for tgo package mapping' do
+        headers = { 'CONTENT_TYPE' => 'application/json' }
+        post '/packages', package_descriptor, headers
+        expect(last_response.status).to eq(201)
+        pd_body = JSON.parse(last_response.body)
+        $pd_testpkg_name = (pd_body['pd']['name'])
+        $pd_testpkg_vendor = (pd_body['pd']['vendor'])
+        $pd_testpkg_version = (pd_body['pd']['version'])
+      end
+    end
+  end
+
+  let(:vnf_descriptor) {Rack::Test::UploadedFile.new('samples/dependencies_mapping/myvnfd.json','application/json', true)}
+  describe 'POST \'/api/v2/vnfs\'' do
+    context 'with correct parameters' do
+      it 'Submit a vnfd for tgo package mapping' do
+        headers = { 'CONTENT_TYPE' => 'application/json' }
+        post '/vnfs', vnf_descriptor, headers
+        expect(last_response.status).to eq(201)
+        vnf_body = JSON.parse(last_response.body)
+        $vnf_testpkg_name = (vnf_body['vnfd']['name'])
+        $vnf_testpkg_vendor = (vnf_body['vnfd']['vendor'])
+        $vnf_testpkg_version = (vnf_body['vnfd']['version'])
+      end
+    end
+  end
+
+  let(:ns_descriptor) {Rack::Test::UploadedFile.new('samples/dependencies_mapping/mynsd.json','application/json', true)}
+  describe 'POST \'/api/v2/network-services\'' do
+    context 'with correct parameters' do
+      it 'Submit a nsd' do
+        headers = { 'CONTENT_TYPE' => 'application/json' }
+        post '/network-services', ns_descriptor, headers
+        expect(last_response.status).to eq(201)
+        ns_body = JSON.parse(last_response.body)
+        $ns_testpkg_name = (ns_body['nsd']['name'])
+        $ns_testpkg_vendor = (ns_body['nsd']['vendor'])
+        $ns_testpkg_version = (ns_body['nsd']['version'])
+      end
+    end
+  end
+
+
+  describe 'POST /files' do
+    context 'post arbitrary files' do
+      before do
+        $file_uuids = []
+        filenames = ['samples/dependencies_mapping/cloud.init']
+        filenames.each do |filename|
+          headers = { 'CONTENT_TYPE' => 'application/octet-stream',
+                      'HTTP_CONTENT_DISPOSITION' => "attachment; filename=#{filename}" }
+          response = post '/files', File.binread(filename), headers
+          filebody = JSON.parse(response.body)
+          $file_uuids << filebody['uuid']
+          $file_names = filenames
+        end
+      end
+      subject { last_response }
+      its(:status) { is_expected.to eq 201 }
+    end
+  end
+
+
+  describe 'POST \'/api/v2/tgo-packages/mappings\'' do
+    context 'with correct parameters' do
+      it 'Submit a pd for tgo package mapping' do
+        headers = { 'CONTENT_TYPE' => 'application/json' }
+
+        mapping = {}
+        mapping['tgo_package_uuid'] = $tgop_uuids[1].to_s
+        mapping['vnfs'] = []
+        mapping['nsds'] = []
+        mapping['files'] = []
+        mapping['deps'] = []
+        mapping['pd'] = {name: $pd_testpkg_name.to_s,
+                     vendor: $pd_testpkg_vendor.to_s,
+                     version: $pd_testpkg_version.to_s}
+        mapping['vnfs'] << {name: $vnf_testpkg_name.to_s,
+                        vendor: $vnf_testpkg_vendor.to_s,
+                        version: $vnf_testpkg_version.to_s}
+        mapping['nsds'] << {name: $ns_testpkg_name.to_s,
+                        vendor: $ns_testpkg_vendor.to_s,
+                        version: $ns_testpkg_version.to_s}
+        mapping['files'] << {file_name: $file_names[0].to_s,
+                         file_uuid: $file_uuids[0].to_s}
+        post '/tgo-packages/mappings', mapping.to_json, headers
+        expect(last_response.status).to eq(200)
+      end
+    end
+  end
 
   describe 'GET tgo-packages' do
     context 'with uuid given' do

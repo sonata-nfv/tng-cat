@@ -69,17 +69,16 @@ RSpec.describe CatalogueV2 do
   #    iperf-vnfd and tcpdump-vnfd; second one contains only tcpdump-vnfd
   #    according to next test that tries to delete the first one, tcpdump-vnfd should
   #    not be deleted according to intelligent delete feature
-  describe 'POST /son-packages' do
-    context 'post packages simulating gatekeeper operation (posting all descriptors)' do
+  describe 'POST /files' do
+    context 'post arbitrary files' do
       before do
         filenames = [ 'samples/dependencies_mapping/MyExample',
                       'samples/dependencies_mapping/MyExample.cfg']
-        $pd_uuids = []
         filenames.each do |filename|
           headers = { 'CONTENT_TYPE' => 'application/octet-stream',
                       'HTTP_CONTENT_DISPOSITION' => "attachment; filename=#{filename}" }
           response = post '/files', File.binread(filename), headers
-          $tgop_uuids = JSON.parse(response.body)
+          $file_uuids = JSON.parse(response.body)
         end
       end
       subject { last_response }
@@ -93,7 +92,7 @@ RSpec.describe CatalogueV2 do
     context 'with uuid given' do
       before do
         headers = { 'CONTENT_TYPE' => 'application/json' }
-        get '/files?' + $tgop_uuids[0].to_s, nil, headers
+        get '/files?' + $file_uuids[0].to_s, nil, headers
       end
       subject { last_response }
       its(:status) { is_expected.to eq 200 }

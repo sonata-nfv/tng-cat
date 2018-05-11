@@ -100,7 +100,7 @@ class CatalogueV1 < SonataCatalogue
     begin
       sonp = FileContainer.find_by({ '_id' => params[:id] })
       # p 'FileContainer FOUND'
-      p 'Filename: ', sonp['grid_fs_name']
+      p 'Filename: ', sonp['package_name']
       p 'grid_fs_id: ', sonp['grid_fs_id']
     rescue Mongoid::Errors::DocumentNotFound => e
       logger.error e
@@ -111,12 +111,12 @@ class CatalogueV1 < SonataCatalogue
     grid_file = grid_fs.get(sonp['grid_fs_id'])
 
     # grid_file.data # big huge blob
-    # temp=Tempfile.new("../#{sonp['grid_fs_name'].to_s}", 'wb')
+    # temp=Tempfile.new("../#{sonp['package_name'].to_s}", 'wb')
     # grid_file.each do |chunk|
     #  temp.write(chunk) # streaming write
     # end
     ## Client file recovery
-    # temp=File.new("../#{sonp['grid_fs_name']}", 'wb')
+    # temp=File.new("../#{sonp['package_name']}", 'wb')
     # temp.write(grid_file.data)
     # temp.close
 
@@ -154,10 +154,10 @@ class CatalogueV1 < SonataCatalogue
     # p "FILE HASH is: ", file_hash
 
     # Check duplicates
-    # -> grid_fs_name
+    # -> package_name
     # Check if son-package already exists in the catalogue by filename (grid-fs-name identifier)
     begin
-      sonpkg = FileContainer.find_by({ 'grid_fs_name' => filename })
+      sonpkg = FileContainer.find_by({ 'package_name' => filename })
       json_return 200, 'Duplicated son-package Filename'
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
@@ -185,7 +185,7 @@ class CatalogueV1 < SonataCatalogue
     FileContainer.new.tap do |file_container|
       file_container._id = sonp_id
       file_container.grid_fs_id = grid_file.id
-      file_container.grid_fs_name = filename
+      file_container.package_name = filename
       file_container.md5 = grid_file.md5
       file_container.save
     end
@@ -311,7 +311,7 @@ class CatalogueV2 < SonataCatalogue
       when 'application/zip'
         begin
           tgop = FileContainer.find_by({ '_id' => params[:id] })
-          p 'Filename: ', tgop['grid_fs_name']
+          p 'Filename: ', tgop['package_name']
           p 'grid_fs_id: ', tgop['grid_fs_id']
         rescue Mongoid::Errors::DocumentNotFound => e
           logger.error e
@@ -322,17 +322,17 @@ class CatalogueV2 < SonataCatalogue
         grid_file = grid_fs.get(tgop['grid_fs_id'])
 
         # Set custom header with package Filename
-        headers 'Filename' => (tgop['grid_fs_name'].to_s)
+        headers 'Filename' => (tgop['package_name'].to_s)
 
         # grid_file.data # big huge blob
-        # temp = Tempfile.new("#{tgop['grid_fs_name'].to_s}", 'wb')
+        # temp = Tempfile.new("#{tgop['package_name'].to_s}", 'wb')
         # path_file = File.basename(temp.path)
         # grid_file.each do |chunk|
         #   temp.write(chunk) # streaming write
         # end
         # temp.close
         # Client file recovery
-        # str_name = tgop['grid_fs_name'].split('.')
+        # str_name = tgop['package_name'].split('.')
         # str_name[0] << "_" + Time.now.to_i.to_s.delete(" ")
         # temp = File.new("../" + str_name.join("."), 'wb')
         # temp.write(grid_file.data)
@@ -405,10 +405,10 @@ class CatalogueV2 < SonataCatalogue
     # rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
     # end
-    # -> grid_fs_name
+    # -> package_name
     # Check if tgo-package already exists in the catalogue by filename (grid-fs-name identifier)
     begin
-      tgopkg = FileContainer.find_by({ 'grid_fs_name' => filename })
+      tgopkg = FileContainer.find_by({ 'package_name' => filename })
       halt 409, "Duplicated tgo-package ID => #{tgopkg['_id']}"
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
@@ -432,8 +432,8 @@ class CatalogueV2 < SonataCatalogue
     FileContainer.new.tap do |file_container|
       file_container._id = tgop_id
       file_container.grid_fs_id = grid_file.id
-      file_container.mapping = {}
-      file_container.grid_fs_name = filename
+      file_container.mapping = nil
+      file_container.package_name = filename
       file_container.md5 = grid_file.md5
       file_container.username = username
       file_container.signature = signature
@@ -452,75 +452,6 @@ class CatalogueV2 < SonataCatalogue
     # end
     halt 201, {'Content-type' => 'application/json'}, response.to_json
   end
-
-  # @method post_tgo_package
-  # @overload post '/catalogues/tgo-package'
-  # Post a tgo Package in binary-data
-  post '/files' do
-    logger.debug "Catalogue: entered POST /v2/files?#{query_string}"
-    # Return if content-type is invalid
-    halt 415 unless request.content_type == 'application/octet-stream'
-
-    att = request.env['HTTP_CONTENT_DISPOSITION']
-
-    unless att
-      error = "HTTP Content-Disposition is missing"
-      halt 400, error.to_json
-    end
-    if request.env['HTTP_SIGNATURE']
-      signature = request.env['HTTP_SIGNATURE']
-    else
-      signature = nil
-    end
-
-    #Delete key "captures" if present
-    params.delete(:captures) if params.key?(:captures)
-
-    # Transform 'string' params Hash into keys
-    keyed_params = keyed_hash(params)
-    filename = att.match(/filename=(\"?)(.+)\1/)[2]
-
-    # Reads body data
-    file, errors = request.body
-    halt 400, errors.to_json if errors
-
-    begin
-      file = Files.find_by({ 'grid_fs_name' => filename })
-      halt 409, "Duplicated file ID => #{file['_id']}"
-    rescue Mongoid::Errors::DocumentNotFound => e
-      # Continue
-    end
-
-    grid_fs = Mongoid::GridFs
-
-    grid_file = grid_fs.put(file,
-                            filename: filename,
-                            content_type: 'application/octet-stream',
-    # _id: SecureRandom.uuid,
-                            )
-
-    if keyed_params.key?(:username)
-      username = keyed_params[:username]
-    else
-      username = nil
-    end
-
-    file_id = SecureRandom.uuid
-    Files.new.tap do |file|
-      file._id = file_id
-      file.grid_fs_id = grid_file.id
-      file.grid_fs_name = filename
-      file.md5 = grid_file.md5
-      file.username = username
-      file.signature = signature
-      file.save
-    end
-    logger.debug "Catalogue: leaving POST /v2/files/ with #{grid_file.id}"
-    response = {"uuid" => file_id}
-
-    halt 201, {'Content-type' => 'application/json'}, response.to_json
-  end
-
 
   # @method post_tgo_package/mappings
   post '/tgo-packages/mappings' do
@@ -555,14 +486,14 @@ class CatalogueV2 < SonataCatalogue
     end
 
     begin
-      if tgo_package_dep_mapping(new_mapping)
+      if tgo_package_dep_mapping(new_mapping, tgopkg)
         new_mapping.delete('tgo_package_uuid')
         tgopkg.update_attributes(mapping: new_mapping)
       end
     rescue Moped::Errors::OperationFailure => e
       json_error 400, 'ERROR: Operation of updating mappings failed'
     end
-    halt 200, "Updated mappings of #{new_mapping['tgo_package_uuid']}"
+    halt 200, "Updated mappings of tgo-package with {id => #{tgopkg['_id']}}"
   end
 
   # @method update_son_package_id
@@ -590,7 +521,7 @@ class CatalogueV2 < SonataCatalogue
         begin
           puts 'Searching ' + params[:tgop_uuid].to_s
           tgop = FileContainer.find_by({ '_id' => params[:id] })
-          p 'Filename: ', tgop['grid_fs_name']
+          p 'Filename: ', tgop['package_name']
           puts 'tgo-package is found'
         rescue Mongoid::Errors::DocumentNotFound => e
           json_error 404, 'Submitted tgo-package UUID not exists'

@@ -141,6 +141,8 @@ class Pkgd
 
   field :pd, type: Hash
   field :status, type: String
+  field :package_id, type: String
+  field :package_name, type: String
   field :signature, type: String
   field :username, type: String
   validates :pd, presence: true
@@ -161,7 +163,7 @@ class FileContainer
 
   # embeds_one :dependencies_mapping, class_name: "Dependencies_mapping"
   field :grid_fs_id, type: String
-  field :grid_fs_name, type: String
+  field :package_name, type: String
   field :mapping, type: Hash
   field :signature, type: String
   field :md5, type: String
@@ -180,7 +182,7 @@ class Files
 
   # embeds_one :dependencies_mapping, class_name: "Dependencies_mapping"
   field :grid_fs_id, type: String
-  field :grid_fs_name, type: String
+  field :file_name, type: String
   field :signature, type: String
   field :md5, type: String
   field :username, type: String

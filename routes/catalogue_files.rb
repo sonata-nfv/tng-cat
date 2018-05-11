@@ -112,7 +112,7 @@ class CatalogueV2 < SonataCatalogue
       when 'application/octet-stream'
         begin
           file = Files.find_by({ '_id' => params[:id] })
-          p 'Filename: ', file['grid_fs_name']
+          p 'Filename: ', file['file_name']
           p 'grid_fs_id: ', file['grid_fs_id']
         rescue Mongoid::Errors::DocumentNotFound => e
           logger.error e
@@ -123,24 +123,24 @@ class CatalogueV2 < SonataCatalogue
         grid_file = grid_fs.get(file['grid_fs_id'])
 
         # Set custom header with Filename
-        headers 'Filename' => (file['grid_fs_name'].to_s)
+        headers 'Filename' => (file['file_name'].to_s)
 
         grid_file.data # big huge blob
-        # temp = Tempfile.new("#{files['grid_fs_name'].to_s}", 'wb')
+        # temp = Tempfile.new("#{files['file_name'].to_s}", 'wb')
         # path_file = File.basename(temp.path)
         # grid_file.each do |chunk|
         #   temp.write(chunk) # streaming write
         # end
         # temp.close
-        # Client file recovery
-        str_name = file['grid_fs_name'].split('.')
-        str_name[0] << "_" + Time.now.to_i.to_s.delete(" ")
-        temp = File.new(str_name.join("."), 'wb')
-        temp.write(grid_file.data)
-        temp.close
+        # # Client file recovery
+        # str_name = file['file_name'].split('.')
+        # str_name[0] << "_" + Time.now.to_i.to_s.delete(" ")
+        # temp = File.new(str_name.join("."), 'wb')
+        # temp.write(grid_file.data)
+        # temp.close
 
         logger.debug "Catalogue: leaving GET /files/#{params[:id]}"
-        halt 200, "{Name => #{File.basename(temp.path)}}"
+        halt 200, grid_file.data
 
       when 'application/json'
         begin
@@ -192,7 +192,7 @@ class CatalogueV2 < SonataCatalogue
 
     # For first version of 5GTANGO avoid the intelligent reuse of files
     # begin
-    #   file = Files.find_by({ 'grid_fs_name' => filename })
+    #   file = Files.find_by({ 'file_name' => filename })
     #   halt 409, "Duplicated file ID => #{file['_id']}"
     # rescue Mongoid::Errors::DocumentNotFound => e
     #   # Continue
@@ -216,7 +216,7 @@ class CatalogueV2 < SonataCatalogue
     Files.new.tap do |file|
       file._id = file_id
       file.grid_fs_id = grid_file.id
-      file.grid_fs_name = filename
+      file.file_name = filename
       file.md5 = grid_file.md5
       file.username = username
       file.signature = signature

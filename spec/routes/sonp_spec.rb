@@ -105,21 +105,6 @@ RSpec.describe CatalogueV2 do
                       'HTTP_CONTENT_DISPOSITION' => "attachment; filename=#{filename}" }
           response = post '/tgo-packages', File.binread(filename), headers
           $tgop_uuids = JSON.parse(response.body)
-          # content = xtract_sonp(filename)
-          # content[:vnfds].each do |vnfd|
-          #   postvnf = post '/vnfs',
-          #                  vnfd,
-          #                  { 'CONTENT_TYPE' => 'application/x-yaml' }
-          # end
-          # content[:nsds].each do |nsd|
-          #   postnsd = post '/network-services',
-          #                  nsd,
-          #                  { 'CONTENT_TYPE' => 'application/x-yaml' }
-          # end
-          # postpd = post '/packages',
-          #                content[:manifest],
-          #                { 'CONTENT_TYPE' => 'application/x-yaml' }
-          # $pd_uuids << YAML.load(postpd.body)['uuid']
         end
       end
       subject { last_response }

@@ -326,14 +326,15 @@ class SonataCatalogue < Sinatra::Application
   # every descriptor and file inside the Catalogues. Schema can be found inside the
   # @param [StringIO] mapping_file The mapping file
   # @return [Boolean] Document containing the dependencies mapping
-  def tgo_package_dep_mapping(mapping_file)
+  def tgo_package_dep_mapping(mapping_file,tgopkg)
+    pkg_desc = []
     mapping_file.each do |field, content|
       case field
         when 'pd'
-          if !content.empty?
-            Pkgd.find_by(trio_dep_mapping_hash?('pd', content))
-          else
+          if content.empty?
             halt 400, 'Empty package trio'
+          else
+            pkg_desc << Pkgd.find_by(trio_dep_mapping_hash?('pd', content))
           end
         when 'vnfds'
           examine_descs(content, Vnfd,'vnfd', 'VNF Descriptor')
@@ -352,7 +353,17 @@ class SonataCatalogue < Sinatra::Application
           end
         end
     end
-    true
+    
+    pkg_desc.each do |pkg|
+      if pkg['package_name'].nil? && pkg['package_id'].nil?
+        pkg.update_attributes(package_id: tgopkg['_id'],
+                              package_name: tgopkg['package_name'])
+      else
+        halt 400, "Package Desriptor {id => #{pkg['_id']}} already mapped to package"
+      end
+    end
+
+  true
   end
 
 

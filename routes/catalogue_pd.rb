@@ -453,7 +453,7 @@ class CatalogueV1 < SonataCatalogue
         begin
           puts 'Searching ' + params[:sonp_uuid].to_s
           sonp = FileContainer.find_by({ '_id' => params[:sonp_uuid] })
-          p 'Filename: ', sonp['grid_fs_name']
+          p 'Filename: ', sonp['package_name']
           puts 'son-package is found'
         rescue Mongoid::Errors::DocumentNotFound => e
           json_error 404, 'Submitted son-package UUID not exists'
@@ -814,6 +814,8 @@ class CatalogueV2 < SonataCatalogue
     # Generate the UUID for the descriptor
     new_pd['_id'] = SecureRandom.uuid
     new_pd['status'] = 'active'
+    new_pd['package_id'] = nil
+    new_pd['package_name'] = nil
     new_pd['signature'] = nil
     new_pd['md5'] = checksum new_pks.to_s
     new_pd['username'] = username
@@ -930,6 +932,8 @@ class CatalogueV2 < SonataCatalogue
     new_pd['_id'] = SecureRandom.uuid # Unique UUIDs per PD entries
     new_pd['pd'] = new_pks
     new_pd['status'] = 'active'
+    new_pd['package_id'] = nil
+    new_pd['package_name'] = nil
     new_pd['signature'] = nil
     new_pd['md5'] = checksum new_pks.to_s
     new_pd['username'] = username
@@ -1023,7 +1027,7 @@ class CatalogueV2 < SonataCatalogue
         begin
           puts 'Searching ' + params[:sonp_uuid].to_s
           sonp = FileContainer.find_by({ '_id' => params[:sonp_uuid] })
-          p 'Filename: ', sonp['grid_fs_name']
+          p 'Filename: ', sonp['package_name']
           puts 'son-package is found'
         rescue Mongoid::Errors::DocumentNotFound => e
           json_error 404, 'Submitted son-package UUID not exists'

@@ -505,8 +505,8 @@ class SonataCatalogue < Sinatra::Application
     vnfds = []
     nsds = []
     testds = []
-    unless mapping['vnfs'].nil?
-      mapping['vnfs'].each do |vnfd|
+    unless mapping['vnfds'].nil?
+      mapping['vnfds'].each do |vnfd|
         if instanced_descriptor?(:vnfd, vnfd)
           vnfds << vnfd
         end
@@ -544,9 +544,9 @@ class SonataCatalogue < Sinatra::Application
     vnfds, nsds, testds, files, cant_delete_vnfds = [], [], [], [], []
     cant_delete_nsds, cant_delete_testds, cant_delete_files = [], [], []
     pdep_mapping = mapping
-    unless pdep_mapping['vnfs'].nil?
-      pdep_mapping['vnfs'].each do |vnfd|
-        if check_dependencies('vnfs', vnfd, package.pd, active_criteria)
+    unless pdep_mapping['vnfds'].nil?
+      pdep_mapping['vnfds'].each do |vnfd|
+        if check_dependencies('vnfds', vnfd, package.pd, active_criteria)
           logger.info 'VNFD ' + vnfd[:name] + ' has more than one dependency'
           cant_delete_vnfds << vnfd
         else

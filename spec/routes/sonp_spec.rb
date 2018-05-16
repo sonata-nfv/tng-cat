@@ -189,14 +189,14 @@ RSpec.describe CatalogueV2 do
 
         mapping = {}
         mapping['tgo_package_uuid'] = $tgop_uuids[1].to_s
-        mapping['vnfs'] = []
+        mapping['vnfds'] = []
         mapping['nsds'] = []
         mapping['files'] = []
         mapping['deps'] = []
         mapping['pd'] = {name: $pd_testpkg_name.to_s,
                      vendor: $pd_testpkg_vendor.to_s,
                      version: $pd_testpkg_version.to_s}
-        mapping['vnfs'] << {name: $vnf_testpkg_name.to_s,
+        mapping['vnfds'] << {name: $vnf_testpkg_name.to_s,
                         vendor: $vnf_testpkg_vendor.to_s,
                         version: $vnf_testpkg_version.to_s}
         mapping['nsds'] << {name: $ns_testpkg_name.to_s,

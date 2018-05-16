@@ -100,7 +100,6 @@ RSpec.describe CatalogueV2 do
       before do
         filenames = %w[samples/dependencies_mapping/5gtango-test-package.tgo
                      samples/dependencies_mapping/5gtango-ns-package.tgo]
-        $pd_uuids = []
         $tgop_uuids = []
         filenames.each do |filename|
           headers = { 'CONTENT_TYPE' => 'application/zip',
@@ -124,6 +123,7 @@ RSpec.describe CatalogueV2 do
         post '/packages', package_descriptor, headers
         expect(last_response.status).to eq(201)
         pd_body = JSON.parse(last_response.body)
+        $pd_testpkg_id = pd_body['uuid']
         $pd_testpkg_name = (pd_body['pd']['name'])
         $pd_testpkg_vendor = (pd_body['pd']['vendor'])
         $pd_testpkg_version = (pd_body['pd']['version'])
@@ -189,14 +189,14 @@ RSpec.describe CatalogueV2 do
 
         mapping = {}
         mapping['tgo_package_uuid'] = $tgop_uuids[1].to_s
-        mapping['vnfs'] = []
+        mapping['vnfds'] = []
         mapping['nsds'] = []
         mapping['files'] = []
         mapping['deps'] = []
         mapping['pd'] = {name: $pd_testpkg_name.to_s,
                      vendor: $pd_testpkg_vendor.to_s,
                      version: $pd_testpkg_version.to_s}
-        mapping['vnfs'] << {name: $vnf_testpkg_name.to_s,
+        mapping['vnfds'] << {name: $vnf_testpkg_name.to_s,
                         vendor: $vnf_testpkg_vendor.to_s,
                         version: $vnf_testpkg_version.to_s}
         mapping['nsds'] << {name: $ns_testpkg_name.to_s,
@@ -292,32 +292,33 @@ RSpec.describe CatalogueV2 do
   #   end
   # end
 
-  # # Tries to delete first package posted in previous test resulting
-  # #    in the deletion of
-  # #    {"deleted":
-  # #    {"vnfds":[{"vendor":"eu.sonata-nfv","version":"0.3","name":"firewall-vnf"},
-  # #    {"vendor":"eu.sonata-nfv","version":"0.2","name":"iperf-vnf"}],
-  # #    "nsds":[{"vendor":"eu.sonata-nfv.service-descriptor","version":"0.2.1","name":"sonata-demo"}]}}
-  # # But preventing tcpdump-vnf and firewall-vnf deletion because second package posted before has a dependency on it
-  # describe 'DELETE /api/v2/packages' do
-  #   context 'deleting pds' do
-  #     before do
-  #       puts 'Deleting sonata-demo.son'
-  #       delete_response = delete '/packages/' + $pd_uuids[0]
-  #       puts delete_response.body
-  #       puts
-  #       expect(delete_response.status).to eq(200)
-  #       result = JSON.parse(delete_response.body)
-  #       expect(result['result']['delete']['vnfds'].length).to eq(1)
-  #       expect(result['result']['delete']['vnfds'][0]['name']).to eq('iperf-vnf')
-  #       expect(result['result']['delete']['nsds'].length).to eq(1)
-  #       expect(result['result']['delete']['nsds'][0]['name']).to eq('sonata-demo')
-  #     end
-  #     subject { last_response }
-  #     its(:status) { is_expected.to eq 200 }
-  #   end
-  # end
-  #
+  # Tries to delete first package posted in previous test resulting
+  describe 'DELETE /api/v2/packages' do
+    context 'deleting pds' do
+      before do
+        puts 'Deleting sonata-demo.son'
+        delete_response = delete '/packages/' + $pd_testpkg_id.to_s
+        puts delete_response.body
+        puts
+        expect(delete_response.status).to eq(200)
+        result = JSON.parse(delete_response.body)
+        expect(result['result']['delete']['vnfds'].length).to eq(1)
+        expect(result['result']['delete']['vnfds'][0]['name']).to eq('myvnf')
+        expect(result['result']['delete']['vnfds'][0]['vendor']).to eq('eu.5gtango')
+        expect(result['result']['delete']['vnfds'][0]['version']).to eq('0.1')
+        expect(result['result']['delete']['nsds'].length).to eq(1)
+        expect(result['result']['delete']['nsds'][0]['name']).to eq('myns')
+        expect(result['result']['delete']['nsds'][0]['vendor']).to eq('eu.5gtango')
+        expect(result['result']['delete']['nsds'][0]['version']).to eq('0.1')
+        expect(result['result']['delete']['files'].length).to eq(1)
+        expect(result['result']['delete']['files'][0]['file_name']).to eq($file_names[0].to_s)
+        expect(result['result']['delete']['files'][0]['file_uuid']).to eq($file_uuids[0].to_s)
+      end
+      subject { last_response }
+      its(:status) { is_expected.to eq 200 }
+    end
+  end
+
   # # Deletes the second package posted
   # describe 'DELETE /api/v2/packages' do
   #   context 'deleting pds' do

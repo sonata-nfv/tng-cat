@@ -675,7 +675,9 @@ class SonataCatalogue < Sinatra::Application
     # first find dependencies_mapping
     pkg = FileContainer.find_by('_id' => descriptor['package_file_id'])
     descriptor.destroy
-    pkg.update_attributes(mapping: nil)
+    grid_fs = Mongoid::GridFs
+    grid_fs.delete(pkg['grid_fs_id'])
+    pkg.destroy
   end
 
   # Method Set status of vnfds from name, vendor, version

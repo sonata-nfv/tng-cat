@@ -814,8 +814,8 @@ class CatalogueV2 < SonataCatalogue
     # Generate the UUID for the descriptor
     new_pd['_id'] = SecureRandom.uuid
     new_pd['status'] = 'active'
-    new_pd['package_id'] = nil
-    new_pd['package_name'] = nil
+    new_pd['package_file_id'] = nil
+    new_pd['package_file_name'] = nil
     new_pd['signature'] = nil
     new_pd['md5'] = checksum new_pks.to_s
     new_pd['username'] = username
@@ -932,8 +932,8 @@ class CatalogueV2 < SonataCatalogue
     new_pd['_id'] = SecureRandom.uuid # Unique UUIDs per PD entries
     new_pd['pd'] = new_pks
     new_pd['status'] = 'active'
-    new_pd['package_id'] = nil
-    new_pd['package_name'] = nil
+    new_pd['package_file_id'] = nil
+    new_pd['package_file_name'] = nil
     new_pd['signature'] = nil
     new_pd['md5'] = checksum new_pks.to_s
     new_pd['username'] = username
@@ -1102,6 +1102,8 @@ class CatalogueV2 < SonataCatalogue
         new_pd['_id'] = SecureRandom.uuid # Unique UUIDs per PD entries
         new_pd['pd'] = new_pks
         new_pd['status'] = 'active'
+        new_pd['package_file_id'] = nil
+        new_pd['package_file_name'] = nil
         new_pd['signature'] = nil
         new_pd['md5'] = checksum new_pks.to_s
         new_pd['username'] = username
@@ -1197,10 +1199,10 @@ class CatalogueV2 < SonataCatalogue
       rescue Mongoid::Errors::DocumentNotFound => e
         json_error 404, "The PD Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist"
       end
-      # intelligent_delete(pks)
       # Delete entry in dict mapping
       del_ent_dict(pks, :pd)
-      pks.destroy
+      intelligent_delete(pks)
+
       logger.debug "Catalogue: leaving DELETE v2/packages?#{query_string}\" with PD #{pks}"
       halt 200, 'OK: PD ID Removed'
     end
@@ -1222,10 +1224,10 @@ class CatalogueV2 < SonataCatalogue
         logger.error e
         json_error 404, "The PD ID #{params[:id]} does not exist" unless pks
       end
-      # intelligent_delete(pks)
       # Delete entry in dict mapping
       del_ent_dict(pks, :pd)
-      pks.destroy
+      intelligent_delete(pks)
+
       logger.debug "Catalogue: leaving DELETE v2/packages?#{query_string}\" with PD #{pks}"
       halt 200, 'OK: PD ID Removed'
     end

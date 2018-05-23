@@ -130,7 +130,7 @@ class CatalogueV1 < SonataCatalogue
   post '/son-packages' do
     logger.debug 'Catalogue: entered POST /son-packages/'
     # Return if content-type is invalid
-    halt 415 unless request.content_type == 'application/zip'
+    halt 415 unless request.content_type == 'application/octet-stream'
 
     # puts "headers", request.env["HTTP_CONTENT_DISPOSITION"]
     att = request.env['HTTP_CONTENT_DISPOSITION']
@@ -174,7 +174,7 @@ class CatalogueV1 < SonataCatalogue
     grid_fs = Mongoid::GridFs
     grid_file = grid_fs.put(file,
                             filename: filename,
-                            content_type: 'application/zip',
+                            content_type: 'application/octet-stream',
                             # _id: SecureRandom.uuid,
     # :file_hash   => file_hash,
     # :chunk_size   => 100 * 1024,
@@ -308,7 +308,7 @@ class CatalogueV2 < SonataCatalogue
 
     # Check headers
     case request.content_type
-      when 'application/zip'
+      when 'application/octet-stream'
         begin
           tgop = FileContainer.find_by({ '_id' => params[:id] })
           p 'Filename: ', tgop['package_name']
@@ -364,7 +364,7 @@ class CatalogueV2 < SonataCatalogue
   post '/tgo-packages' do
     logger.debug "Catalogue: entered POST /v2/tgo-packages?#{query_string}"
     # Return if content-type is invalid
-    halt 415 unless request.content_type == 'application/zip'
+    halt 415 unless request.content_type == 'application/octet-stream'
 
     att = request.env['HTTP_CONTENT_DISPOSITION']
     # tgop_vendor = request.env['HTTP_VENDOR']
@@ -418,7 +418,7 @@ class CatalogueV2 < SonataCatalogue
 
     grid_file = grid_fs.put(file,
                             filename: filename,
-                            content_type: 'application/zip',
+                            content_type: 'application/octet-stream',
                             # _id: SecureRandom.uuid,
     )
 
@@ -432,7 +432,7 @@ class CatalogueV2 < SonataCatalogue
     FileContainer.new.tap do |file_container|
       file_container._id = tgop_id
       file_container.grid_fs_id = grid_file.id
-      file_container.mapping = nil
+      # file_container.mapping = nil
       file_container.package_name = filename
       file_container.md5 = grid_file.md5
       file_container.username = username
@@ -453,48 +453,6 @@ class CatalogueV2 < SonataCatalogue
     halt 201, {'Content-type' => 'application/json'}, response.to_json
   end
 
-  # @method post_tgo_package/mappings
-  post '/tgo-packages/mappings' do
-    logger.debug "Catalogue: entered POST /v2/tgo-packages/mappings"
-    halt 415 unless request.content_type == 'application/x-yaml' or request.content_type == 'application/json'
-
-    # Compatibility support for YAML content-type
-    case request.content_type
-      when 'application/x-yaml'
-        # Validate YAML format
-        mapping, errors = parse_yaml(request.body.read)
-        halt 400, 'Error in parsing file' if errors
-
-        # Translate from YAML format to JSON format
-        new_mapping_json = yaml_to_json(mapping)
-
-        # Validate JSON format
-        new_mapping, errors = parse_json(new_mapping_json)
-
-      else
-        # Compatibility support for JSON content-type
-        # Parses and validates JSON format
-        new_mapping, errors = parse_json(request.body.read)
-    end
-    halt 400, 'Error in parsing file' if errors
-
-    # Check if a package matches with the uuid with the uuid from the mapping file
-    begin
-      tgopkg = FileContainer.find_by('_id' => new_mapping['tgo_package_uuid'])
-    rescue Mongoid::Errors::DocumentNotFound
-      halt 400, "Package with {id => #{new_mapping['tgo_package_uuid']}} not found"
-    end
-
-    begin
-      if tgo_package_dep_mapping(new_mapping, tgopkg)
-        new_mapping.delete('tgo_package_uuid')
-        tgopkg.update_attributes(mapping: new_mapping)
-      end
-    rescue Moped::Errors::OperationFailure => e
-      json_error 400, 'ERROR: Operation of updating mappings failed'
-    end
-    halt 200, "Updated mappings of tgo-package with {id => #{tgopkg['_id']}}"
-  end
 
   # @method update_son_package_id
   # @overload put '/catalogues/son-packages/:id/?'

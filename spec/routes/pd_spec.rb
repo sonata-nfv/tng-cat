@@ -309,7 +309,7 @@ RSpec.describe CatalogueV2 do
       end
       subject { last_response }
       # No dependency mapping found, expect 500
-      its(:status) { is_expected.to eq 200 }
+      its(:status) { is_expected.to eq 500 }
     end
   end
 end

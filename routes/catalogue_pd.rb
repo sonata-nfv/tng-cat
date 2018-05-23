@@ -814,8 +814,8 @@ class CatalogueV2 < SonataCatalogue
     # Generate the UUID for the descriptor
     new_pd['_id'] = SecureRandom.uuid
     new_pd['status'] = 'active'
-    new_pd['package_file_id'] = nil
-    new_pd['package_file_name'] = nil
+    # new_pd['package_file_id'] = nil
+    # new_pd['package_file_name'] = nil
     new_pd['signature'] = nil
     new_pd['md5'] = checksum new_pks.to_s
     new_pd['username'] = username
@@ -841,6 +841,49 @@ class CatalogueV2 < SonataCatalogue
     end
     halt 201, {'Content-type' => request.content_type}, response
   end
+
+  # # @method post_tgo_package/mappings
+  # post '/tgo-packages/mappings' do
+  #   logger.debug "Catalogue: entered POST /v2/tgo-packages/mappings"
+  #   halt 415 unless request.content_type == 'application/x-yaml' or request.content_type == 'application/json'
+  #
+  #   # Compatibility support for YAML content-type
+  #   case request.content_type
+  #     when 'application/x-yaml'
+  #       # Validate YAML format
+  #       mapping, errors = parse_yaml(request.body.read)
+  #       halt 400, 'Error in parsing file' if errors
+  #
+  #       # Translate from YAML format to JSON format
+  #       new_mapping_json = yaml_to_json(mapping)
+  #
+  #       # Validate JSON format
+  #       new_mapping, errors = parse_json(new_mapping_json)
+  #
+  #     else
+  #       # Compatibility support for JSON content-type
+  #       # Parses and validates JSON format
+  #       new_mapping, errors = parse_json(request.body.read)
+  #   end
+  #   halt 400, 'Error in parsing file' if errors
+  #
+  #   # Check if a package matches with the uuid with the uuid from the mapping file
+  #   begin
+  #     tgopkg = FileContainer.find_by('_id' => new_mapping['tgo_package_uuid'])
+  #   rescue Mongoid::Errors::DocumentNotFound
+  #     halt 400, "Package with {id => #{new_mapping['tgo_package_uuid']}} not found"
+  #   end
+  #
+  #   begin
+  #     if tgo_package_dep_mapping(new_mapping, tgopkg)
+  #       new_mapping.delete('tgo_package_uuid')
+  #       tgopkg.update_attributes(mapping: new_mapping)
+  #     end
+  #   rescue Moped::Errors::OperationFailure => e
+  #     json_error 400, 'ERROR: Operation of updating mappings failed'
+  #   end
+  #   halt 200, "Updated mappings of tgo-package with {id => #{tgopkg['_id']}}"
+  # end
 
   # @method update_package_group_name_version
   # @overload put '/catalogues/packages/vendor/:package_group/name/:package_name/version/:package_version
@@ -932,8 +975,8 @@ class CatalogueV2 < SonataCatalogue
     new_pd['_id'] = SecureRandom.uuid # Unique UUIDs per PD entries
     new_pd['pd'] = new_pks
     new_pd['status'] = 'active'
-    new_pd['package_file_id'] = nil
-    new_pd['package_file_name'] = nil
+    # new_pd['package_file_id'] = nil
+    # new_pd['package_file_name'] = nil
     new_pd['signature'] = nil
     new_pd['md5'] = checksum new_pks.to_s
     new_pd['username'] = username
@@ -1102,8 +1145,8 @@ class CatalogueV2 < SonataCatalogue
         new_pd['_id'] = SecureRandom.uuid # Unique UUIDs per PD entries
         new_pd['pd'] = new_pks
         new_pd['status'] = 'active'
-        new_pd['package_file_id'] = nil
-        new_pd['package_file_name'] = nil
+        # new_pd['package_file_id'] = nil
+        # new_pd['package_file_name'] = nil
         new_pd['signature'] = nil
         new_pd['md5'] = checksum new_pks.to_s
         new_pd['username'] = username
@@ -1146,7 +1189,7 @@ class CatalogueV2 < SonataCatalogue
       # Validate YAML format
       # When updating a PD, the json object sent to API must contain just data inside
       # of the pd, without the json field pd: before
-      status_info, errors = parse_yaml(request.body.read)
+      status_info, errors = prake ci:allarse_yaml(request.body.read)
       halt 400, errors.to_json if errors
     else
       # Compatibility support for JSON content-type
@@ -1233,5 +1276,10 @@ class CatalogueV2 < SonataCatalogue
     end
     logger.debug "Catalogue: leaving DELETE /v2/packages/#{params[:id]} with 'No PD ID specified'"
     json_error 400, 'No PD ID specified'
+  end
+
+  delete '/packages_debug/:id/?' do
+    pks = Pkgd.find(params[:id])
+    pks.destroy
   end
 end

@@ -102,11 +102,12 @@ RSpec.describe CatalogueV2 do
                      samples/dependencies_mapping/5gtango-ns-package.tgo]
         $tgop_uuids = []
         filenames.each do |filename|
-          headers = { 'CONTENT_TYPE' => 'application/zip',
+          headers = { 'CONTENT_TYPE' => 'application/octet-stream',
                       'HTTP_CONTENT_DISPOSITION' => "attachment; filename=#{filename}" }
           response = post '/tgo-packages', File.binread(filename), headers
           tgo_body = JSON.parse(response.body)
           $tgop_uuids << tgo_body['uuid']
+          $tgo_filenames = filenames
         end
       end
       subject { last_response }
@@ -115,21 +116,6 @@ RSpec.describe CatalogueV2 do
     end
   end
 
-  let(:package_descriptor) {Rack::Test::UploadedFile.new('samples/dependencies_mapping/NAPD.json','application/json', true)}
-  describe 'POST \'/api/v2/packages\'' do
-    context 'with correct parameters' do
-      it 'Submit a pd for tgo package mapping' do
-        headers = { 'CONTENT_TYPE' => 'application/json' }
-        post '/packages', package_descriptor, headers
-        expect(last_response.status).to eq(201)
-        pd_body = JSON.parse(last_response.body)
-        $pd_testpkg_id = pd_body['uuid']
-        $pd_testpkg_name = (pd_body['pd']['name'])
-        $pd_testpkg_vendor = (pd_body['pd']['vendor'])
-        $pd_testpkg_version = (pd_body['pd']['version'])
-      end
-    end
-  end
 
   let(:vnf_descriptor) {Rack::Test::UploadedFile.new('samples/dependencies_mapping/myvnfd.json','application/json', true)}
   describe 'POST \'/api/v2/vnfs\'' do
@@ -139,13 +125,14 @@ RSpec.describe CatalogueV2 do
         post '/vnfs', vnf_descriptor, headers
         expect(last_response.status).to eq(201)
         vnf_body = JSON.parse(last_response.body)
+        $vnf_testpkg_uuid = vnf_body['uuid']
         $vnf_testpkg_name = (vnf_body['vnfd']['name'])
         $vnf_testpkg_vendor = (vnf_body['vnfd']['vendor'])
         $vnf_testpkg_version = (vnf_body['vnfd']['version'])
       end
     end
   end
-
+  #
   let(:ns_descriptor) {Rack::Test::UploadedFile.new('samples/dependencies_mapping/mynsd.json','application/json', true)}
   describe 'POST \'/api/v2/network-services\'' do
     context 'with correct parameters' do
@@ -154,6 +141,7 @@ RSpec.describe CatalogueV2 do
         post '/network-services', ns_descriptor, headers
         expect(last_response.status).to eq(201)
         ns_body = JSON.parse(last_response.body)
+        $ns_testpkg_uuid = ns_body['uuid']
         $ns_testpkg_name = (ns_body['nsd']['name'])
         $ns_testpkg_vendor = (ns_body['nsd']['vendor'])
         $ns_testpkg_version = (ns_body['nsd']['version'])
@@ -166,7 +154,8 @@ RSpec.describe CatalogueV2 do
     context 'post arbitrary files' do
       before do
         $file_uuids = []
-        filenames = ['samples/dependencies_mapping/cloud.init']
+        filenames = ['samples/dependencies_mapping/cloud.init',
+                     'samples/dependencies_mapping/MyExample']
         filenames.each do |filename|
           headers = { 'CONTENT_TYPE' => 'application/octet-stream',
                       'HTTP_CONTENT_DISPOSITION' => "attachment; filename=#{filename}" }
@@ -182,33 +171,76 @@ RSpec.describe CatalogueV2 do
   end
 
 
-  describe 'POST \'/api/v2/tgo-packages/mappings\'' do
+  let(:package_descriptor) {Rack::Test::UploadedFile.new('samples/dependencies_mapping/NAPD.json','application/json', true)}
+  describe 'POST \'/api/v2/packages\'' do
     context 'with correct parameters' do
       it 'Submit a pd for tgo package mapping' do
         headers = { 'CONTENT_TYPE' => 'application/json' }
-
-        mapping = {}
-        mapping['tgo_package_uuid'] = $tgop_uuids[1].to_s
-        mapping['vnfds'] = []
-        mapping['nsds'] = []
-        mapping['files'] = []
-        mapping['deps'] = []
-        mapping['pd'] = {name: $pd_testpkg_name.to_s,
-                     vendor: $pd_testpkg_vendor.to_s,
-                     version: $pd_testpkg_version.to_s}
-        mapping['vnfds'] << {name: $vnf_testpkg_name.to_s,
-                        vendor: $vnf_testpkg_vendor.to_s,
-                        version: $vnf_testpkg_version.to_s}
-        mapping['nsds'] << {name: $ns_testpkg_name.to_s,
-                        vendor: $ns_testpkg_vendor.to_s,
-                        version: $ns_testpkg_version.to_s}
-        mapping['files'] << {file_name: $file_names[0].to_s,
-                         file_uuid: $file_uuids[0].to_s}
-        post '/tgo-packages/mappings', mapping.to_json, headers
-        expect(last_response.status).to eq(200)
+        post '/packages', package_descriptor, headers
+        pd_body = JSON.parse(last_response.body)
+        $pd_testpkg_id = pd_body['uuid']
+        pd_body = pd_body['pd']
+        pd_body['package_content'].each do |content|
+          if content['content-type'].split('.')[-1] == 'vnfd'
+            content['id'] = {name: $vnf_testpkg_name.to_s,
+                             vendor:$vnf_testpkg_vendor.to_s,
+                             version:$vnf_testpkg_version.to_s }
+            content['uuid'] = $vnf_testpkg_uuid.to_s
+          elsif content['content-type'].split('.')[-1] == 'nsd'
+            content['id'] = {name: $ns_testpkg_name.to_s,
+                             vendor:$ns_testpkg_vendor.to_s,
+                             version:$ns_testpkg_version.to_s }
+            content['uuid'] = $ns_testpkg_uuid.to_s
+          elsif content['content-type'].split('.')[-1] == 'tstd'
+          content['id'] = {name: $ns_testpkg_name.to_s,
+                           vendor:$ns_testpkg_vendor.to_s,
+                           version:$ns_testpkg_version.to_s }
+          content['uuid'] = $ns_testpkg_uuid.to_s
+          else
+            if content['source'].split('/')[-1] == $file_names[0].split('/')[-1]
+              content['uuid'] = $file_uuids[0].to_s
+            elsif content['source'].split('/')[-1] == $file_names[1].split('/')[-1]
+              content['uuid'] = $file_uuids[1].to_s
+            end
+          end
+        end
+        pd_body['package_file_uuid'] = $tgop_uuids[0].to_s
+        pd_body['package_file_name'] = $tgo_filenames[0].to_s
+        delete '/packages_debug/' + $pd_testpkg_id.to_s
+        post '/packages', pd_body.to_json, headers
+        pd_body_fin = JSON.parse(last_response.body)
+        $pd_testpkg_id_fin = pd_body_fin['uuid']
+        expect(last_response.status).to eq(201)
       end
     end
   end
+  # describe 'POST \'/api/v2/tgo-packages/mappings\'' do
+  #   context 'with correct parameters' do
+  #     it 'Submit a pd for tgo package mapping' do
+  #       headers = { 'CONTENT_TYPE' => 'application/json' }
+  #
+  #       mapping = {}
+  #       mapping['tgo_package_uuid'] = $tgop_uuids[1].to_s
+  #       mapping['vnfds'] = []
+  #       mapping['nsds'] = []
+  #       mapping['files'] = []
+  #       mapping['deps'] = []
+  #       mapping['pd'] = {name: $pd_testpkg_name.to_s,
+  #                    vendor: $pd_testpkg_vendor.to_s,
+  #                    version: $pd_testpkg_version.to_s}
+  #       mapping['vnfds'] << {name: $vnf_testpkg_name.to_s,
+  #                       vendor: $vnf_testpkg_vendor.to_s,
+  #                       version: $vnf_testpkg_version.to_s}
+  #       mapping['nsds'] << {name: $ns_testpkg_name.to_s,
+  #                       vendor: $ns_testpkg_vendor.to_s,
+  #                       version: $ns_testpkg_version.to_s}
+  #       mapping['files'] << {file_name: $file_names[0].to_s,
+  #                        file_uuid: $file_uuids[0].to_s}
+  #       post '/tgo-packages/mappings', mapping.to_json, headers
+  #       expect(last_response.status).to eq(200)
+  #     end
+  #   end
+  # end
 
   describe 'GET tgo-packages' do
     context 'with uuid given' do
@@ -297,7 +329,7 @@ RSpec.describe CatalogueV2 do
     context 'deleting pds' do
       before do
         puts 'Deleting sonata-demo.son'
-        delete_response = delete '/packages/' + $pd_testpkg_id.to_s
+        delete_response = delete '/packages/' + $pd_testpkg_id_fin.to_s
         puts delete_response.body
         puts
         expect(delete_response.status).to eq(200)
@@ -310,9 +342,9 @@ RSpec.describe CatalogueV2 do
         expect(result['result']['delete']['nsds'][0]['name']).to eq('myns')
         expect(result['result']['delete']['nsds'][0]['vendor']).to eq('eu.5gtango')
         expect(result['result']['delete']['nsds'][0]['version']).to eq('0.1')
-        expect(result['result']['delete']['files'].length).to eq(1)
-        expect(result['result']['delete']['files'][0]['file_name']).to eq($file_names[0].to_s)
-        expect(result['result']['delete']['files'][0]['file_uuid']).to eq($file_uuids[0].to_s)
+        expect(result['result']['delete']['files'].length).to eq(2)
+        expect(result['result']['delete']['files'][0]['uuid']).to eq($file_uuids[1].to_s)
+        expect(result['result']['delete']['files'][1]['uuid']).to eq($file_uuids[0].to_s)
       end
       subject { last_response }
       its(:status) { is_expected.to eq 200 }

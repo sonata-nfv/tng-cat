@@ -141,8 +141,6 @@ class Pkgd
 
   field :pd, type: Hash
   field :status, type: String
-  field :package_id, type: String
-  field :package_name, type: String
   field :signature, type: String
   field :username, type: String
   validates :pd, presence: true

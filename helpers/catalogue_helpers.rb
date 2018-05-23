@@ -380,17 +380,17 @@ class SonataCatalogue < Sinatra::Application
   # @param [Hash] target_package Target package to check
   # @param [Boolean] active_criteria true: checks the status of the package avoiding returning deps on inactive ones
   # @return [Boolean] true if there is some other package (different from target) depending on the descriptor
-  def check_dependencies(desc_type, desc, target_package = nil, active_criteria = false)
-    dependent_packages = FileContainer.where(
-        { 'mapping.' + desc_type => { '$elemMatch' => { name: desc[:name],
-                                           vendor: desc[:vendor],
-                                           version: desc[:version] } } })
+  def check_dependencies(desc, target_package = nil, active_criteria = false)
+    dependent_packages = Pkgd.where(
+        { 'pd.package_content'  => { '$elemMatch' => { 'id.name' => desc['id'][:name],
+                                                    'id.vendor' => desc['id'][:vendor],
+                                                    'id.version' => desc['id'][:version] } } })
     dependent_packages.each do |dp|
       diffp_condition = true
       if target_package != nil
-        diffp_condition = ( (dp['mapping']['pd']['name'] != target_package['name']) or
-            (dp['mapping']['pd']['vendor'] != target_package['vendor']) or
-            (dp['mapping']['pd']['version'] != target_package['version']) )
+        diffp_condition = ( (dp['pd']['name'] != target_package['name']) or
+            (dp['pd']['vendor'] != target_package['vendor']) or
+            (dp['pd']['version'] != target_package['version']) )
       end
       if diffp_condition
         if active_criteria
@@ -404,15 +404,14 @@ class SonataCatalogue < Sinatra::Application
   end
 
   def check_dependencies_files(desc, target_package = nil, active_criteria = false)
-    dependent_files = FileContainer.where(
-        { 'mapping.files' => { '$elemMatch' => { file_name: desc[:name],
-                                                        file_uuid: desc[:vendor]}}})
+    dependent_files = Pkgd.where(
+        { 'pd.package-content' => { '$elemMatch' => {uuid: desc[:uuid]}}})
     dependent_files.each do |dp|
       diffp_condition = true
       if target_package != nil
-        diffp_condition = ( (dp['mapping']['pd']['name'] != target_package['name']) or
-            (dp['mapping']['pd']['vendor'] != target_package['vendor']) or
-            (dp['mapping']['pd']['version'] != target_package['version']) )
+        diffp_condition = ( (dp['pd']['name'] != target_package['name']) or
+            (dp['pd']['vendor'] != target_package['vendor']) or
+            (dp['pd']['version'] != target_package['version']) )
       end
       if diffp_condition
         if active_criteria
@@ -455,9 +454,9 @@ class SonataCatalogue < Sinatra::Application
   # @return [Boolean] true/false
   def instanced_descriptor?(desc_type, descriptor)
     if desc_type == :vnfd
-      desc = Vnfd.where({ 'vnfd.name' => descriptor['name'],
-                          'vnfd.vendor' => descriptor['vendor'],
-                          'vnfd.version' => descriptor['version'] }).first
+      desc = Vnfd.where({ 'vnfd.name' => descriptor['id']['name'],
+                          'vnfd.vendor' => descriptor['id']['vendor'],
+                          'vnfd.version' => descriptor['id']['version'] }).first
       return false if desc.nil?
       # instances = Vnfr.where( 'descriptor_reference' => desc['_id'] }).count
       begin
@@ -468,9 +467,9 @@ class SonataCatalogue < Sinatra::Application
         return false
       end
     elsif desc_type == :nsd
-      desc = Nsd.where({ 'nsd.name' => descriptor['name'],
-                         'nsd.vendor' => descriptor['vendor'],
-                         'nsd.version' => descriptor['version'] }).first
+      desc = Nsd.where({ 'nsd.name' => descriptor['id']['name'],
+                         'nsd.vendor' => descriptor['id']['vendor'],
+                         'nsd.version' => descriptor['id']['version'] }).first
       return false if desc.nil?
       begin
         resp_rep = HTTParty.get('https://tng-rep:4011/records/nsr/descriptor_reference=' + desc['_id'],
@@ -480,9 +479,9 @@ class SonataCatalogue < Sinatra::Application
         return false
       end
     elsif desc_type == :testd
-      desc = Testd.where({ 'testd.name' => descriptor['name'],
-                          'testd.vendor' => descriptor['vendor'],
-                          'testd.version' => descriptor['version'] }).first
+      desc = Testd.where({ 'testd.name' => descriptor['id']['name'],
+                          'testd.vendor' => descriptor['id']['vendor'],
+                          'testd.version' => descriptor['id']['version'] }).first
       return false if desc.nil?
       # instances = Vnfr.where( 'descriptor_reference' => desc['_id'] }).count
       begin
@@ -501,32 +500,27 @@ class SonataCatalogue < Sinatra::Application
   # Method returning descritptor information depending if there's one component instanced
   # @param [Pkgd] package Package descriptor model
   # @return [Hash] instantiated vnfds and nsds arrays
+  # content['content-type'].split('.')[-1] == 'nsd'
   def instanced_components(mapping)
     vnfds = []
     nsds = []
     testds = []
-    unless mapping['vnfds'].nil?
-      mapping['vnfds'].each do |vnfd|
-        if instanced_descriptor?(:vnfd, vnfd)
-          vnfds << vnfd
+    mapping.each do |content|
+      if content['content-type'].split('.')[-1] == 'vnfd'
+        if instanced_descriptor?(:vnfd, content)
+          vnfds << content['id']
+        end
+      elsif content['content-type'].split('.')[-1] == 'nsd'
+        if instanced_descriptor?(:nsd, content)
+          nsds << content['id']
+        end
+      elsif content['content-type'].split('.')[-1] == 'testd'
+        if instanced_descriptor?(:testd, content)
+          testds << content['id']
         end
       end
     end
-    unless mapping['nsds'].nil?
-      mapping['nsds'].each do |nsd|
-        if instanced_descriptor?(:nsd, nsd)
-          nsds << nsd
-          end
-      end
-    end
-    unless mapping['testds'].nil?
-      mapping['testds'].each do |testd|
-        if instanced_descriptor?(:testd, testd)
-          testds << testd
-        end
-        end
-    end
-      {vnfds: vnfds, nsds: nsds, testds: testds}
+    {vnfds: vnfds, nsds: nsds, testds: testds}
   end
 
 
@@ -543,44 +537,34 @@ class SonataCatalogue < Sinatra::Application
   def intelligent_nodeps(mapping, package, nodeps_sym = :delete, deps_sym = :cant_delete, active_criteria = false)
     vnfds, nsds, testds, files, cant_delete_vnfds = [], [], [], [], []
     cant_delete_nsds, cant_delete_testds, cant_delete_files = [], [], []
-    pdep_mapping = mapping
-    unless pdep_mapping['vnfds'].nil?
-      pdep_mapping['vnfds'].each do |vnfd|
-        if check_dependencies('vnfds', vnfd, package.pd, active_criteria)
-          logger.info 'VNFD ' + vnfd[:name] + ' has more than one dependency'
-          cant_delete_vnfds << vnfd
+    mapping.each do |content|
+      if content['content-type'].split('.')[-1] == 'vnfd'
+        if check_dependencies( content, package.pd, active_criteria)
+          logger.info 'VNFD ' + content['id'][:name] + ' has more than one dependency'
+          cant_delete_vnfds << content['id']
         else
-          vnfds << vnfd
+          vnfds << content['id']
         end
-      end
-    end
-    unless pdep_mapping['nsds'].nil?
-      pdep_mapping['nsds'].each do |nsd|
-        if check_dependencies('nsds', nsd, package.pd, active_criteria)
-          logger.info 'NSD ' + nsd[:name] + ' has more than one dependency'
-          cant_delete_nsds << nsd
+      elsif content['content-type'].split('.')[-1] == 'nsd'
+        if check_dependencies(content, package.pd, active_criteria)
+          logger.info 'NSD ' + content['id'][:name] + ' has more than one dependency'
+          cant_delete_nsds << content['id']
         else
-          nsds << nsd
+          nsds << content['id']
         end
-      end
-    end
-    unless pdep_mapping['testds'].nil?
-      pdep_mapping['testds'].each do |testd|
-        if check_dependencies('testds', testd, package.pd, active_criteria)
-          logger.info 'TESTD ' + testd[:name] + ' has more than one dependency'
-          cant_delete_testds << testd
+      elsif content['content-type'].split('.')[-1] == 'tstd'
+        if check_dependencies(content, package.pd, active_criteria)
+          logger.info 'TESTD ' + content['id'][:name] + ' has more than one dependency'
+          cant_delete_testds << content['id']
         else
-          testds << testd
+          testds << content['id']
         end
-      end
-    end
-    unless pdep_mapping['files'].nil?
-      pdep_mapping['files'].each do |file|
-        if check_dependencies_files(file, package.pd, active_criteria)
-          logger.info 'File ' + file[:file_name] + ' has more than one dependency'
-          cant_delete_files << file
+      else
+        if check_dependencies_files(content, package.pd, active_criteria)
+          logger.info 'File with {uuid =>' + content[:uuid] + '} has more than one dependency'
+          cant_delete_files << {uuid: content[:uuid]}
         else
-          files << file
+          files << {uuid: content[:uuid]}
         end
       end
     end
@@ -652,8 +636,7 @@ class SonataCatalogue < Sinatra::Application
   def delete_files(files)
     not_found = []
     files.each do |file|
-      file_stored = Files.where({ '_id' => file['file_uuid'],
-                                 'file_name' => file['file_name']}).first
+      file_stored = Files.where({ '_id' => file[:uuid]}).first
       if file_stored.nil?
         logger.error 'File not found ' + file.to_s
         not_found << file
@@ -673,11 +656,12 @@ class SonataCatalogue < Sinatra::Application
   # @return [void]
   def delete_pd(descriptor)
     # first find dependencies_mapping
-    pkg = FileContainer.find_by('_id' => descriptor['package_file_id'])
+    pkg = FileContainer.find_by('_id' => descriptor['pd']['package_file_uuid'])
     descriptor.destroy
     grid_fs = Mongoid::GridFs
     grid_fs.delete(pkg['grid_fs_id'])
     pkg.destroy
+    descriptor.destroy
   end
 
   # Method Set status of vnfds from name, vendor, version
@@ -735,23 +719,23 @@ class SonataCatalogue < Sinatra::Application
     end
   end
 
-  #Method of fetching package mapping metadata from package descriptor
-  def fetch_pkg_mapping(pks)
-    if pks['package_file_id'].nil?
-      logger.debug "Catalogue: leaving DELETE /api/v2/packages?#{query_string}\" with PD #{pks}"
-      pks.destroy
-      json_return 200, "Mapping package file not found. Delete only PD {_id => #{pks['_id']}"
-    else
-      pkg = FileContainer.find_by('_id' => pks['package_file_id'])
-    end
-    pkg['mapping']
-  end
+  # #Method of fetching package mapping metadata from package descriptor
+  # def fetch_pkg_mapping(pks)
+  #   if pks['package_file_id'].nil?
+  #     logger.debug "Catalogue: leaving DELETE /api/v2/packages?#{query_string}\" with PD #{pks}"
+  #     pks.destroy
+  #     json_return 200, "Mapping package file not found. Delete only PD {_id => #{pks['_id']}"
+  #   else
+  #     pkg = FileContainer.find_by('_id' => pks['package_file_id'])
+  #   end
+  #   pkg['mapping']
+  # end
 
   # Method deleting pd from name, vendor, version
   # @param [Hash] pks Package model hash
   # @return [void]
   def intelligent_delete(pks)
-    mapping = fetch_pkg_mapping(pks)
+    mapping = pks['pd']['package_content']
     icomps = instanced_components(mapping)
     halt 500, JSON.generate(error: 'Can\'t search for instanced components') if icomps.nil?
     if ( icomps[:vnfds].length > 0 ) or ( icomps[:nsds].length > 0 ) or ( icomps[:testds].length > 0 )

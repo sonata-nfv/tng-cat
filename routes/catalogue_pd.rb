@@ -76,7 +76,7 @@ class CatalogueV1 < SonataCatalogue
       keyed_params.delete(:version)
       # puts 'keyed_params(2)', keyed_params
 
-      pks = Package.where((keyed_params)).sort({ 'version' => -1 }) #.limit(1).first()
+      pks = Package.where((keyed_params)).sort( 'version' => -1 ) #.limit(1).first()
       logger.info "Catalogue: PDs=#{pks}"
       # pks = pks.sort({"version" => -1})
       # puts 'pks: ', pks.to_json
@@ -225,14 +225,14 @@ class CatalogueV1 < SonataCatalogue
 
     # Check if PD already exists in the catalogue by name, vendor and version
     begin
-      pks = Package.find_by({ 'name' => new_pks['name'], 'vendor' => new_pks['vendor'], 'version' => new_pks['version'] })
+      pks = Package.find_by('name' => new_pks['name'], 'vendor' => new_pks['vendor'], 'version' => new_pks['version'])
       json_return 200, 'Duplicated Package Name, Vendor and Version'
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
     end
     # Check if PD has an ID (it should not) and if it already exists in the catalogue
     begin
-      pks = Package.find_by({ '_id' => new_pks['_id'] })
+      pks = Package.find_by('_id' => new_pks['_id'])
       json_return 200, 'Duplicated Package ID'
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
@@ -327,8 +327,8 @@ class CatalogueV1 < SonataCatalogue
       json_error 400, 'Update Vendor, Name and Version parameters are null'
     else
       begin
-        pks = Package.find_by({ 'vendor' => keyed_params[:vendor], 'name' => keyed_params[:name],
-                                'version' => keyed_params[:version] })
+        pks = Package.find_by('vendor' => keyed_params[:vendor], 'name' => keyed_params[:name],
+                                'version' => keyed_params[:version])
         puts "Package is found #{pks.to_s}"
       rescue Mongoid::Errors::DocumentNotFound => e
         json_error 404, "The PD Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist"
@@ -336,7 +336,7 @@ class CatalogueV1 < SonataCatalogue
     end
     # Check if PD already exists in the catalogue by name, group and version
     begin
-      pks = Package.find_by({ 'name' => new_pks['name'], 'vendor' => new_pks['vendor'], 'version' => new_pks['version'] })
+      pks = Package.find_by('name' => new_pks['name'], 'vendor' => new_pks['vendor'], 'version' => new_pks['version'])
       json_return 200, 'Duplicated PD Name, Vendor and Version'
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
@@ -401,7 +401,7 @@ class CatalogueV1 < SonataCatalogue
         # Retrieve stored version
         begin
           puts 'Searching ' + params[:id].to_s
-          pks = Package.find_by({ '_id' => params[:id] })
+          pks = Package.find_by('_id' => params[:id])
           puts 'Package is found'
         rescue Mongoid::Errors::DocumentNotFound => e
           json_error 404, 'This PD does not exists'
@@ -443,7 +443,7 @@ class CatalogueV1 < SonataCatalogue
         # Retrieve stored version
         begin
           puts 'Searching ' + params[:id].to_s
-          pks = Package.find_by({ '_id' => params[:id] })
+          pks = Package.find_by('_id' => params[:id])
           puts 'Package is found'
         rescue Mongoid::Errors::DocumentNotFound => e
           json_error 404, 'This PD does not exists'
@@ -452,7 +452,7 @@ class CatalogueV1 < SonataCatalogue
         # Validate son-package uuid
         begin
           puts 'Searching ' + params[:sonp_uuid].to_s
-          sonp = FileContainer.find_by({ '_id' => params[:sonp_uuid] })
+          sonp = FileContainer.find_by('_id' => params[:sonp_uuid])
           p 'Filename: ', sonp['package_name']
           puts 'son-package is found'
         rescue Mongoid::Errors::DocumentNotFound => e
@@ -512,7 +512,7 @@ class CatalogueV1 < SonataCatalogue
         # Retrieve stored version
         begin
           puts 'Searching ' + params[:id].to_s
-          pks = Package.find_by({ '_id' => params[:id] })
+          pks = Package.find_by('_id' => params[:id])
           puts 'Package is found'
         rescue Mongoid::Errors::DocumentNotFound => e
           json_error 404, "The PD ID #{params[:id]} does not exist"
@@ -520,8 +520,8 @@ class CatalogueV1 < SonataCatalogue
 
         # Check if Package already exists in the catalogue by name, vendor and version
         begin
-          pks = Package.find_by({ 'name' => new_pks['name'], 'vendor' => new_pks['vendor'],
-                                  'version' => new_pks['version'] })
+          pks = Package.find_by('name' => new_pks['name'], 'vendor' => new_pks['vendor'],
+                                  'version' => new_pks['version'])
           json_return 200, 'Duplicated Package Name, Vendor and Version'
         rescue Mongoid::Errors::DocumentNotFound => e
           # Continue
@@ -580,8 +580,8 @@ class CatalogueV1 < SonataCatalogue
 
     unless keyed_params[:vendor].nil? && keyed_params[:name].nil? && keyed_params[:version].nil?
       begin
-        pks = Package.find_by({ 'vendor' => keyed_params[:vendor], 'name' => keyed_params[:name],
-                                'version' => keyed_params[:version] })
+        pks = Package.find_by('vendor' => keyed_params[:vendor], 'name' => keyed_params[:name],
+                                'version' => keyed_params[:version])
         puts 'Package is found'
       rescue Mongoid::Errors::DocumentNotFound => e
         json_error 404, "The PD Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist"
@@ -654,7 +654,7 @@ class CatalogueV2 < SonataCatalogue
       # Do query for last version -> get_pd_package_vendor_last_version
       keyed_params.delete(:'pd.version')
 
-      pks = Pkgd.where((keyed_params)).sort({ 'pd.version' => -1 }) #.limit(1).first()
+      pks = Pkgd.where((keyed_params)).sort( 'pd.version' => -1 ) #.limit(1).first()
       logger.info "Catalogue: PDs=#{pks}"
       # pks = pks.sort({"version" => -1})
 
@@ -745,6 +745,80 @@ class CatalogueV2 < SonataCatalogue
     json_error 400, 'No PD ID specified'
   end
 
+  # @method get_packages_package_id_files_
+  # @overload get '/catalogues/packages/:id/files/?'
+  #	  GET all files with the content type referenced in pd
+  #	  @param :id [Symbol] package_uuid Package id
+  get '/packages/:id/files/?' do
+    unless params[:id].nil?
+      logger.debug "Catalogue: GET /v2/packages/#{params[:id]}/files"
+      begin
+        pks = Pkgd.find(params[:id])
+      rescue Mongoid::Errors::DocumentNotFound => e
+        logger.error e
+        json_error 404, "The PD ID #{params[:id]} does not exist" unless pks
+      end
+
+      response = ''
+      case request.content_type
+        when 'application/json'
+          response = pks['pd']['package_content'].to_json
+        when 'application/x-yaml'
+          response = json_to_yaml(pks['pd']['package_content'].to_json)
+        else
+          halt 415, 'Unsupported media type'
+      end
+      halt 200, {'Content-type' => request.content_type}, response
+    end
+    logger.debug "Catalogue: leaving GET /v2/packages/#{params[:id]}/files with 'No PD ID specified'"
+    json_error 400, 'No PD ID specified'
+  end
+
+
+  # @method get_packages_package_id_files_fileuuid
+  # @overload get '/catalogues/packages/:id/files/file_uuid?'
+  #	  GET one specific file with the content type referenced in pd
+  #	  @param :id [Symbol] package_uuid Package id
+  # 	@param :file_uuid [Symbol] file_uuid file id
+  get '/packages/:id/files/:file_uuid/?' do
+    unless params[:id].nil?
+      logger.debug "Catalogue: GET /v2/packages/#{params[:id]}/files/#{params[:file_uuid]}}"
+      logger.info "#{params[:file_uuid]}"
+      begin
+        pks = Pkgd.find(params[:id])
+      rescue Mongoid::Errors::DocumentNotFound => e
+        logger.error e
+        json_error 404, "The PD ID #{params[:id]} does not exist" unless pks
+      end
+      content_type = 'application/octet-stream'
+      pks['pd']['package_content'].each do |content|
+        content_type = content['content-type'] if content['uuid'] == params[:file_uuid]
+      end
+
+      begin
+        file = Files.find_by('_id' => params[:file_uuid])
+        logger.info
+        p 'Filename: ', file['file_name']
+        p 'grid_fs_id: ', file['grid_fs_id']
+      rescue Mongoid::Errors::DocumentNotFound => e
+        logger.error e
+        json_error 404, "File with {uuid => #{params[:file_uuid]}} not found"
+      end
+
+      grid_fs = Mongoid::GridFs
+      grid_file = grid_fs.get(file['grid_fs_id'])
+
+      # Set custom header with Filename
+      headers 'Filename' => (file['file_name'].to_s)
+
+      logger.debug "Catalogue: leaving GET /files/#{params[:id]}"
+      halt 200, {'Content-type' => content_type}, grid_file.data
+
+    end
+    logger.debug "Catalogue: leaving GET /v2/packages/#{params[:id]}/files/#{params[:file_uuid]} with 'No PD ID specified'"
+    json_error 400, 'No PD ID specified'
+  end
+
   # @method post_package
   # @overload post '/catalogues/packages'
   # Post a Package in JSON or YAML format
@@ -788,15 +862,15 @@ class CatalogueV2 < SonataCatalogue
 
     # Check if PD already exists in the catalogue by name, vendor and version
     begin
-      pks = Pkgd.find_by({ 'pd.name' => new_pks['name'], 'pd.vendor' => new_pks['vendor'],
-                           'pd.version' => new_pks['version'] })
+      pks = Pkgd.find_by('pd.name' => new_pks['name'], 'pd.vendor' => new_pks['vendor'],
+                           'pd.version' => new_pks['version'])
       halt 409, "Duplicate with Package ID => #{pks['_id']}"
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
     end
     # Check if PD has an ID (it should not) and if it already exists in the catalogue
     begin
-      pks = Pkgd.find_by({ '_id' => new_pks['_id'] })
+      pks = Pkgd.find_by('_id' => new_pks['_id'])
       halt 409, 'Duplicated Package ID'
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
@@ -947,8 +1021,8 @@ class CatalogueV2 < SonataCatalogue
       json_error 400, 'Update Vendor, Name and Version parameters are null'
     else
       begin
-        pks = Pkgd.find_by({ 'pd.vendor' => keyed_params[:vendor], 'pd.name' => keyed_params[:name],
-                                'pd.version' => keyed_params[:version] })
+        pks = Pkgd.find_by('pd.vendor' => keyed_params[:vendor], 'pd.name' => keyed_params[:name],
+                                'pd.version' => keyed_params[:version])
         puts 'Package is found'
       rescue Mongoid::Errors::DocumentNotFound => e
         json_error 404, "The PD Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist"
@@ -956,8 +1030,8 @@ class CatalogueV2 < SonataCatalogue
     end
     # Check if PD already exists in the catalogue by Name, Vendor and Version
     begin
-      pks = Pkgd.find_by({ 'pd.name' => new_pks['name'], 'pd.vendor' => new_pks['vendor'],
-                           'pd.version' => new_pks['version'] })
+      pks = Pkgd.find_by('pd.name' => new_pks['name'], 'pd.vendor' => new_pks['vendor'],
+                           'pd.version' => new_pks['version'])
       json_return 200, 'Duplicated PD Name, Vendor and Version'
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
@@ -1029,7 +1103,7 @@ class CatalogueV2 < SonataCatalogue
         # Retrieve stored version
         begin
           puts 'Searching ' + params[:id].to_s
-          pks = Pkgd.find_by({ '_id' => params[:id] })
+          pks = Pkgd.find_by('_id' => params[:id])
           puts 'Package is found'
         rescue Mongoid::Errors::DocumentNotFound => e
           json_error 404, 'This PD does not exists'
@@ -1060,7 +1134,7 @@ class CatalogueV2 < SonataCatalogue
         # Retrieve stored version
         begin
           puts 'Searching ' + params[:id].to_s
-          pks = Pkgd.find_by({ '_id' => params[:id] })
+          pks = Pkgd.find_by('_id' => params[:id])
           puts 'Package is found'
         rescue Mongoid::Errors::DocumentNotFound => e
           json_error 404, 'This PD does not exists'
@@ -1069,7 +1143,7 @@ class CatalogueV2 < SonataCatalogue
         # Validate son-package uuid
         begin
           puts 'Searching ' + params[:sonp_uuid].to_s
-          sonp = FileContainer.find_by({ '_id' => params[:sonp_uuid] })
+          sonp = FileContainer.find_by('_id' => params[:sonp_uuid])
           p 'Filename: ', sonp['package_name']
           puts 'son-package is found'
         rescue Mongoid::Errors::DocumentNotFound => e
@@ -1118,7 +1192,7 @@ class CatalogueV2 < SonataCatalogue
         # Retrieve stored version
         begin
           puts 'Searching ' + params[:id].to_s
-          pks = Pkgd.find_by({ '_id' => params[:id] })
+          pks = Pkgd.find_by('_id' => params[:id])
           puts 'Package is found'
         rescue Mongoid::Errors::DocumentNotFound => e
           json_error 404, "The PD ID #{params[:id]} does not exist"
@@ -1126,8 +1200,8 @@ class CatalogueV2 < SonataCatalogue
 
         # Check if Package already exists in the catalogue by name, vendor and version
         begin
-          pks = Pkgd.find_by({ 'pd.name' => new_pks['name'], 'pd.vendor' => new_pks['vendor'],
-                                  'pd.version' => new_pks['version'] })
+          pks = Pkgd.find_by('pd.name' => new_pks['name'], 'pd.vendor' => new_pks['vendor'],
+                                  'pd.version' => new_pks['version'])
           json_return 200, 'Duplicated Package Name, Vendor and Version'
         rescue Mongoid::Errors::DocumentNotFound => e
           # Continue
@@ -1204,7 +1278,7 @@ class CatalogueV2 < SonataCatalogue
       halt 400, JSON.generate(error: 'Status should be active/inactive')
     end
     begin
-      pks = Pkgd.find_by({ 'id' => params[:id] })
+      pks = Pkgd.find_by('id' => params[:id])
     rescue Mongoid::Errors::DocumentNotFound => e
       json_error 404, "The PD with id #{params[:id]} does not exist"
     end
@@ -1236,8 +1310,8 @@ class CatalogueV2 < SonataCatalogue
 
     unless keyed_params[:vendor].nil? && keyed_params[:name].nil? && keyed_params[:version].nil?
       begin
-        pks = Pkgd.find_by({ 'pd.vendor' => keyed_params[:vendor], 'pd.name' => keyed_params[:name],
-                                'pd.version' => keyed_params[:version] })
+        pks = Pkgd.find_by('pd.vendor' => keyed_params[:vendor], 'pd.name' => keyed_params[:name],
+                                'pd.version' => keyed_params[:version])
         puts 'Package is found'
       rescue Mongoid::Errors::DocumentNotFound => e
         json_error 404, "The PD Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist"

@@ -102,7 +102,7 @@ RSpec.describe CatalogueV2 do
                      samples/dependencies_mapping/5gtango-ns-package.tgo]
         $tgop_uuids = []
         filenames.each do |filename|
-          headers = { 'CONTENT_TYPE' => 'application/octet-stream',
+          headers = { 'CONTENT_TYPE' => 'application/zip',
                       'HTTP_CONTENT_DISPOSITION' => "attachment; filename=#{filename}" }
           response = post '/tgo-packages', File.binread(filename), headers
           tgo_body = JSON.parse(response.body)
@@ -252,6 +252,30 @@ RSpec.describe CatalogueV2 do
       its(:status) { is_expected.to eq 200 }
     end
   end
+
+
+  describe 'GET /packages/:id/files/' do
+    context 'with uuid given' do
+      before do
+        get '/packages/' + $pd_testpkg_id_fin[0].to_s + '/files',
+            subject { last_response }
+        its(:status) { is_expected.to eq 200 }
+      end
+    end
+  end
+
+
+
+  describe 'GET /packages/:id/files/:file_uuid' do
+    context 'with uuid given' do
+      before do
+        get '/packages/' + $pd_testpkg_id_fin[0].to_s + '/files/'+ $file_uuids.to_s,
+      subject { last_response }
+      its(:status) { is_expected.to eq 200 }
+      end
+    end
+  end
+
   # # Tries to disable first package posted in previous test resulting
   # #    in the deletion of
   # #    {"disabled":

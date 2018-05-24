@@ -140,7 +140,7 @@ class CatalogueV2 < SonataCatalogue
         # temp.close
 
         logger.debug "Catalogue: leaving GET /files/#{params[:id]}"
-        halt 200, grid_file.data
+        halt 200, {'Content-type' => request.content_type}, grid_file.data
 
       when 'application/json'
         begin

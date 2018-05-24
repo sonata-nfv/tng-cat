@@ -130,7 +130,7 @@ class CatalogueV1 < SonataCatalogue
   post '/son-packages' do
     logger.debug 'Catalogue: entered POST /son-packages/'
     # Return if content-type is invalid
-    halt 415 unless request.content_type == 'application/octet-stream'
+    halt 415 unless request.content_type == 'application/zip'
 
     # puts "headers", request.env["HTTP_CONTENT_DISPOSITION"]
     att = request.env['HTTP_CONTENT_DISPOSITION']
@@ -174,7 +174,7 @@ class CatalogueV1 < SonataCatalogue
     grid_fs = Mongoid::GridFs
     grid_file = grid_fs.put(file,
                             filename: filename,
-                            content_type: 'application/octet-stream',
+                            content_type: 'application/zip',
                             # _id: SecureRandom.uuid,
     # :file_hash   => file_hash,
     # :chunk_size   => 100 * 1024,
@@ -308,7 +308,7 @@ class CatalogueV2 < SonataCatalogue
 
     # Check headers
     case request.content_type
-      when 'application/octet-stream'
+      when 'application/zip'
         begin
           tgop = FileContainer.find_by({ '_id' => params[:id] })
           p 'Filename: ', tgop['package_name']
@@ -339,7 +339,7 @@ class CatalogueV2 < SonataCatalogue
         # temp.close
 
         logger.debug "Catalogue: leaving GET /tgo-packages/#{params[:id]}"
-        halt 200, grid_file.data
+        halt 200, {'Content-type' => 'application/zip'}, grid_file.data
         # halt 200, "{Name => #{File.basename(temp.path)}}"
 
       when 'application/json'
@@ -364,7 +364,7 @@ class CatalogueV2 < SonataCatalogue
   post '/tgo-packages' do
     logger.debug "Catalogue: entered POST /v2/tgo-packages?#{query_string}"
     # Return if content-type is invalid
-    halt 415 unless request.content_type == 'application/octet-stream'
+    halt 415 unless request.content_type == 'application/zip'
 
     att = request.env['HTTP_CONTENT_DISPOSITION']
     # tgop_vendor = request.env['HTTP_VENDOR']
@@ -418,7 +418,7 @@ class CatalogueV2 < SonataCatalogue
 
     grid_file = grid_fs.put(file,
                             filename: filename,
-                            content_type: 'application/octet-stream',
+                            content_type: 'application/zip',
                             # _id: SecureRandom.uuid,
     )
 

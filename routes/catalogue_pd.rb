@@ -745,6 +745,36 @@ class CatalogueV2 < SonataCatalogue
     json_error 400, 'No PD ID specified'
   end
 
+  # @method get_packages_package_id_files_
+  # @overload get '/catalogues/packages/:id/files/?'
+  #	  GET all files with the content type referenced in pd
+  #	  @param :id [Symbol] package_uuid Package id
+  get '/packages/:id/files/?' do
+    unless params[:id].nil?
+      logger.debug "Catalogue: GET /v2/packages/#{params[:id]}/files"
+      begin
+        pks = Pkgd.find(params[:id])
+      rescue Mongoid::Errors::DocumentNotFound => e
+        logger.error e
+        json_error 404, "The PD ID #{params[:id]} does not exist" unless pks
+      end
+
+      response = ''
+      case request.content_type
+        when 'application/json'
+          response = pks['pd']['package_content'].to_json
+        when 'application/x-yaml'
+          response = json_to_yaml(pks['pd']['package_content'].to_json)
+        else
+          halt 415, 'Unsupported media type'
+      end
+      halt 200, {'Content-type' => request.content_type}, response
+    end
+    logger.debug "Catalogue: leaving GET /v2/packages/#{params[:id]}/files with 'No PD ID specified'"
+    json_error 400, 'No PD ID specified'
+  end
+
+
   # @method get_packages_package_id_files_fileuuid
   # @overload get '/catalogues/packages/:id/files/file_uuid?'
   #	  GET one specific file with the content type referenced in pd
@@ -753,7 +783,7 @@ class CatalogueV2 < SonataCatalogue
   get '/packages/:id/files/:file_uuid/?' do
     unless params[:id].nil?
       logger.debug "Catalogue: GET /v2/packages/#{params[:id]}/files/#{params[:file_uuid]}}"
-
+      logger.info "#{params[:file_uuid]}"
       begin
         pks = Pkgd.find(params[:id])
       rescue Mongoid::Errors::DocumentNotFound => e
@@ -785,7 +815,7 @@ class CatalogueV2 < SonataCatalogue
       halt 200, {'Content-type' => content_type}, grid_file.data
 
     end
-    logger.debug "Catalogue: leaving GET /v2/packages/#{params[:id]} with 'No PD ID specified'"
+    logger.debug "Catalogue: leaving GET /v2/packages/#{params[:id]}/files/#{params[:file_uuid]} with 'No PD ID specified'"
     json_error 400, 'No PD ID specified'
   end
 

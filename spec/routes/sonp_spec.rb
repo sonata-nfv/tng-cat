@@ -253,6 +253,19 @@ RSpec.describe CatalogueV2 do
     end
   end
 
+
+  describe 'GET /packages/:id/files/' do
+    context 'with uuid given' do
+      before do
+        get '/packages/' + $pd_testpkg_id_fin[0].to_s + '/files',
+            subject { last_response }
+        its(:status) { is_expected.to eq 200 }
+      end
+    end
+  end
+
+
+
   describe 'GET /packages/:id/files/:file_uuid' do
     context 'with uuid given' do
       before do

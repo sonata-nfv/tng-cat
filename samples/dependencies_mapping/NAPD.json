@@ -34,6 +34,15 @@
       "content-type": "text/plain"
     },
     {
+      "source": "Definitions/myvnfd.yaml",
+      "algorithm": "SHA-256",
+      "hash": "44fc832e0be9c78d8a59d8b57abd8d8f47e6b2e5e7ed264f111e51d3413f911b",
+      "content-type": "application/vnd.5gtango.ref",
+      "tags": [
+        "eu.5gtango"
+      ]
+    },
+    {
       "source": "Scripts/cloud.init",
       "algorithm": "SHA-256",
       "hash": "e16360cc3518bde752ac2d506e6bdb6bcb6638a0f94df9ea06975ae910204277",

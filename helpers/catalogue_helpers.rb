@@ -559,7 +559,7 @@ class SonataCatalogue < Sinatra::Application
         else
           testds << content['id']
         end
-      else
+      elseif content['content-type'].split('.')[-1] == 'ref'
         if check_dependencies_files(content, package.pd, active_criteria)
           logger.info 'File with {uuid =>' + content[:uuid] + '} has more than one dependency'
           cant_delete_files << {uuid: content[:uuid]}

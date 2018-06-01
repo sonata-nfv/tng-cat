@@ -433,6 +433,7 @@ class CatalogueV2 < SonataCatalogue
 
         nst_doc = nst.as_document
 
+
         # check if the provided field is in the root level of descriptor (without Catalogues metadata)
         unless nst_doc['nstd'].keys.include? params.keys[0]
           json_error 404, "The field #{query_string} is not in the root level of descriptor"
@@ -444,15 +445,15 @@ class CatalogueV2 < SonataCatalogue
           json_error 400, "The field should be type of string"
         end
 
-
+        keyed_params = add_descriptor_level('nstd', params)
         begin
-          nst.update_attributes(params.keys[0] => params[0])
-          logger.info "#{params.keys[0]}, #{params[0]}"
+          nst.update_attributes({keyed_params.keys[0] => keyed_params.values[0]})
+          logger.info "Change #{keyed_params.keys[0]} to #{keyed_params.values[0]}"
         rescue Moped::Errors::OperationFailure => e
           json_error 400, 'ERROR: Operation failed'
         end
 
-        halt 200, "#{params.keys[0].capitalize} updated to {#{query_string}}"
+        halt 200, "#{params.keys[0]} updated to {#{query_string}}"
       else
         # Compatibility support for YAML content-type
         case request.content_type

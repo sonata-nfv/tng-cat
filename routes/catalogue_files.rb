@@ -144,7 +144,7 @@ class CatalogueV2 < SonataCatalogue
 
       when 'application/json'
         begin
-          file = FileContainer.find_by('_id' => params[:id])
+          file = Files.find_by('_id' => params[:id])
         rescue Mongoid::Errors::DocumentNotFound => e
           logger.error e
           json_error 404, "The file ID #{params[:id]} does not exist" unless file

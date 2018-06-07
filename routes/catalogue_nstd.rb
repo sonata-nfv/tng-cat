@@ -414,6 +414,46 @@ class CatalogueV2 < SonataCatalogue
         end
         halt 200, "Status updated to {#{query_string}}"
 
+
+      elsif keyed_params.length == 2
+        # Case where another field is subject to change
+        logger.info "Catalogue: entered PUT /v2/nsts/#{query_string}"
+
+
+        # Validate NST
+        # Retrieve stored version
+        begin
+          puts 'Searching ' + params[:id].to_s
+          nst = Nstd.find_by({ '_id' => params[:id] })
+          puts 'NST is found'
+        rescue Mongoid::Errors::DocumentNotFound => e
+          json_error 404, 'This NST does not exists'
+        end
+        params.delete('id')
+
+        nst_doc = nst.as_document
+
+
+        # check if the provided field is in the root level of descriptor (without Catalogues metadata)
+        unless nst_doc['nstd'].keys.include? params.keys[0]
+          json_error 404, "The field #{query_string} is not in the root level of descriptor"
+        end
+
+        # Check if is a string type. Not able to change arrays or hashes for now
+        check_field = nst_doc['nstd'].fetch(params.keys[0])
+        if (check_field.is_a? Array) || (check_field.is_a? Hash)
+          json_error 400, "The field should be type of string"
+        end
+
+        keyed_params = add_descriptor_level('nstd', params)
+        begin
+          nst.update_attributes({keyed_params.keys[0] => keyed_params.values[0]})
+          logger.info "Change #{keyed_params.keys[0]} to #{keyed_params.values[0]}"
+        rescue Moped::Errors::OperationFailure => e
+          json_error 400, 'ERROR: Operation failed'
+        end
+
+        halt 200, "#{params.keys[0]} updated to {#{query_string}}"
       else
         # Compatibility support for YAML content-type
         case request.content_type

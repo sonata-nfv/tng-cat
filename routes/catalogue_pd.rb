@@ -1342,7 +1342,7 @@ class CatalogueV2 < SonataCatalogue
         json_error 404, "The PD ID #{params[:id]} does not exist" unless pks
       end
       # Delete entry in dict mapping
-      del_ent_dict(pks, :pd)
+
       intelligent_delete(pks)
 
       logger.debug "Catalogue: leaving DELETE v2/packages?#{query_string}\" with PD #{pks}"

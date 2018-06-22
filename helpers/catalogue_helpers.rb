@@ -587,6 +587,7 @@ class SonataCatalogue < Sinatra::Application
         not_found << vnfd_td
       else
         descriptor.destroy
+        del_ent_dict(descriptor, :vnfd)
       end
     end
     not_found
@@ -606,6 +607,7 @@ class SonataCatalogue < Sinatra::Application
         not_found << nsd_td
       else
         descriptor.destroy
+        del_ent_dict(descriptor, :nsd)
       end
     end
     not_found
@@ -625,6 +627,7 @@ class SonataCatalogue < Sinatra::Application
         not_found << testd_td
       else
         descriptor.destroy
+        del_ent_dict(descriptor, :testd)
       end
     end
     not_found
@@ -642,7 +645,7 @@ class SonataCatalogue < Sinatra::Application
         not_found << file
       else
         file_stored.destroy
-
+        del_ent_dict(file_stored, :files)
         # Remove files from grid
         grid_fs = Mongoid::GridFs
         grid_fs.delete(file_stored['grid_fs_id'])
@@ -658,6 +661,7 @@ class SonataCatalogue < Sinatra::Application
     # first find dependencies_mapping
     pkg = FileContainer.find_by('_id' => descriptor['pd']['package_file_uuid'])
     descriptor.destroy
+    del_ent_dict(descriptor, :pd)
     grid_fs = Mongoid::GridFs
     grid_fs.delete(pkg['grid_fs_id'])
     pkg.destroy
@@ -939,6 +943,7 @@ class SonataCatalogue < Sinatra::Application
                 ns_id: '$..ns_id'
             },
             nstd: {},
+            files: {},
             pld: {},
             pd: {}
     }

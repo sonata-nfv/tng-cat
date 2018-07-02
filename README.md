@@ -1,5 +1,7 @@
 
-[![Build Status](http://jenkins.sonata-nfv.eu/buildStatus/icon?job=tng-cat)](http://jenkins.sonata-nfv.eu/job/tng-cat)  
+[![Build Status](https://jenkins.sonata-nfv.eu/buildStatus/icon?job=tng-cat/master)](https://jenkins.sonata-nfv.eu/job/tng-cat/master)  
+
+<p align="center"><img src="https://github.com/sonata-nfv/tng-api-gtw/wiki/images/sonata-5gtango-logo-500px.png" /></p>
   
 # TNG Catalogue  
 This repository contains the development for the [5GTANGO](https://5gtango.eu/) 's Service Platform Catalogue. It holds the API implementation for the Service Platform Catalogue component.  
@@ -19,16 +21,17 @@ Root folder provides a script "installation_mongodb.sh" to install and set up a 
   
 Ruby gems used (for more details see Gemfile):  
 * [Sinatra](http://www.sinatrarb.com/) - Ruby framework  
-* [puma](http://puma.io/) - Web server  
-* [json](https://github.com/flori/json) - JSON specification  
-* [sinatra-contrib](https://github.com/sinatra/sinatra-contrib) - Sinatra extensions  
-* [rake](http://rake.rubyforge.org/) - Ruby build program with capabilities similar to make  
+* [Puma](http://puma.io/) - Web server  
+* [Json](https://github.com/flori/json) - JSON specification  
+* [Sinatra-contrib](https://github.com/sinatra/sinatra-contrib) - Sinatra extensions  
+* [Rake](http://rake.rubyforge.org/) - Ruby build program with capabilities similar to make  
 * [JSON-schema](https://github.com/ruby-json-schema/json-schema) - JSON schema validator  
-* [jwt](https://github.com/jwt/ruby-jwt) - Json Web Token lib  
-* [curb](https://github.com/taf2/curb) - HTTP and REST client  
-* [Yard](https://github.com/lsegal/yard) - Documentation generator tool  
-* [mongoid-grid_fs](https://github.com/mongoid/mongoid-grid_fs) - Implementation of the MongoDB GridFS specification  
-  
+* [Jwt](https://github.com/jwt/ruby-jwt) - Json Web Token lib  
+* [Curb](https://github.com/taf2/curb) - HTTP and REST client  
+* [Yard](https://github.com/lsegal/yard) - Documentation generator tool
+* [Mongoid](https://github.com/mongodb/mongoid) - Ruby ODM framework for MongoDB
+* [Mongoid-grid_fs](https://github.com/mongoid/mongoid-grid_fs) - Implementation of the MongoDB GridFS specification  
+
 ### Contributing  
 You may contribute to the editor similar to other 5GTANGO (sub-) projects, i.e. by creating pull requests.  
   
@@ -94,13 +97,8 @@ __Note 2__: `<Content-Type>` header defines the functionality of this endpoint. 
 
 __Note 3__: `<Content-Type>` header can be defined as`"Content-Type: application/zip"`for tgo-packages and `"Content-Type: application/octet-stream"` for files.
 
-Examples can be found in the relative [wiki page](https://github.com/sonata-nfv/tng-cat/wiki/Examples)
+Examples can be found in the relative [wiki page](https://github.com/sonata-nfv/tng-cat/wiki/Examples) and detailed information can be found in the [wiki](https://github.com/sonata-nfv/tng-cat/wiki)
 
-In order to associate the package with its content, it needs the provision of  a file including the {name, vendor, version} trios of the Package, VNF and NS descriptors along with the {file_uuid, file_name} pair of every arbitrary file in the package.  
-The validity of the mapping file is done by examining the existence of every entity mentioned inside. In order to send this type of file:  
-```  
-curl -X POST -H "Content-Type: application/json" --data-binary @package_mapping_file.json  http://localhost:4011/api/catalogues/v2/tgo-packages/mappings  
-```  
   
 ### Pushing 'tango-demo' files to Catalogue  
   
@@ -158,4 +156,4 @@ The following lead developers are responsible for this repository and have admin
   
 ## Feedback-Channel  
   
-Please use the GitHub issues and the SONATA development mailing list sonata-dev@lists.atosresearch.eu for feedback.
+Please use the GitHub issues and the 5GTANGO development mailing list tango-5g@lists.atosresearch.eu for feedback.

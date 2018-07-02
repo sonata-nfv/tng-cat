@@ -93,7 +93,7 @@ pipeline {
     }
     steps {
         echo 'Stage: Promoting containers to integration env'
-        sh "pipeline/promote/promote-int.sh"
+        sh 'docker push  registry.sonata-nfv.eu:5000/tng-cat:int'
         sh 'rm -rf tng-devops || true'
         sh 'git clone https://github.com/sonata-nfv/tng-devops.git'
         dir(path: 'tng-devops') {

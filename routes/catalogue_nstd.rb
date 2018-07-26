@@ -68,7 +68,7 @@ class CatalogueV2 < SonataCatalogue
       # Do query for last version -> get_nstd_nst_vendor_last_version
       keyed_params.delete(:'nstd.version')
 
-      nsts = Nstd.where((keyed_params)).sort({ 'nstd.version' => -1 }) #.limit(1).first()
+      nsts = Nstd.where((keyed_params)).sort( 'nstd.version' => -1 ) #.limit(1).first()
       logger.info "Catalogue: NSTs=#{nsts}"
 
       if nsts && nsts.size.to_i > 0
@@ -200,15 +200,15 @@ class CatalogueV2 < SonataCatalogue
 
     # Check if NST already exists in the catalogue by name, vendor and version
     begin
-      nst = Nstd.find_by({ 'nstd.name' => new_nst['name'], 'nstd.vendor' => new_nst['vendor'],
-                           'nstd.version' => new_nst['version'] })
+      nst = Nstd.find_by('nstd.name' => new_nst['name'], 'nstd.vendor' => new_nst['vendor'],
+                           'nstd.version' => new_nst['version'])
       halt 409, "Duplicate with NSTD ID => #{nst['_id']}"
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
     end
     # Check if NST has an ID (it should not) and if it already exists in the catalogue
     begin
-      nst = Nstd.find_by({ '_id' => new_nst['_id'] })
+      nst = Nstd.find_by('_id' => new_nst['_id'])
       halt 409, 'Duplicated NST ID'
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
@@ -314,8 +314,8 @@ class CatalogueV2 < SonataCatalogue
       json_error 400, 'Update Vendor, Name and Version parameters are null'
     else
       begin
-        nst = Nstd.find_by({ 'nstd.vendor' => keyed_params[:vendor], 'nstd.name' => keyed_params[:name],
-                            'nstd.version' => keyed_params[:version] })
+        nst = Nstd.find_by('nstd.vendor' => keyed_params[:vendor], 'nstd.name' => keyed_params[:name],
+                            'nstd.version' => keyed_params[:version])
         puts 'NST is found'
       rescue Mongoid::Errors::DocumentNotFound => e
         json_error 404, "The NST Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist"
@@ -323,8 +323,8 @@ class CatalogueV2 < SonataCatalogue
     end
     # Check if NST already exists in the catalogue by Name, Vendor and Version
     begin
-      nst = Nstd.find_by({ 'nstd.name' => new_nst['name'], 'nstd.vendor' => new_nst['vendor'],
-                           'nstd.version' => new_nst['version'] })
+      nst = Nstd.find_by('nstd.name' => new_nst['name'], 'nstd.vendor' => new_nst['vendor'],
+                           'nstd.version' => new_nst['version'])
       json_return 200, 'Duplicated NST Name, Vendor and Version'
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
@@ -394,7 +394,7 @@ class CatalogueV2 < SonataCatalogue
         # Retrieve stored version
         begin
           puts 'Searching ' + params[:id].to_s
-          nst = Nstd.find_by({ '_id' => params[:id] })
+          nst = Nstd.find_by('_id' => params[:id])
           puts 'NST is found'
         rescue Mongoid::Errors::DocumentNotFound => e
           json_error 404, 'This NST does not exists'
@@ -424,36 +424,55 @@ class CatalogueV2 < SonataCatalogue
         # Retrieve stored version
         begin
           puts 'Searching ' + params[:id].to_s
-          nst = Nstd.find_by({ '_id' => params[:id] })
+          nst = Nstd.find_by('_id' => params[:id])
           puts 'NST is found'
         rescue Mongoid::Errors::DocumentNotFound => e
-          json_error 404, 'This NST does not exists'
+          json_error 404, 'This NST does not exist'
         end
         params.delete('id')
 
         nst_doc = nst.as_document
 
+        par_key = params.keys[0].to_s.split('.')[0]
+        meth = params.keys[0].to_s.split('.')[1]
 
         # check if the provided field is in the root level of descriptor (without Catalogues metadata)
-        unless nst_doc['nstd'].keys.include? params.keys[0]
+        unless nst_doc['nstd'].keys.include? par_key
           json_error 404, "The field #{query_string} is not in the root level of descriptor"
         end
 
         # Check if is a string type. Not able to change arrays or hashes for now
-        check_field = nst_doc['nstd'].fetch(params.keys[0])
-        if (check_field.is_a? Array) || (check_field.is_a? Hash)
-          json_error 400, "The field should be type of string"
-        end
+        check_field = nst_doc['nstd'].fetch(par_key)
 
         keyed_params = add_descriptor_level('nstd', params)
+
         begin
-          nst.update_attributes({keyed_params.keys[0] => keyed_params.values[0]})
-          logger.info "Change #{keyed_params.keys[0]} to #{keyed_params.values[0]}"
+
+          if check_field.is_a? Array
+            if meth == 'append'
+              nst.set({keyed_params.keys[0].to_s.rpartition('.')[0].to_sym => check_field << keyed_params.values[0]})
+            elsif meth == 'pop'
+              if check_field.include? keyed_params.values[0]
+                check_field.delete(keyed_params.values[0])
+                nst.set({keyed_params.keys[0].to_s.rpartition('.')[0].to_sym => check_field})
+              else
+                json_error 400, "There is no element equal to #{keyed_params.values[0]}"
+              end
+            else
+              json_error 400, "In the update of arrays, append/pop can be used only"
+            end
+          elsif check_field.is_a? String
+            nst.update_attributes(keyed_params.keys[0] => keyed_params.values[0])
+            logger.info "Change #{keyed_params.keys[0]} to #{keyed_params.values[0]}"
+          else
+            json_error 400, "The field should be String or Array"
+          end
+
         rescue Moped::Errors::OperationFailure => e
           json_error 400, 'ERROR: Operation failed'
         end
 
-        halt 200, "#{params.keys[0]} updated to {#{query_string}}"
+        json_return 200, "#{par_key} updated to {#{query_string}}"
       else
         # Compatibility support for YAML content-type
         case request.content_type
@@ -487,7 +506,7 @@ class CatalogueV2 < SonataCatalogue
         # Retrieve stored version
         begin
           puts 'Searching ' + params[:id].to_s
-          nst = Nstd.find_by({ '_id' => params[:id] })
+          nst = Nstd.find_by('_id' => params[:id])
           puts 'NST is found'
         rescue Mongoid::Errors::DocumentNotFound => e
           json_error 404, "The NST ID #{params[:id]} does not exist"
@@ -495,8 +514,8 @@ class CatalogueV2 < SonataCatalogue
 
         # Check if NST already exists in the catalogue by name, vendor and version
         begin
-          nst = Nstd.find_by({ 'nstd.name' => new_nst['name'], 'nstd.vendor' => new_nst['vendor'],
-                               'nstd.version' => new_nst['version'] })
+          nst = Nstd.find_by('nstd.name' => new_nst['name'], 'nstd.vendor' => new_nst['vendor'],
+                               'nstd.version' => new_nst['version'])
           json_return 200, 'Duplicated NST Name, Vendor and Version'
         rescue Mongoid::Errors::DocumentNotFound => e
           # Continue
@@ -558,8 +577,8 @@ class CatalogueV2 < SonataCatalogue
 
     unless keyed_params[:vendor].nil? && keyed_params[:name].nil? && keyed_params[:version].nil?
       begin
-        nst = Nstd.find_by({ 'nstd.vendor' => keyed_params[:vendor], 'nstd.name' => keyed_params[:name],
-                            'nstd.version' => keyed_params[:version] })
+        nst = Nstd.find_by('nstd.vendor' => keyed_params[:vendor], 'nstd.name' => keyed_params[:name],
+                            'nstd.version' => keyed_params[:version])
         puts 'NST is found'
       rescue Mongoid::Errors::DocumentNotFound => e
         json_error 404, "The NST Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist"

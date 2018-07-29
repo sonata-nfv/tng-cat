@@ -1,0 +1,4215 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "5GTANGO, an H2020 5GPPP project",
+    "version": "0.0.1",
+    "title": "5GTANGO SP Catalogues REST API",
+    "contact": {
+      "email": "pstav@unipi.gr"
+    },
+    "termsOfService": "https://5gtango.eu/",
+    "license": {
+      "name": "Apache License 2.0",
+      "url": "https://github.com/sonata-nfv/tng-cat/blob/master/LICENSE"
+    }
+  },
+  "host": "tng-cat:4011",
+  "basePath": "/api/v2",
+  "tags": [
+    {
+      "name": "NS Descriptors",
+      "description": "Network Services Descriptors APIs"
+    },
+    {
+      "name": "VNF Descriptors",
+      "description": "Virtualized Network Function Descriptors APIs"
+    },
+    {
+      "name": "Arbitrary Files",
+      "description": "Arbitrary Files APIs"
+    },
+    {
+      "name": "Package Descriptors",
+      "description": "Package Descriptors APIs"
+    },
+    {
+      "name": "5GTANGO Packages",
+      "description": "5GTANGO Packages APIs"
+    },
+    {
+      "name": "Test Descriptors",
+      "description": "Test Descriptors APIs"
+    },
+    {
+      "name": "SLA Templates",
+      "description": "SLA Templates APIs"
+    },
+    {
+      "name": "Network Slice Templates",
+      "description": "Network Slice Templates APIs"
+    }
+  ],
+  "paths": {
+    "/network-services": {
+      "get": {
+        "tags": [
+          "NS Descriptors"
+        ],
+        "summary": "List all available network service descriptors",
+        "operationId": "allNetworkServicesDescriptorsQuerying",
+        "consumes": [
+          "application/json",
+          "application/x-yaml"
+        ],
+        "produces": [
+          "application/json",
+          "application/x-yaml"
+        ],
+        "parameters": [
+          {
+            "name": "page_size",
+            "in": "query",
+            "description": "The number of network service descriptors to be included in a page",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          {
+            "name": "page_number",
+            "in": "query",
+            "description": "The number of the page of network service descriptors to be shown (starting in 0)",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0,
+            "default": 0
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "description": "Request of returning the last versions of the hosted network services",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "last",
+              "specific version"
+            ]
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "description": "Query with name field of the network service",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "vendor",
+            "in": "query",
+            "description": "Query with vendor field of the network service",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "XFilter",
+            "in": "query",
+            "description": "Query with a desired field of the network service",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "created_at": {
+                  "description": "The creation date of the network service descriptor",
+                  "type": "string"
+                },
+                "md5": {
+                  "description": "The md5 hash of the network service descriptor",
+                  "type": "string"
+                },
+                "nsd": {
+                  "description": "The body of the network service descriptor",
+                  "type": "object"
+                },
+                "signature": {
+                  "description": "The signature of the network service descriptor",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "The status of the network service descriptor",
+                  "type": "string"
+                },
+                "updated_at": {
+                  "description": "The date of update of the network service descriptor",
+                  "type": "string"
+                },
+                "username": {
+                  "description": "The username of the creator of the network service descriptor",
+                  "type": "string"
+                },
+                "uuid": {
+                  "description": "The unique universal identifier of the network service descriptor",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "NS Descriptors"
+        ],
+        "summary": "Upload a network service descriptor",
+        "operationId": "uploadANetworkServiceDescriptor",
+        "produces": [
+          "application/json",
+          "application/x-yaml"
+        ],
+        "parameters": [
+          {
+            "name": "--data-binary",
+            "in": "header",
+            "description": "The binary file of the network service descriptor in the current directory according to the defined Content Type",
+            "required": true,
+            "type": "string",
+            "default": "@nsd_example.json"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "created_at": {
+                  "description": "The creation date of the network service descriptor",
+                  "type": "string"
+                },
+                "md5": {
+                  "description": "The md5 hash of the network service descriptor",
+                  "type": "string"
+                },
+                "nsd": {
+                  "description": "The body of the network service descriptor",
+                  "type": "object"
+                },
+                "signature": {
+                  "description": "The signature of the network service descriptor",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "The status of the network service descriptor",
+                  "type": "string"
+                },
+                "updated_at": {
+                  "description": "The date of update of the network service descriptor",
+                  "type": "string"
+                },
+                "username": {
+                  "description": "The username of the creator of the network service descriptor",
+                  "type": "string"
+                },
+                "uuid": {
+                  "description": "The unique universal identifier of the network service descriptor",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "Error",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "Duplicated NS ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "NS Descriptors"
+        ],
+        "summary": "Upload a network service descriptor if a descriptor with {name, vendor, version} triplet exists in the Catalogues",
+        "produces": [
+          "application/json",
+          "application/x-yaml"
+        ],
+        "operationId": "updateNetworkServiceDescriptor",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "description": "The name field of the existing network service descriptor",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "vendor",
+            "in": "query",
+            "description": "The vendor field of the existing network service descriptor",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "--data-binary",
+            "in": "header",
+            "description": "The binary file of the network service descriptor in the current directory according the defined Content Type",
+            "required": true,
+            "type": "string",
+            "default": "@nsd_example.json"
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "description": "The version field of the existing network service descriptor",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "created_at": {
+                  "description": "The creation date of the network service descriptor",
+                  "type": "string"
+                },
+                "md5": {
+                  "description": "The md5 hash of the network service descriptor",
+                  "type": "string"
+                },
+                "nsd": {
+                  "description": "The body of the network service descriptor",
+                  "type": "object"
+                },
+                "signature": {
+                  "description": "The signature of the network service descriptor",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "The status of the network service descriptor",
+                  "type": "string"
+                },
+                "updated_at": {
+                  "description": "The date of update of the network service descriptor",
+                  "type": "string"
+                },
+                "username": {
+                  "description": "The username of the creator of the network service descriptor",
+                  "type": "string"
+                },
+                "uuid": {
+                  "description": "The unique universal identifier of the network service descriptor",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "Update Vendor, Name and Version parameters are null",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "The NSD Vendor {vendor}, Name {name}, Version {version} does not exist",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "NS Descriptors"
+        ],
+        "summary": "Delete an available network service descriptor with {name, vendor, version} triplet",
+        "operationId": "deleteNetworkServiceDescriptor",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "description": "The name field of the network service descriptor",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "vendor",
+            "in": "query",
+            "description": "The vendor field of the network service descriptor",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "description": "The version field of the network service descriptor",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "OK": {
+                  "description": "NSD removed",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "No NSD Vendor, Name, Version specified",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "The NSD Vendor {vendor}, Name {name}, Version {version} does not exist",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/network-services/{id}": {
+      "get": {
+        "tags": [
+          "NS Descriptors"
+        ],
+        "summary": "Retrieve a specific network service descriptor with the uuid",
+        "operationId": "oneNetworkServiceDescriptorQuerying",
+        "consumes": [
+          "*/*"
+        ],
+        "produces": [
+          "application/json",
+          "application/x-yaml"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The universal unique identifier attached from the Catalogues",
+            "required": true,
+            "type": "string",
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "created_at": {
+                  "description": "The creation date of the network service descriptor",
+                  "type": "string"
+                },
+                "md5": {
+                  "description": "The md5 hash of the network service descriptor",
+                  "type": "string"
+                },
+                "nsd": {
+                  "description": "The body of the network service descriptor",
+                  "type": "object"
+                },
+                "signature": {
+                  "description": "The signature of the network service descriptor",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "The status of the network service descriptor",
+                  "type": "string"
+                },
+                "updated_at": {
+                  "description": "The date of update of the network service descriptor",
+                  "type": "string"
+                },
+                "username": {
+                  "description": "The username of the creator of the network service descriptor",
+                  "type": "string"
+                },
+                "uuid": {
+                  "description": "The unique universal identifier of the network service descriptor",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "No NSD ID specified",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "The NSD ID {id} does not exist",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "NS Descriptors"
+        ],
+        "summary": "Update a parameter from network service descriptor if a descriptor with {id} exists in the Catalogues",
+        "consumes": [
+          "*/*"
+        ],
+        "produces": [
+          "application/json",
+          "application/x-yaml"
+        ],
+        "operationId": "updateidNetworkServiceDescriptor",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The universal unique identifier attached from the Catalogues",
+            "required": true,
+            "type": "string",
+            "format": "uuid"
+          },
+          {
+            "name": "param",
+            "in": "query",
+            "description": "The update field of the network service descriptor",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+			"schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "{param} updated to {param=value}",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "Error",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "The NSD ID {id} does not exist",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "NS Descriptors"
+        ],
+        "summary": "Delete a specific network service descriptor with the uuid",
+        "operationId": "deleteidNetworkServiceDescriptor",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The universal unique identifier attached from the Catalogues",
+            "required": true,
+            "type": "string",
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "OK": {
+                  "description": "NSD removed",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "No NSD ID specified",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "The NSD ID {id} does not exist",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/vnfs": {
+      "get": {
+        "tags": [
+          "VNF Descriptors"
+        ],
+        "summary": "List all available virtualized network function descriptors",
+        "operationId": "allVirtualizedNetworkFunctionQuerying",
+        "consumes": [
+          "application/json",
+          "application/x-yaml"
+        ],
+        "produces": [
+          "application/json",
+          "application/x-yaml"
+        ],
+        "parameters": [
+          {
+            "name": "page_size",
+            "in": "query",
+            "description": "The number of virtualized network function descriptors to be included in a page",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          {
+            "name": "page_number",
+            "in": "query",
+            "description": "The number of the page of virtualized network function descriptors to be shown (starting in 0)",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0,
+            "default": 0
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "description": "Request of returning the last versions of the hosted virtualized network function descriptors",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "last",
+              "specific version"
+            ]
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "description": "Query with name field of the virtualized network function descriptors",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "vendor",
+            "in": "query",
+            "description": "Query with vendor field of the virtualized network function descriptors",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "XFilter",
+            "in": "query",
+            "description": "Query with a desired field of the virtualized network function descriptors",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "created_at": {
+                  "description": "The creation date of the virtualized network function descriptor",
+                  "type": "string"
+                },
+                "md5": {
+                  "description": "The md5 hash of the virtualized network function descriptor",
+                  "type": "string"
+                },
+                "vnfd": {
+                  "description": "The body of the virtualized network function descriptor",
+                  "type": "object"
+                },
+                "signature": {
+                  "description": "The signature of the virtualized network function descriptor",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "The status of the virtualized network function descriptor",
+                  "type": "string"
+                },
+                "updated_at": {
+                  "description": "The date of update of the virtualized network function descriptor",
+                  "type": "string"
+                },
+                "username": {
+                  "description": "The username of the creator of the virtualized network function descriptor",
+                  "type": "string"
+                },
+                "uuid": {
+                  "description": "The unique universal identifier of the virtualized network function descriptor",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "VNF Descriptors"
+        ],
+        "summary": "Upload a virtualized network function descriptor",
+        "operationId": "uploadAVirtualizedNetworkFunctionDescriptor",
+        "produces": [
+          "application/json",
+          "application/x-yaml"
+        ],
+        "parameters": [
+          {
+            "name": "--data-binary",
+            "in": "header",
+            "description": "The binary file of the virtualized network function descriptor in the current directory according the defined Content Type",
+            "required": true,
+            "type": "string",
+            "default": "@vnfd_example.json"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "created_at": {
+                  "description": "The creation date of the virtualized network function descriptor",
+                  "type": "string"
+                },
+                "md5": {
+                  "description": "The md5 hash of the virtualized network function descriptor",
+                  "type": "string"
+                },
+                "vnfd": {
+                  "description": "The body of the virtualized network function descriptor",
+                  "type": "object"
+                },
+                "signature": {
+                  "description": "The signature of the virtualized network function descriptor",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "The status of the virtualized network function descriptor",
+                  "type": "string"
+                },
+                "updated_at": {
+                  "description": "The date of update of the virtualized network function descriptor",
+                  "type": "string"
+                },
+                "username": {
+                  "description": "The username of the creator of the virtualized network function descriptor",
+                  "type": "string"
+                },
+                "uuid": {
+                  "description": "The unique universal identifier of the virtualized network function descriptor",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "Error",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "Duplicated VNF ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "VNF Descriptors"
+        ],
+        "summary": "Upload a virtualized network function descriptor if a descriptor with {name, vendor, version} triplet exists in the Catalogues",
+        "produces": [
+          "application/json",
+          "application/x-yaml"
+        ],
+        "operationId": "updateVirtualizedNetworkFunctionDescriptor",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "description": "The name field of the virtualized network function descriptor",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "vendor",
+            "in": "query",
+            "description": "The vendor field of the virtualized network function descriptor",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "--data-binary",
+            "in": "header",
+            "description": "The binary file of the virtualized network function descriptor in the current directory according the defined Content Type",
+            "required": true,
+            "type": "string",
+            "default": "@vnfd_example.json"
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "description": "The version field of the virtualized network function descriptor",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "created_at": {
+                  "description": "The creation date of the virtualized network function descriptor",
+                  "type": "string"
+                },
+                "md5": {
+                  "description": "The md5 hash of the virtualized network function descriptor",
+                  "type": "string"
+                },
+                "vnfd": {
+                  "description": "The body of the virtualized network function descriptor",
+                  "type": "object"
+                },
+                "signature": {
+                  "description": "The signature of the virtualized network function descriptor",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "The status of the virtualized network function descriptor",
+                  "type": "string"
+                },
+                "updated_at": {
+                  "description": "The date of update of the virtualized network function descriptor",
+                  "type": "string"
+                },
+                "username": {
+                  "description": "The username of the creator of the virtualized network function descriptor",
+                  "type": "string"
+                },
+                "uuid": {
+                  "description": "The unique universal identifier of the virtualized network function descriptor",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "Update Vendor, Name and Version parameters are null",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "The VNFD Vendor {vendor}, Name {name}, Version {version} does not exist",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "VNF Descriptors"
+        ],
+        "summary": "Delete an available virtualized network function descriptor with {name, vendor, version} triplet",
+        "operationId": "deleteVirtualizedNetworkFunctionDescriptor",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "description": "The name field of the virtualized network function descriptor",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "vendor",
+            "in": "query",
+            "description": "The vendor field of the virtualized network function descriptor",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "description": "The version field of the virtualized network function descriptor",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "OK": {
+                  "description": "VNFD removed",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "No VNFD ID specified",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "The VNFD ID {id} does not exist",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/vnfs/{id}": {
+      "get": {
+        "tags": [
+          "VNF Descriptors"
+        ],
+        "summary": "Retrieve a specific virtualized network function descriptor with the uuid",
+        "operationId": "oneVirtualizedNetworkFunctionDescriptorQuerying",
+        "consumes": [
+          "*/*"
+        ],
+        "produces": [
+          "application/json",
+          "application/x-yaml"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The universal unique identifier attached from the Catalogues",
+            "required": true,
+            "type": "string",
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "created_at": {
+                  "description": "The creation date of the virtualized network function descriptor",
+                  "type": "string"
+                },
+                "md5": {
+                  "description": "The md5 hash of the virtualized network function descriptor",
+                  "type": "string"
+                },
+                "vnfd": {
+                  "description": "The body of the virtualized network function descriptor",
+                  "type": "object"
+                },
+                "signature": {
+                  "description": "The signature of the virtualized network function descriptor",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "The status of the virtualized network function descriptor",
+                  "type": "string"
+                },
+                "updated_at": {
+                  "description": "The date of update of the virtualized network function descriptor",
+                  "type": "string"
+                },
+                "username": {
+                  "description": "The username of the creator of the virtualized network function descriptor",
+                  "type": "string"
+                },
+                "uuid": {
+                  "description": "The unique universal identifier of the virtualized network function descriptor",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "No VNFD ID specified",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "The VNFD ID {id} does not exist",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "VNF Descriptors"
+        ],
+        "summary": "Update a parameter from virtualized network function descriptor if a descriptor with {id} exists in the Catalogues",
+        "consumes": [
+          "*/*"
+        ],
+        "produces": [
+          "application/json",
+          "application/x-yaml"
+        ],
+        "operationId": "updateidVirtualizedNetworkFunctionDescriptor",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The universal unique identifier attached from the Catalogues",
+            "required": true,
+            "type": "string",
+            "format": "uuid"
+          },
+          {
+            "name": "param",
+            "in": "query",
+            "description": "The name field of the virtualized network function descriptor",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "{param} updated to {param => value}"
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "Error",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "The VNFD ID {id} does not exist",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "VNF Descriptors"
+        ],
+        "summary": "Delete a specific virtualized network function descriptor with the uuid",
+        "operationId": "deleteidVirtualizedNetworkFunctionDescriptor",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The universal unique identifier attached from the Catalogues",
+            "required": true,
+            "type": "string",
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "OK": {
+                  "description": "VNFD removed",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "No VNFD ID specified",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "The VNFD ID {id} does not exist",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/packages": {
+      "get": {
+        "tags": [
+          "Package Descriptors"
+        ],
+        "summary": "List all available package descriptors",
+        "operationId": "allPackagesQuerying",
+        "consumes": [
+          "application/json",
+          "application/x-yaml"
+        ],
+        "produces": [
+          "application/json",
+          "application/x-yaml"
+        ],
+        "parameters": [
+          {
+            "name": "page_size",
+            "in": "query",
+            "description": "The number of package descriptors to be included in a page",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          {
+            "name": "page_number",
+            "in": "query",
+            "description": "The number of the page of package descriptors to be shown (starting in 0)",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0,
+            "default": 0
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "description": "Request of returning the last versions of the hosted package descriptors",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "last",
+              "specific version"
+            ]
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "description": "Query with name field of the package descriptors",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "vendor",
+            "in": "query",
+            "description": "Query with vendor field of the package descriptors",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "XFilter",
+            "in": "query",
+            "description": "Query with a desired field of the package descriptors",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "created_at": {
+                  "description": "The creation date of the package descriptor",
+                  "type": "string"
+                },
+                "md5": {
+                  "description": "The md5 hash of the package descriptor",
+                  "type": "string"
+                },
+                "pd": {
+                  "description": "The body of the package descriptor",
+                  "type": "object"
+                },
+                "signature": {
+                  "description": "The signature of the package descriptor",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "The status of the package descriptor",
+                  "type": "string"
+                },
+                "updated_at": {
+                  "description": "The date of update of the package descriptor",
+                  "type": "string"
+                },
+                "username": {
+                  "description": "The username of the creator of the package descriptor",
+                  "type": "string"
+                },
+                "uuid": {
+                  "description": "The unique universal identifier of the package descriptor",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Package Descriptors"
+        ],
+        "summary": "Upload a package descriptor",
+        "operationId": "uploadAPackageDescriptor",
+        "produces": [
+          "application/json",
+          "application/x-yaml"
+        ],
+        "parameters": [
+          {
+            "name": "--data-binary",
+            "in": "header",
+            "description": "The binary file of the package descriptor in the current directory according the defined Content Type",
+            "required": true,
+            "type": "string",
+            "default": "@pd_example.json"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "created_at": {
+                  "description": "The creation date of the package descriptor",
+                  "type": "string"
+                },
+                "md5": {
+                  "description": "The md5 hash of the package descriptor",
+                  "type": "string"
+                },
+                "pd": {
+                  "description": "The body of the package descriptor",
+                  "type": "object"
+                },
+                "signature": {
+                  "description": "The signature of the package descriptor",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "The status of the package descriptor",
+                  "type": "string"
+                },
+                "updated_at": {
+                  "description": "The date of update of the package descriptor",
+                  "type": "string"
+                },
+                "username": {
+                  "description": "The username of the creator of the package descriptor",
+                  "type": "string"
+                },
+                "uuid": {
+                  "description": "The unique universal identifier of the package descriptor",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "Error",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "Duplicated PD ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Package Descriptors"
+        ],
+        "summary": "Upload a package descriptor if a descriptor with {name, vendor, version} triplet exists in the Catalogues",
+        "produces": [
+          "application/json",
+          "application/x-yaml"
+        ],
+        "operationId": "updatePackageDescriptor",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "description": "The name field of the package descriptor",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "vendor",
+            "in": "query",
+            "description": "The vendor field of the package descriptor",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "--data-binary",
+            "in": "header",
+            "description": "The binary file of the package descriptor in the current directory according the defined Content Type",
+            "required": true,
+            "type": "string",
+            "default": "@pd_example.json"
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "description": "The version field of the package descriptor",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "created_at": {
+                  "description": "The creation date of the package descriptor",
+                  "type": "string"
+                },
+                "md5": {
+                  "description": "The md5 hash of the package descriptor",
+                  "type": "string"
+                },
+                "pd": {
+                  "description": "The body of the package descriptor",
+                  "type": "object"
+                },
+                "signature": {
+                  "description": "The signature of the package descriptor",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "The status of the package descriptor",
+                  "type": "string"
+                },
+                "updated_at": {
+                  "description": "The date of update of the package descriptor",
+                  "type": "string"
+                },
+                "username": {
+                  "description": "The username of the creator of the package descriptor",
+                  "type": "string"
+                },
+                "uuid": {
+                  "description": "The unique universal identifier of the package descriptor",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "Update Vendor, Name and Version parameters are null",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "The PD Vendor {vendor}, Name {name}, Version {version} does not exist",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Package Descriptors"
+        ],
+        "summary": "Delete an available package descriptor with {name, vendor, version} triplet",
+        "operationId": "deletePackageDescriptor",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "description": "The name field of the package descriptor",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "vendor",
+            "in": "query",
+            "description": "The vendor field of the package descriptor",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "description": "The version field of the package descriptor",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "OK": {
+                  "description": "PD removed",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "No PD ID specified",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "The PD ID {id} does not exist",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/packages/{id}": {
+      "get": {
+        "tags": [
+          "Package Descriptors"
+        ],
+        "summary": "Retrieve a specific package descriptor with the uuid",
+        "operationId": "onePackageDescriptorQuerying",
+        "consumes": [
+          "*/*"
+        ],
+        "produces": [
+          "application/json",
+          "application/x-yaml"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The universal unique identifier attached from the Catalogues",
+            "required": true,
+            "type": "string",
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "created_at": {
+                  "description": "The creation date of the package descriptor",
+                  "type": "string"
+                },
+                "md5": {
+                  "description": "The md5 hash of the package descriptor",
+                  "type": "string"
+                },
+                "pd": {
+                  "description": "The body of the package descriptor",
+                  "type": "object"
+                },
+                "signature": {
+                  "description": "The signature of the package descriptor",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "The status of the package descriptor",
+                  "type": "string"
+                },
+                "updated_at": {
+                  "description": "The date of update of the package descriptor",
+                  "type": "string"
+                },
+                "username": {
+                  "description": "The username of the creator of the package descriptor",
+                  "type": "string"
+                },
+                "uuid": {
+                  "description": "The unique universal identifier of the package descriptor",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "No PD ID specified",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "The PD ID {id} does not exist",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Package Descriptors"
+        ],
+        "summary": "Update a parameter from package descriptor if a descriptor with {id} exists in the Catalogues",
+        "consumes": [
+          "*/*"
+        ],
+        "produces": [
+          "application/json",
+          "application/x-yaml"
+        ],
+        "operationId": "updateidPackageDescriptor",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The universal unique identifier attached from the Catalogues",
+            "required": true,
+            "type": "string",
+            "format": "uuid"
+          },
+          {
+            "name": "param",
+            "in": "query",
+            "description": "The name field of the package descriptor",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "{param} updated to {param=value}"
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "Error",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "The PD ID {id} does not exist",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Package Descriptors"
+        ],
+        "summary": "Delete a specific package descriptor with the uuid",
+        "operationId": "deleteidPackageDescriptor",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The universal unique identifier attached from the Catalogues",
+            "required": true,
+            "type": "string",
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "OK": {
+                  "description": "PD removed",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "No PD ID specified",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "The PD ID {id} does not exist",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/slas/template-descriptors": {
+      "get": {
+        "tags": [
+          "SLA Templates"
+        ],
+        "summary": "List all available service level agreement templates",
+        "operationId": "allServiceLevelAgreementQuerying",
+        "consumes": [
+          "application/json",
+          "application/x-yaml"
+        ],
+        "produces": [
+          "application/json",
+          "application/x-yaml"
+        ],
+        "parameters": [
+          {
+            "name": "page_size",
+            "in": "query",
+            "description": "The number of service level agreement templates to be included in a page",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          {
+            "name": "page_number",
+            "in": "query",
+            "description": "The number of the page of service level agreement templates to be shown (starting in 0)",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0,
+            "default": 0
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "description": "Request of returning the last versions of the hosted service level agreement templates",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "last",
+              "specific version"
+            ]
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "description": "Query with name field of the service level agreement templates",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "vendor",
+            "in": "query",
+            "description": "Query with vendor field of the service level agreement templates",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "XFilter",
+            "in": "query",
+            "description": "Query with a desired field of the service level agreement templates",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "created_at": {
+                  "description": "The creation date of the service level agreement template",
+                  "type": "string"
+                },
+                "md5": {
+                  "description": "The md5 hash of the service level agreement template",
+                  "type": "string"
+                },
+                "slad": {
+                  "description": "The body of the service level agreement template",
+                  "type": "object"
+                },
+                "signature": {
+                  "description": "The signature of the service level agreement template",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "The status of the service level agreement template",
+                  "type": "string"
+                },
+                "updated_at": {
+                  "description": "The date of update of the service level agreement template",
+                  "type": "string"
+                },
+                "username": {
+                  "description": "The username of the creator of the service level agreement template",
+                  "type": "string"
+                },
+                "uuid": {
+                  "description": "The unique universal identifier of the service level agreement template",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "SLA Templates"
+        ],
+        "summary": "Upload a service level agreement template",
+        "operationId": "uploadAServiceLevelAgreementTemplate",
+        "produces": [
+          "application/json",
+          "application/x-yaml"
+        ],
+        "parameters": [
+          {
+            "name": "--data-binary",
+            "in": "header",
+            "description": "The binary file of the service level agreement template in the current directory according the defined Content Type",
+            "required": true,
+            "type": "string",
+            "default": "@slad_example.json"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "created_at": {
+                  "description": "The creation date of the service level agreement template",
+                  "type": "string"
+                },
+                "md5": {
+                  "description": "The md5 hash of the service level agreement template",
+                  "type": "string"
+                },
+                "slad": {
+                  "description": "The body of the service level agreement template",
+                  "type": "object"
+                },
+                "signature": {
+                  "description": "The signature of the service level agreement template",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "The status of the service level agreement template",
+                  "type": "string"
+                },
+                "updated_at": {
+                  "description": "The date of update of the service level agreement template",
+                  "type": "string"
+                },
+                "username": {
+                  "description": "The username of the creator of the service level agreement template",
+                  "type": "string"
+                },
+                "uuid": {
+                  "description": "The unique universal identifier of the service level agreement template",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "Error",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "Duplicated SLAD ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "SLA Templates"
+        ],
+        "summary": "Upload a service level agreement template if a descriptor with {name, vendor, version} triplet exists in the Catalogues",
+        "produces": [
+          "application/json",
+          "application/x-yaml"
+        ],
+        "operationId": "updateServiceLevelAgreementTemplate",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "description": "The name field of the service level agreement template",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "vendor",
+            "in": "query",
+            "description": "The vendor field of the service level agreement template",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "--data-binary",
+            "in": "header",
+            "description": "The binary file of the service level agreement template in the current directory according the defined Content Type",
+            "required": true,
+            "type": "string",
+            "default": "@slad_example.json"
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "description": "The version field of the service level agreement template",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "created_at": {
+                  "description": "The creation date of the service level agreement template",
+                  "type": "string"
+                },
+                "md5": {
+                  "description": "The md5 hash of the service level agreement template",
+                  "type": "string"
+                },
+                "slad": {
+                  "description": "The body of the service level agreement template",
+                  "type": "object"
+                },
+                "signature": {
+                  "description": "The signature of the service level agreement template",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "The status of the service level agreement template",
+                  "type": "string"
+                },
+                "updated_at": {
+                  "description": "The date of update of the service level agreement template",
+                  "type": "string"
+                },
+                "username": {
+                  "description": "The username of the creator of the service level agreement template",
+                  "type": "string"
+                },
+                "uuid": {
+                  "description": "The unique universal identifier of the service level agreement template",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "Update Vendor, Name and Version parameters are null",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "The SLAD Vendor {vendor}, Name {name}, Version {version} does not exist",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "SLA Templates"
+        ],
+        "summary": "Delete an available service level agreement template with {name, vendor, version} triplet",
+        "operationId": "deleteServiceLevelAgreementsTemplate",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "description": "The name field of the service level agreement template",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "vendor",
+            "in": "query",
+            "description": "The vendor field of the service level agreement template",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "description": "The version field of the service level agreement template",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "OK": {
+                  "description": "SLAD removed",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "No SLAD ID specified",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "The SLAD ID {id} does not exist",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/slas/template-descriptors/{id}": {
+      "get": {
+        "tags": [
+          "SLA Templates"
+        ],
+        "summary": "Retrieve a specific service level agreement template with the uuid",
+        "operationId": "oneServiceLevelAgreementsTemplateQuerying",
+        "consumes": [
+          "*/*"
+        ],
+        "produces": [
+          "application/json",
+          "application/x-yaml"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The universal unique identifier attached from the Catalogues",
+            "required": true,
+            "type": "string",
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "created_at": {
+                  "description": "The creation date of the service level agreement template",
+                  "type": "string"
+                },
+                "md5": {
+                  "description": "The md5 hash of the service level agreement template",
+                  "type": "string"
+                },
+                "slad": {
+                  "description": "The body of the service level agreement template",
+                  "type": "object"
+                },
+                "signature": {
+                  "description": "The signature of the service level agreement template",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "The status of the service level agreement template",
+                  "type": "string"
+                },
+                "updated_at": {
+                  "description": "The date of update of the service level agreement template",
+                  "type": "string"
+                },
+                "username": {
+                  "description": "The username of the creator of the service level agreement template",
+                  "type": "string"
+                },
+                "uuid": {
+                  "description": "The unique universal identifier of the service level agreement template",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "No SLAD ID specified",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "The SLAD ID {id} does not exist",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "SLA Templates"
+        ],
+        "summary": "Update a parameter from service level agreement template if a descriptor with {id} exists in the Catalogues",
+        "consumes": [
+          "*/*"
+        ],
+        "produces": [
+          "application/json",
+          "application/x-yaml"
+        ],
+        "operationId": "updateidServiceLevelAgreementTemplate",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The universal unique identifier attached from the Catalogues",
+            "required": true,
+            "type": "string",
+            "format": "uuid"
+          },
+          {
+            "name": "param",
+            "in": "query",
+            "description": "The name field of the service level agreement template",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "{param} updated to {param=value}"
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "Error",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "The SLAD ID {id} does not exist",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "SLA Templates"
+        ],
+        "summary": "Delete a specific service level agreement template with the uuid",
+        "operationId": "deleteidServiceLevelAgreementTemplate",
+        "consumes": [
+          "*/*"
+        ],
+        "produces": [
+          "application/json",
+          "application/x-yaml"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The universal unique identifier attached from the Catalogues",
+            "required": true,
+            "type": "string",
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "OK": {
+                  "description": "SLAD removed",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "No SLAD ID specified",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "The SLAD ID {id} does not exist",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tests": {
+      "get": {
+        "tags": [
+          "Test Descriptors"
+        ],
+        "summary": "List all available test descriptors",
+        "operationId": "allTestDescriptorsQuerying",
+        "consumes": [
+          "application/json",
+          "application/x-yaml"
+        ],
+        "produces": [
+          "application/json",
+          "application/x-yaml"
+        ],
+        "parameters": [
+          {
+            "name": "page_size",
+            "in": "query",
+            "description": "The number of test descriptor to be included in a page",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          {
+            "name": "page_number",
+            "in": "query",
+            "description": "The number of the page of test descriptor to be shown (starting in 0)",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0,
+            "default": 0
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "description": "Request of returning the last versions of the test descriptors",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "last",
+              "specific version"
+            ]
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "description": "Query with name field of the test descriptors",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "vendor",
+            "in": "query",
+            "description": "Query with vendor field of the test descriptors",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "XFilter",
+            "in": "query",
+            "description": "Query with a desired field of the test descriptors",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "created_at": {
+                  "description": "The creation date of the test descriptor",
+                  "type": "string"
+                },
+                "md5": {
+                  "description": "The md5 hash of the test descriptor",
+                  "type": "string"
+                },
+                "testd": {
+                  "description": "The body of the test descriptor",
+                  "type": "object"
+                },
+                "signature": {
+                  "description": "The signature of the test descriptor",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "The status of the test descriptor",
+                  "type": "string"
+                },
+                "updated_at": {
+                  "description": "The date of update of the test descriptor",
+                  "type": "string"
+                },
+                "username": {
+                  "description": "The username of the creator of the test descriptor",
+                  "type": "string"
+                },
+                "uuid": {
+                  "description": "The unique universal identifier of the test descriptor",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Test Descriptors"
+        ],
+        "summary": "Upload a test descriptor",
+        "operationId": "uploadATestDescriptor",
+        "produces": [
+          "application/json",
+          "application/x-yaml"
+        ],
+        "parameters": [
+          {
+            "name": "--data-binary",
+            "in": "header",
+            "description": "The binary file of the test descriptor in the current directory according the defined Content Type",
+            "required": true,
+            "type": "string",
+            "default": "testd_example.json"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "created_at": {
+                  "description": "The creation date of the test descriptor",
+                  "type": "string"
+                },
+                "md5": {
+                  "description": "The md5 hash of the test descriptor",
+                  "type": "string"
+                },
+                "testd": {
+                  "description": "The body of the test descriptor",
+                  "type": "object"
+                },
+                "signature": {
+                  "description": "The signature of the test descriptor",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "The status of the test descriptor",
+                  "type": "string"
+                },
+                "updated_at": {
+                  "description": "The date of update of the test descriptor",
+                  "type": "string"
+                },
+                "username": {
+                  "description": "The username of the creator of the test descriptor",
+                  "type": "string"
+                },
+                "uuid": {
+                  "description": "The unique universal identifier of the test descriptor",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "Error",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "Duplicated TEST ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Test Descriptors"
+        ],
+        "summary": "Upload a test descriptor if a descriptor with {name, vendor, version} triplet exists in the Catalogues",
+        "produces": [
+          "application/json",
+          "application/x-yaml"
+        ],
+        "operationId": "updateTestDescriptor",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "description": "The name field of the test descriptor",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "vendor",
+            "in": "query",
+            "description": "The vendor field of the test descriptor",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "--data-binary",
+            "in": "header",
+            "description": "The binary file of the test descriptor in the current directory according the defined Content Type",
+            "required": true,
+            "type": "string",
+            "default": "@testd_example.json"
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "description": "The version field of the test descriptor",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "created_at": {
+                  "description": "The creation date of the test descriptor",
+                  "type": "string"
+                },
+                "md5": {
+                  "description": "The md5 hash of the test descriptor",
+                  "type": "string"
+                },
+                "testd": {
+                  "description": "The body of the test descriptor",
+                  "type": "object"
+                },
+                "signature": {
+                  "description": "The signature of the test descriptor",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "The status of the test descriptor",
+                  "type": "string"
+                },
+                "updated_at": {
+                  "description": "The date of update of the test descriptor",
+                  "type": "string"
+                },
+                "username": {
+                  "description": "The username of the creator of the test descriptor",
+                  "type": "string"
+                },
+                "uuid": {
+                  "description": "The unique universal identifier of the test descriptor",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "Update Vendor, Name and Version parameters are null",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "The TESTD Vendor {vendor}, Name {name}, Version {version} does not exist",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Test Descriptors"
+        ],
+        "summary": "Delete an available test descriptor with {name, vendor, version} triplet",
+        "operationId": "deleteTestDescriptor",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "description": "The name field of the test descriptor",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "vendor",
+            "in": "query",
+            "description": "The vendor field of the test descriptor",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "description": "The version field of the test descriptor",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "OK": {
+                  "description": "TESTD removed",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "No TESTD ID specified",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "The TESTD ID {id} does not exist",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tests/{id}": {
+      "get": {
+        "tags": [
+          "Test Descriptors"
+        ],
+        "summary": "Retrieve a specific test descriptor with the uuid",
+        "operationId": "oneTestDescriptorQuerying",
+        "consumes": [
+          "*/*"
+        ],
+        "produces": [
+          "application/json",
+          "application/x-yaml"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The universal unique identifier attached from the Catalogues",
+            "required": true,
+            "type": "string",
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "created_at": {
+                  "description": "The creation date of the test descriptor",
+                  "type": "string"
+                },
+                "md5": {
+                  "description": "The md5 hash of the test descriptor",
+                  "type": "string"
+                },
+                "testd": {
+                  "description": "The body of the test descriptor",
+                  "type": "object"
+                },
+                "signature": {
+                  "description": "The signature of the test descriptor",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "The status of the test descriptor",
+                  "type": "string"
+                },
+                "updated_at": {
+                  "description": "The date of update of the test descriptor",
+                  "type": "string"
+                },
+                "username": {
+                  "description": "The username of the creator of the test descriptor",
+                  "type": "string"
+                },
+                "uuid": {
+                  "description": "The unique universal identifier of the test descriptor",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "No TESTD ID specified",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "The TESTD ID {id} does not exist",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Test Descriptors"
+        ],
+        "summary": "Update a parameter from test descriptor if a descriptor with {id} exists in the Catalogues",
+        "consumes": [
+          "*/*"
+        ],
+        "produces": [
+          "application/json",
+          "application/x-yaml"
+        ],
+        "operationId": "updateidTestDescriptor",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The universal unique identifier attached from the Catalogues",
+            "required": true,
+            "type": "string",
+            "format": "uuid"
+          },
+          {
+            "name": "param",
+            "in": "query",
+            "description": "The name field of the test descriptor",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "{param} updated to {param=value}"
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "Error",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "The TESTD ID {id} does not exist",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Test Descriptors"
+        ],
+        "summary": "Delete a specific test descriptor with the uuid",
+        "operationId": "deleteidTestDescriptor",
+        "consumes": [
+          "*/*"
+        ],
+        "produces": [
+          "application/json",
+          "application/x-yaml"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The universal unique identifier attached from the Catalogues",
+            "required": true,
+            "type": "string",
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "OK": {
+                  "description": "TESTD removed",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "No TESTD ID specified",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "The TESTD ID {id} does not exist",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/nsts": {
+      "get": {
+        "tags": [
+          "Network Slice Templates"
+        ],
+        "summary": "List all available network slice templates",
+        "operationId": "allNetworkSliceTemplatesQuerying",
+        "consumes": [
+          "application/json",
+          "application/x-yaml"
+        ],
+        "produces": [
+          "application/json",
+          "application/x-yaml"
+        ],
+        "parameters": [
+          {
+            "name": "page_size",
+            "in": "query",
+            "description": "The number of network slice template to be included in a page",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          {
+            "name": "page_number",
+            "in": "query",
+            "description": "The number of the page of network slice template to be shown (starting in 0)",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0,
+            "default": 0
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "description": "Request of returning the last versions of the hosted network slice templates",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "last",
+              "specific version"
+            ]
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "description": "Query with name field of the network slice template",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "vendor",
+            "in": "query",
+            "description": "Query with vendor field of network slice template",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "XFilter",
+            "in": "query",
+            "description": "Query with a desired field of the network slice template",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "created_at": {
+                  "description": "The creation date of the network slice template",
+                  "type": "string"
+                },
+                "md5": {
+                  "description": "The md5 hash of the network slice template",
+                  "type": "string"
+                },
+                "nstd": {
+                  "description": "The body of the network slice template",
+                  "type": "object"
+                },
+                "signature": {
+                  "description": "The signature of the network slice template",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "The status of the network slice template",
+                  "type": "string"
+                },
+                "updated_at": {
+                  "description": "The date of update of the network slice template",
+                  "type": "string"
+                },
+                "username": {
+                  "description": "The username of the creator of the network slice template",
+                  "type": "string"
+                },
+                "uuid": {
+                  "description": "The unique universal identifier of the network slice template",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Network Slice Templates"
+        ],
+        "summary": "Upload a network slice template",
+        "operationId": "uploadANetworkSliceTemplate",
+        "produces": [
+          "application/json",
+          "application/x-yaml"
+        ],
+        "parameters": [
+          {
+            "name": "--data-binary",
+            "in": "header",
+            "description": "The binary file of the network slice template in the current directory according the defined Content Type",
+            "required": true,
+            "type": "string",
+            "default": "@nstd_example.json"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "created_at": {
+                  "description": "The creation date of the network slice template",
+                  "type": "string"
+                },
+                "md5": {
+                  "description": "The md5 hash of the network slice template",
+                  "type": "string"
+                },
+                "nstd": {
+                  "description": "The body of the network slice template",
+                  "type": "object"
+                },
+                "signature": {
+                  "description": "The signature of the network slice template",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "The status of the network slice template",
+                  "type": "string"
+                },
+                "updated_at": {
+                  "description": "The date of update of the network slice template",
+                  "type": "string"
+                },
+                "username": {
+                  "description": "The username of the creator of the network slice template",
+                  "type": "string"
+                },
+                "uuid": {
+                  "description": "The unique universal identifier of the network slice template",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "Error",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "Duplicated NST ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Network Slice Templates"
+        ],
+        "summary": "Upload a network slice template if a descriptor with {name, vendor, version} triplet exists in the Catalogues",
+        "produces": [
+          "application/json",
+          "application/x-yaml"
+        ],
+        "operationId": "updateNetworkSliceTemplate",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "description": "The name field of the network slice template",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "vendor",
+            "in": "query",
+            "description": "The vendor field of the network slice template",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "--data-binary",
+            "in": "header",
+            "description": "The binary file of the network slice template in the current directory according the defined Content Type",
+            "required": true,
+            "type": "string",
+            "default": "@vnfd_example.json"
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "description": "The version field of the network slice template",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "created_at": {
+                  "description": "The creation date of the network slice template",
+                  "type": "string"
+                },
+                "md5": {
+                  "description": "The md5 hash of the network slice template",
+                  "type": "string"
+                },
+                "nstd": {
+                  "description": "The body of the network slice template",
+                  "type": "object"
+                },
+                "signature": {
+                  "description": "The signature of the network slice template",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "The status of the network slice template",
+                  "type": "string"
+                },
+                "updated_at": {
+                  "description": "The date of update of the network slice template",
+                  "type": "string"
+                },
+                "username": {
+                  "description": "The username of the creator of the network slice template",
+                  "type": "string"
+                },
+                "uuid": {
+                  "description": "The unique universal identifier of the network slice template",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "No NST ID specified",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "The NST ID {id} does not exist",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Network Slice Templates"
+        ],
+        "summary": "Delete an available network slice template with {name, vendor, version} triplet",
+        "operationId": "deleteNetworkSliceTemplate",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "description": "The name field of the network slice template",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "vendor",
+            "in": "query",
+            "description": "The vendor field of the network slice template",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "description": "The version field of the network slice template",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "OK": {
+                  "description": "NSTD removed",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "No NST ID specified",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "The NST ID {id} does not exist",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/nsts/{id}": {
+      "get": {
+        "tags": [
+          "Network Slice Templates"
+        ],
+        "summary": "Retrieve a specific network slice template with the uuid",
+        "operationId": "oneNetworkSliceTemplateQuerying",
+        "consumes": [
+          "*/*"
+        ],
+        "produces": [
+          "application/json",
+          "application/x-yaml"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The universal unique identifier attached from the Catalogues",
+            "required": true,
+            "type": "string",
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "created_at": {
+                  "description": "The creation date of the network slice template",
+                  "type": "string"
+                },
+                "md5": {
+                  "description": "The md5 hash of the network slice template",
+                  "type": "string"
+                },
+                "nstd": {
+                  "description": "The body of the network slice template",
+                  "type": "object"
+                },
+                "signature": {
+                  "description": "The signature of the network slice template",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "The status of the network slice template",
+                  "type": "string"
+                },
+                "updated_at": {
+                  "description": "The date of update of the network slice template",
+                  "type": "string"
+                },
+                "username": {
+                  "description": "The username of the creator of the network slice template",
+                  "type": "string"
+                },
+                "uuid": {
+                  "description": "The unique universal identifier of the network slice template",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "No NST ID specified",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "The NST ID {id} does not exist",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Network Slice Templates"
+        ],
+        "summary": "Update a parameter from network slice template if a descriptor with {id} exists in the Catalogues",
+        "consumes": [
+          "*/*"
+        ],
+        "produces": [
+          "application/json",
+          "application/x-yaml"
+        ],
+        "operationId": "updateidNetworkSliceTemplate",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The universal unique identifier attached from the Catalogues",
+            "required": true,
+            "type": "string",
+            "format": "uuid"
+          },
+          {
+            "name": "param",
+            "in": "query",
+            "description": "The name field of the network slice template",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "{param} updated to {param=value}"
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "Error",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "The NSTD ID {id} does not exist",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Network Slice Templates"
+        ],
+        "summary": "Delete a specific network slice template with the uuid",
+        "operationId": "deleteidNetworkSliceTemplate",
+        "consumes": [
+          "*/*"
+        ],
+        "produces": [
+          "application/json",
+          "application/x-yaml"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The universal unique identifier attached from the Catalogues",
+            "required": true,
+            "type": "string",
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "OK": {
+                  "description": "NST removed",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "No NST ID specified",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "The NST ID {id} does not exist",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tgo-packages": {
+      "get": {
+        "tags": [
+          "5GTANGO Packages"
+        ],
+        "summary": "List all available 5GTANGO (.tgo) Packages",
+        "operationId": "allTgoPackagesQuerying",
+        "consumes": [
+          "application/json",
+          "application/x-yaml"
+        ],
+        "produces": [
+          "application/json",
+          "application/x-yaml"
+        ],
+        "parameters": [
+          {
+            "name": "page_size",
+            "in": "query",
+            "description": "The number of tgo packages to be included in a page",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          {
+            "name": "page_number",
+            "in": "query",
+            "description": "The number of the page of tgo packages to be shown (starting in 0)",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0,
+            "default": 0
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "created_at": {
+                  "description": "The creation date of the tgo package",
+                  "type": "string"
+                },
+                "md5": {
+                  "description": "The md5 hash of the tgo package",
+                  "type": "string"
+                },
+                "grid_fs_id": {
+                  "description": "The id of the grid file system of the tgo package",
+                  "type": "string"
+                },
+                "signature": {
+                  "description": "The signature of the tgo package",
+                  "type": "string"
+                },
+                "package_name": {
+                  "description": "The name of the tgo package",
+                  "type": "string"
+                },
+                "updated_at": {
+                  "description": "The date of update of the tgo package",
+                  "type": "string"
+                },
+                "username": {
+                  "description": "The username of the creator of the tgo package",
+                  "type": "string"
+                },
+                "uuid": {
+                  "description": "The unique universal identifier of the tgo package",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "5GTANGO Packages"
+        ],
+        "summary": "Upload a 5GTANGO (.tgo) package",
+        "operationId": "uploadATgoPackage",
+        "produces": [
+          "application/zip"
+        ],
+        "parameters": [
+          {
+            "name": "--data-binary",
+            "in": "header",
+            "description": "The binary file of the tgo package in the current directory",
+            "required": true,
+            "type": "string",
+            "default": "@5gtango-test-package.tgo"
+          },
+          {
+            "name": "Content-Disposition",
+            "in": "header",
+            "description": "The name of the tgo package in the current Catalogues",
+            "required": true,
+            "type": "string",
+            "default": "attachment; filename=5gtango-test-package.tgo"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "uuid": {
+                  "description": "The uuid of the 5GTANGO (.tgo) package",
+                  "type": "string"
+				}
+              }
+              }
+            },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "Error",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "Duplicated tgo-package ID => {id}",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type"
+          }
+        }
+      }
+    },
+    "/tgo-packages/{id}": {
+      "get": {
+        "tags": [
+          "5GTANGO Packages"
+        ],
+        "summary": "Retrieve a specific 5GTANGO (.tgo) package with the uuid",
+        "operationId": "oneTgoPackageQuerying",
+        "consumes": [
+          "*/*"
+        ],
+        "produces": [
+          "application/json",
+          "application/x-yaml",
+          "application/zip"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The universal unique identifier attached from the Catalogues",
+            "required": true,
+            "type": "string",
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "created_at": {
+                  "description": "The creation date of the tgo package",
+                  "type": "string"
+                },
+                "md5": {
+                  "description": "The md5 hash of the tgo package",
+                  "type": "string"
+                },
+                "grid_fs_id": {
+                  "description": "The id of the grid file system of the tgo package",
+                  "type": "string"
+                },
+                "signature": {
+                  "description": "The signature of the tgo package",
+                  "type": "string"
+                },
+                "package_name": {
+                  "description": "The name of the tgo package",
+                  "type": "string"
+                },
+                "updated_at": {
+                  "description": "The date of update of the tgo package",
+                  "type": "string"
+                },
+                "username": {
+                  "description": "The username of the creator of the tgo package",
+                  "type": "string"
+                },
+                "uuid": {
+                  "description": "The unique universal identifier of the tgo package",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "415": {
+            "description": "Unsupported Media Type"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "5GTANGO Packages"
+        ],
+        "summary": "Delete a specific 5GTANGO (.tgo) package with the uuid",
+        "operationId": "deleteidTgoPackage",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The universal unique identifier attached from the Catalogues",
+            "required": true,
+            "type": "string",
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "OK": {
+                  "description": "tgo-package removed",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "No tgo-package ID specified",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "The tgo-package ID {id} does not exist",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/files": {
+      "get": {
+        "tags": [
+          "Arbitrary Files"
+        ],
+        "summary": "List all available arbitrary files",
+        "operationId": "allArbFilesQuerying",
+        "consumes": [
+          "application/json",
+          "application/x-yaml"
+        ],
+        "produces": [
+          "application/json",
+          "application/x-yaml"
+        ],
+        "parameters": [
+          {
+            "name": "page_size",
+            "in": "query",
+            "description": "The number of arbitrary files to be included in a page",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          {
+            "name": "page_number",
+            "in": "query",
+            "description": "The number of the page of arbitrary files to be shown (starting in 0)",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0,
+            "default": 0
+          },
+          {
+            "name": "XFilter",
+            "in": "query",
+            "description": "Query with a desired field of the metadata of the arbitrary file",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "md5": {
+                  "description": "The md5 hash of the arbitrary file",
+                  "type": "string"
+                },
+                "grid_fs_id": {
+                  "description": "The id of the grid file system of the arbitrary file",
+                  "type": "string"
+                },
+                "signature": {
+                  "description": "The signature of the arbitrary file",
+                  "type": "string"
+                },
+                "file_name": {
+                  "description": "The name of the arbitrary file",
+                  "type": "string"
+                },
+                "updated_at": {
+                  "description": "The date of update of the arbitrary file",
+                  "type": "string"
+                },
+                "username": {
+                  "description": "The username of the creator of the arbitrary file",
+                  "type": "string"
+                },
+                "uuid": {
+                  "description": "The unique universal identifier of the arbitrary file",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Arbitrary Files"
+        ],
+        "summary": "Upload an arbitrary file",
+        "operationId": "uploadAnArbitraryFile",
+        "produces": [
+          "application/octet-stream"
+        ],
+        "parameters": [
+          {
+            "name": "--data-binary",
+            "in": "header",
+            "description": "The binary file of the arbitrary file in the current directory",
+            "required": true,
+            "type": "string",
+            "default": "@5gtango-test-package.tgo"
+          },
+          {
+            "name": "Content-Disposition",
+            "in": "header",
+            "description": "The name of the arbitrary file in the current Catalogues",
+            "required": true,
+            "type": "string",
+            "default": "attachment; filename=5gtango-test-package.tgo"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "uuid": {
+                  "description": "The unique universal identifier of the arbitrary file",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "Error",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "Duplicated file ID => {id}",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type"
+          }
+        }
+      }
+    },
+    "/files/{id}": {
+      "get": {
+        "tags": [
+          "Arbitrary Files"
+        ],
+        "summary": "Retrieve a specific arbitrary file with the uuid",
+        "operationId": "oneArbitraryFileQuerying",
+        "consumes": [
+          "*/*"
+        ],
+        "produces": [
+          "application/json",
+          "application/x-yaml",
+          "application/octet-stream"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The universal unique identifier attached from the Catalogues",
+            "required": true,
+            "type": "string",
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "created_at": {
+                  "description": "The creation date of the arbitrary file",
+                  "type": "string"
+                },
+                "md5": {
+                  "description": "The md5 hash of the arbitrary file",
+                  "type": "string"
+                },
+                "grid_fs_id": {
+                  "description": "The id of the grid file system of the arbitrary file",
+                  "type": "string"
+                },
+                "signature": {
+                  "description": "The signature of the arbitrary file",
+                  "type": "string"
+                },
+                "file_name": {
+                  "description": "The name of the arbitrary file",
+                  "type": "string"
+                },
+                "updated_at": {
+                  "description": "The date of update of the arbitrary file",
+                  "type": "string"
+                },
+                "username": {
+                  "description": "The username of the creator of the arbitrary file",
+                  "type": "string"
+                },
+                "uuid": {
+                  "description": "The unique universal identifier of the arbitrary file",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "415": {
+            "description": "Unsupported Media Type"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Arbitrary Files"
+        ],
+        "summary": "Delete a specific arbitrary file with the uuid",
+        "operationId": "deleteidArbitraryFile",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The universal unique identifier attached from the Catalogues",
+            "required": true,
+            "type": "string",
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "OK": {
+                  "description": "File removed",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "No File ID specified",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "The File ID {id} does not exist",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

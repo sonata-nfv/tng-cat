@@ -1,16 +1,15 @@
 
-[![Build Status](https://jenkins.sonata-nfv.eu/buildStatus/icon?job=tng-cat/master)](https://jenkins.sonata-nfv.eu/job/tng-cat/master)  
-[![Join the chat at https://gitter.im/5gtango/tango-sp](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/5gtango/tango-sp)
+[![Build Status](https://jenkins.sonata-nfv.eu/buildStatus/icon?job=tng-cat/master)](https://jenkins.sonata-nfv.eu/job/tng-cat/master)  [![Join the chat at https://gitter.im/sonata-nfv/5gtango-sp](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/sonata-nfv/5gtango-sp)
 <p align="center"><img src="https://github.com/sonata-nfv/tng-api-gtw/wiki/images/sonata-5gtango-logo-500px.png" /></p>
   
-# 5GTANGO Catalogue  
-This repository contains the development for the [5GTANGO](https://5gtango.eu/) 's Service Platform Catalogue. It holds the API implementation for the Service Platform Catalogue component.  
-This repository comprises a basic component for the functionality of the following components:
-
-* [tng-sdk-package](https://github.com/sonata-nfv/tng-sdk-package) -  The 5GTANGO SDK tool to create and unpack 5GTANGO packages
-* [tng-gtk-sp](https://github.com/sonata-nfv/tng-gtk-sp) - The 5GTANGO Gatekeeper Service Platform specific components repository
+# 5GTANGO Catalogue 
  
-Also, it is closely related to the [tng-schema](https://github.com/sonata-nfv/tng-schema) repository that holds the schema for the various descriptors.  
+This repository contains the development for the [5GTANGO](https://5gtango.eu/)'s Service Platform Catalogue and holds the API implementation for the Service Platform Catalogue component. The 5GTANGO catalogue provides management and storage of all descriptors, 5GTANGO packages and files produced from the several 5GTANGO components. The  stored  descriptors  are  required  for  the  selection,  development  and instantiation of network services as well as for data analysis. This repository comprises a basic component for the functionality of the following components:
+
+* [tng-sdk-package](https://github.com/sonata-nfv/tng-sdk-package) -  The 5GTANGO SDK tool to create and unpack 5GTANGO packages.
+* [tng-gtk-sp](https://github.com/sonata-nfv/tng-gtk-sp) - The 5GTANGO Gatekeeper Service Platform specific components repository.
+ 
+Also, it is closely related to the [tng-schema](https://github.com/sonata-nfv/tng-schema) repository that holds the schema for the various descriptors.  For additional information in the context of the architecture, please check the [Introduction wiki page](https://github.com/sonata-nfv/tng-cat/wiki/Introduction) of this repository.
   
 ## Installation 
 
@@ -59,8 +58,7 @@ In this repository, the following libraries are used (also referenced in the [`G
 * [Json](https://github.com/flori/json) (`v.1.8`) - JSON specification  
 * [JSON-schema](https://github.com/ruby-json-schema/json-schema) (`v.2.5`) - JSON schema validator  
 
-
-Below, the gems are used for the MongoDB funnctionalities:
+Below, the gems are used for the MongoDB functionalities:
 
 * [Mongoid](https://github.com/mongodb/mongoid) (`v.4.0`) - Ruby ODM framework for MongoDB
 * [Mongoid-grid_fs](https://github.com/mongoid/mongoid-grid_fs) (`v.2.2`) - Implementation of the MongoDB GridFS specification

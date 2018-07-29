@@ -139,7 +139,7 @@ __Note 2__: `<Content-Type>` header defines the functionality of this endpoint. 
 
 __Note 3__: `<Content-Type>` header can be defined as`"Content-Type: application/zip"`for tgo-packages and `"Content-Type: application/octet-stream"` for files.
 
-Examples can be found in the relative [wiki page](https://github.com/sonata-nfv/tng-cat/wiki/Examples) and detailed information can be found in the [wiki](https://github.com/sonata-nfv/tng-cat/wiki)
+Examples can be found in the relative [wiki page](https://github.com/sonata-nfv/tng-cat/wiki/General-Description-of-Catalogues-API) and detailed information can be found in the [wiki](https://github.com/sonata-nfv/tng-cat/wiki)
 
   
 ### Pushing 'tango-demo' files to Catalogue  

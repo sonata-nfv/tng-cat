@@ -111,8 +111,15 @@ class CatalogueV2 < SonataCatalogue
       end
     end
 
-    response = resp_json_yaml(slas)
-
+    response = ''
+    case request.content_type
+      when 'application/json'
+        response = slas.to_json
+      when 'application/x-yaml'
+        response = json_to_yaml(slas.to_json)
+      else
+        halt 415
+    end
     halt 200, {'Content-type' => request.content_type}, response
   end
 
@@ -133,8 +140,15 @@ class CatalogueV2 < SonataCatalogue
       end
       logger.debug "Catalogue: leaving GET /v2/slas/template-descriptors/#{params[:id]}\" with SLAD #{sla}"
 
-      response = resp_json_yaml(sla)
-
+      response = ''
+      case request.content_type
+        when 'application/json'
+          response = sla.to_json
+        when 'application/x-yaml'
+          response = json_to_yaml(sla.to_json)
+        else
+          halt 415
+      end
       halt 200, {'Content-type' => request.content_type}, response
 
     end
@@ -150,7 +164,27 @@ class CatalogueV2 < SonataCatalogue
     halt 415 unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
 
     # Compatibility support for YAML content-type
-    new_sla = validate_json_yaml
+    case request.content_type
+      when 'application/x-yaml'
+        # Validate YAML format
+        # When updating a SLAD, the json object sent to API must contain just data inside
+        # of the slad, without the json field slad: before
+        sla, errors = parse_yaml(request.body.read)
+        halt 400, errors.to_json if errors
+
+        # Translate from YAML format to JSON format
+        new_sla_json = yaml_to_json(sla)
+
+        # Validate JSON format
+        new_sla, errors = parse_json(new_sla_json)
+        halt 400, errors.to_json if errors
+
+      else
+        # Compatibility support for JSON content-type
+        # Parses and validates JSON format
+        new_sla, errors = parse_json(request.body.read)
+        halt 400, errors.to_json if errors
+    end
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
@@ -207,9 +241,15 @@ class CatalogueV2 < SonataCatalogue
     end
 
     puts 'New SLA has been added'
-
-    response = resp_json_yaml(sla)
-
+    response = ''
+    case request.content_type
+      when 'application/json'
+        response = sla.to_json
+      when 'application/x-yaml'
+        response = json_to_yaml(sla.to_json)
+      else
+        halt 415
+    end
     halt 201, {'Content-type' => request.content_type}, response
   end
 
@@ -233,7 +273,27 @@ class CatalogueV2 < SonataCatalogue
     json_error 400, 'Update parameters are null' if keyed_params.empty?
 
     # Compatibility support for YAML content-type
-    new_sla = validate_json_yaml
+    case request.content_type
+      when 'application/x-yaml'
+        # Validate YAML format
+        # When updating a SLAD, the json object sent to API must contain just data inside
+        # of the slad, without the json field slad: before
+        sla, errors = parse_yaml(request.body.read)
+        halt 400, errors.to_json if errors
+
+        # Translate from YAML format to JSON format
+        new_sla_json = yaml_to_json(sla)
+
+        # Validate JSON format
+        new_sla, errors = parse_json(new_sla_json)
+        halt 400, errors.to_json if errors
+
+      else
+        # Compatibility support for JSON content-type
+        # Parses and validates JSON format
+        new_sla, errors = parse_json(request.body.read)
+        halt 400, errors.to_json if errors
+    end
 
     # Validate SLA
     # Check if mandatory fields Vendor, Name, Version are included
@@ -298,8 +358,15 @@ class CatalogueV2 < SonataCatalogue
     end
     logger.debug "Catalogue: leaving PUT /v2/sla/template-descriptors?#{query_string}\" with SLAD #{new_sla}"
 
-    response = resp_json_yaml(new_sla)
-
+    response = ''
+    case request.content_type
+      when 'application/json'
+        response = new_sla.to_json
+      when 'application/x-yaml'
+        response = json_to_yaml(new_sla.to_json)
+      else
+        halt 415
+    end
     halt 200, {'Content-type' => request.content_type}, response
   end
 
@@ -378,7 +445,27 @@ class CatalogueV2 < SonataCatalogue
         end
       else
         # Compatibility support for YAML content-type
-        new_sla = validate_json_yaml
+        case request.content_type
+          when 'application/x-yaml'
+            # Validate YAML format
+            # When updating a SLAD, the json object sent to API must contain just data inside
+            # of the slad, without the json field slad: before
+            sla, errors = parse_yaml(request.body.read)
+            halt 400, errors.to_json if errors
+
+            # Translate from YAML format to JSON format
+            new_sla_json = yaml_to_json(sla)
+
+            # Validate JSON format
+            new_sla, errors = parse_json(new_sla_json)
+            halt 400, errors.to_json if errors
+
+          else
+            # Compatibility support for JSON content-type
+            # Parses and validates JSON format
+            new_sla, errors = parse_json(request.body.read)
+            halt 400, errors.to_json if errors
+        end
 
         # Validate SLA
         # Check if mandatory fields Vendor, Name, Version are included
@@ -435,8 +522,15 @@ class CatalogueV2 < SonataCatalogue
         end
         logger.debug "Catalogue: leaving PUT /v2/slas/template-descriptors/#{params[:id]}\" with SLAD #{new_sla}"
 
-        response = resp_json_yaml(new_sla)
-
+        response = ''
+        case request.content_type
+          when 'application/json'
+            response = new_sla.to_json
+          when 'application/x-yaml'
+            response = json_to_yaml(new_sla.to_json)
+          else
+            halt 415
+        end
         halt 200, {'Content-type' => request.content_type}, response
       end
     end
@@ -464,16 +558,13 @@ class CatalogueV2 < SonataCatalogue
       rescue Mongoid::Errors::DocumentNotFound => e
         json_error 404, "The SLAD Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist"
       end
-
       # Check if SLAD is unpublished and inactive. Then, it cannot be deleted
       logger.debug "Catalogue: leaving DELETE /v2/sla/template-descriptors?#{query_string}\" with SLAD #{sla}"
-
       # Delete entry in dict mapping
       del_ent_dict(sla, :slad)
       sla.destroy
       halt 200, 'OK: SLAD removed'
     end
-
     logger.debug "Catalogue: leaving DELETE /v2/slas/template-descriptors?#{query_string} with 'No SLAD Vendor, Name, Version specified'"
     json_error 400, 'No SLAD Vendor, Name, Version specified'
   end
@@ -484,7 +575,6 @@ class CatalogueV2 < SonataCatalogue
   #	  @param :id [Symbol] id SLA ID
   # Delete a SLA by uuid
   delete '/slas/template-descriptors/:id/?' do
-
     unless params[:id].nil?
       logger.debug "Catalogue: DELETE /v2/slas/template-descriptors/#{params[:id]}"
       begin
@@ -493,15 +583,12 @@ class CatalogueV2 < SonataCatalogue
         logger.error e
         json_error 404, "The SLAD ID #{params[:id]} does not exist" unless sla
       end
-
       logger.debug "Catalogue: leaving DELETE /v2/slas/template-descriptors?#{query_string}\" with SLAD #{sla}"
-
       # Delete entry in dict mapping
       del_ent_dict(sla, :slad)
       sla.destroy
       halt 200, 'OK: SLAD removed'
     end
-
     logger.debug "Catalogue: leaving DELETE /v2/slas/template-descriptors/#{params[:id]} with 'No SLAD ID specified'"
     json_error 400, 'No SLAD ID specified'
   end

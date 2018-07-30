@@ -117,50 +117,6 @@ class SonataCatalogue < Sinatra::Application
     output_yml
   end
 
-
-  #Check for the Content-Type header
-  # @param [JSON] descriptor the query descriptors
-  # @return [JSON,YAML] response the response
-  def resp_json_yaml(descriptor)
-    response = ''
-    case request.content_type
-      when 'application/json'
-        response = descriptor.to_json
-      when 'application/x-yaml'
-        response = json_to_yaml(descriptor.to_json)
-      else
-        json_error 415, "Incorrect Content Type"
-    end
-    response
-  end
-
-  # Validation of JSON and YAML
-  # @return [JSON, YAML] new_desc is the json/yaml of the descriptor
-  def validate_json_yaml
-    case request.content_type
-      when 'application/x-yaml'
-        # Validate YAML format
-        # The json object sent to API must contain just data inside
-        # without the json field of the descriptor before
-        desc, errors = parse_yaml(request.body.read)
-        halt 400, errors.to_json if errors
-
-        # Translate from YAML format to JSON format
-        new_desc_json = yaml_to_json(desc)
-
-        # Validate JSON format
-        new_desc, errors = parse_json(new_desc_json)
-        halt 400, errors.to_json if errors
-
-      else
-        # Compatibility support for JSON content-type
-        # Parses and validates JSON format
-        new_desc, errors = parse_json(request.body.read)
-        halt 400, errors.to_json if errors
-    end
-    new_desc
-  end
-
   def apply_limit_and_offset(input, offset= nil, limit= nil)
     @result = input
     @result = offset ? input.drop(offset.to_i) : @result

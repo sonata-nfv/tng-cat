@@ -111,8 +111,15 @@ class CatalogueV2 < SonataCatalogue
       end
     end
 
-    response = resp_json_yaml(tests)
-
+    response = ''
+    case request.content_type
+      when 'application/json'
+        response = tests.to_json
+      when 'application/x-yaml'
+        response = json_to_yaml(tests.to_json)
+      else
+        halt 415
+    end
     halt 200, {'Content-type' => request.content_type}, response
   end
 
@@ -133,8 +140,15 @@ class CatalogueV2 < SonataCatalogue
       end
       logger.debug "Catalogue: leaving GET /v2/tests/#{params[:id]}\" with TESTD #{test}"
 
-      response = resp_json_yaml(test)
-
+      response = ''
+      case request.content_type
+        when 'application/json'
+          response = test.to_json
+        when 'application/x-yaml'
+          response = json_to_yaml(test.to_json)
+        else
+          halt 415
+      end
       halt 200, {'Content-type' => request.content_type}, response
 
     end
@@ -150,7 +164,27 @@ class CatalogueV2 < SonataCatalogue
     halt 415 unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
 
     # Compatibility support for YAML content-type
-    new_test = validate_json_yaml
+    case request.content_type
+      when 'application/x-yaml'
+        # Validate YAML format
+        # When updating a Test Descriptor, the json object sent to API must contain just data inside
+        # of the test descriptor, without the json field testd: before
+        test, errors = parse_yaml(request.body.read)
+        halt 400, errors.to_json if errors
+
+        # Translate from YAML format to JSON format
+        new_test_json = yaml_to_json(test)
+
+        # Validate JSON format
+        new_test, errors = parse_json(new_test_json)
+        halt 400, errors.to_json if errors
+
+      else
+        # Compatibility support for JSON content-type
+        # Parses and validates JSON format
+        new_test, errors = parse_json(request.body.read)
+        halt 400, errors.to_json if errors
+    end
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
@@ -205,8 +239,15 @@ class CatalogueV2 < SonataCatalogue
     end
 
     puts 'New TEST Descriptor has been added'
-    response = resp_json_yaml(test)
-
+    response = ''
+    case request.content_type
+      when 'application/json'
+        response = test.to_json
+      when 'application/x-yaml'
+        response = json_to_yaml(test.to_json)
+      else
+        halt 415
+    end
     halt 201, {'Content-type' => request.content_type}, response
   end
 
@@ -230,7 +271,27 @@ class CatalogueV2 < SonataCatalogue
     json_error 400, 'Update parameters are null' if keyed_params.empty?
 
     # Compatibility support for YAML content-type
-    new_test = validate_json_yaml
+    case request.content_type
+      when 'application/x-yaml'
+        # Validate YAML format
+        # When updating a Test Descriptor, the json object sent to API must contain just data inside
+        # of the test descriptor, without the json field testd: before
+        test, errors = parse_yaml(request.body.read)
+        halt 400, errors.to_json if errors
+
+        # Translate from YAML format to JSON format
+        new_test_json = yaml_to_json(test)
+
+        # Validate JSON format
+        new_test, errors = parse_json(new_test_json)
+        halt 400, errors.to_json if errors
+
+      else
+        # Compatibility support for JSON content-type
+        # Parses and validates JSON format
+        new_test, errors = parse_json(request.body.read)
+        halt 400, errors.to_json if errors
+    end
 
     # Validate NS
     # Check if mandatory fields Vendor, Name, Version are included
@@ -294,8 +355,15 @@ class CatalogueV2 < SonataCatalogue
     end
     logger.debug "Catalogue: leaving PUT /v2/tests?#{query_string}\" with TESTD #{new_test}"
 
-    response = resp_json_yaml(new_test)
-
+    response = ''
+    case request.content_type
+      when 'application/json'
+        response = new_test.to_json
+      when 'application/x-yaml'
+        response = json_to_yaml(new_test.to_json)
+      else
+        halt 415
+    end
     halt 200, {'Content-type' => request.content_type}, response
   end
 
@@ -347,7 +415,27 @@ class CatalogueV2 < SonataCatalogue
 
       else
         # Compatibility support for YAML content-type
-        new_test = validate_json_yaml
+        case request.content_type
+          when 'application/x-yaml'
+            # Validate YAML format
+            # When updating a Test Descriptor, the json object sent to API must contain just data inside
+            # of the test descriptor, without the json field testd: before
+            test, errors = parse_yaml(request.body.read)
+            halt 400, errors.to_json if errors
+
+            # Translate from YAML format to JSON format
+            new_test_json = yaml_to_json(test)
+
+            # Validate JSON format
+            new_test, errors = parse_json(new_test_json)
+            halt 400, errors.to_json if errors
+
+          else
+            # Compatibility support for JSON content-type
+            # Parses and validates JSON format
+            new_test, errors = parse_json(request.body.read)
+            halt 400, errors.to_json if errors
+        end
 
         # Validate TEST
         # Check if mandatory fields Vendor, Name, Version are included
@@ -399,8 +487,15 @@ class CatalogueV2 < SonataCatalogue
         end
         logger.debug "Catalogue: leaving PUT /v2/tests/#{params[:id]}\" with TESTD #{new_test}"
 
-        response = resp_json_yaml(new_test)
-
+        response = ''
+        case request.content_type
+          when 'application/json'
+            response = new_test.to_json
+          when 'application/x-yaml'
+            response = json_to_yaml(new_test.to_json)
+          else
+            halt 415
+        end
         halt 200, {'Content-type' => request.content_type}, response
       end
     end
@@ -428,44 +523,36 @@ class CatalogueV2 < SonataCatalogue
       rescue Mongoid::Errors::DocumentNotFound => e
         json_error 404, "The TESTD Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist"
       end
-
       logger.debug "Catalogue: leaving DELETE /v2/tests?#{query_string}\" with TESTD #{test}"
-
       # Delete entry in dict mapping
       del_ent_dict(test, :testd)
       test.destroy
       halt 200, 'OK: TESTD removed'
     end
-
     logger.debug "Catalogue: leaving DELETE /v2/tests?#{query_string} with 'No TESTD Vendor, Name, Version specified'"
     json_error 400, 'No TESTD Vendor, Name, Version specified'
   end
 
   # @method delete_testd_sp_test_id
-  # @overload delete 'tests/:id/?'
+  # @overload delete '/catalogues/tests/:id/?'
   #	  Delete a TEST Descriptor by its ID
   #	  @param :id [Symbol] id TEST ID
   # Delete a TEST by uuid
   delete '/tests/:id/?' do
-
     unless params[:id].nil?
       logger.debug "Catalogue: DELETE /v2/tests/#{params[:id]}"
-
       begin
         test = Testd.find(params[:id])
       rescue Mongoid::Errors::DocumentNotFound => e
         logger.error e
         json_error 404, "The TESTD ID #{params[:id]} does not exist" unless test
       end
-
       logger.debug "Catalogue: leaving DELETE /v2/tests/#{params[:id]}\" with TESTD #{test}"
-
       # Delete entry in dict mapping
       del_ent_dict(test, :testd)
       test.destroy
       halt 200, 'OK: TESTD removed'
     end
-
     logger.debug "Catalogue: leaving DELETE /v2/tests/#{params[:id]} with 'No TESTD ID specified'"
     json_error 400, 'No TESTD ID specified'
   end

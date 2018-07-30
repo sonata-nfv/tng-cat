@@ -112,15 +112,8 @@ class CatalogueV2 < SonataCatalogue
       end
     end
 
-    response = ''
-    case request.content_type
-      when 'application/json'
-        response = nsts.to_json
-      when 'application/x-yaml'
-        response = json_to_yaml(nsts.to_json)
-      else
-        halt 415
-    end
+    response = resp_json_yaml(nsts)
+
     halt 200, {'Content-type' => request.content_type}, response
   end
 
@@ -165,27 +158,7 @@ class CatalogueV2 < SonataCatalogue
     halt 415 unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
 
     # Compatibility support for YAML content-type
-    case request.content_type
-      when 'application/x-yaml'
-        # Validate YAML format
-        # When updating a NST, the json object sent to API must contain just data inside
-        # of the nst, without the json field nst: before
-        nst, errors = parse_yaml(request.body.read)
-        halt 400, errors.to_json if errors
-
-        # Translate from YAML format to JSON format
-        new_nst_json = yaml_to_json(nst)
-
-        # Validate JSON format
-        new_nst, errors = parse_json(new_nst_json)
-        halt 400, errors.to_json if errors
-
-      else
-        # Compatibility support for JSON content-type
-        # Parses and validates JSON format
-        new_nst, errors = parse_json(request.body.read)
-        halt 400, errors.to_json if errors
-    end
+    new_nst = validate_json_yaml
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
@@ -240,15 +213,9 @@ class CatalogueV2 < SonataCatalogue
     end
 
     puts 'New NST has been added'
-    response = ''
-    case request.content_type
-      when 'application/json'
-        response = nst.to_json
-      when 'application/x-yaml'
-        response = json_to_yaml(nst.to_json)
-      else
-        halt 415
-    end
+
+    response = resp_json_yaml(nst)
+
     halt 201, {'Content-type' => request.content_type}, response
   end
 
@@ -272,27 +239,7 @@ class CatalogueV2 < SonataCatalogue
     json_error 400, 'Update parameters are null' if keyed_params.empty?
 
     # Compatibility support for YAML content-type
-    case request.content_type
-      when 'application/x-yaml'
-        # Validate YAML format
-        # When updating a NST, the json object sent to API must contain just data inside
-        # of the nstd, without the json field nstd: before
-        nst, errors = parse_yaml(request.body.read)
-        halt 400, errors.to_json if errors
-
-        # Translate from YAML format to JSON format
-        new_nst_json = yaml_to_json(nst)
-
-        # Validate JSON format
-        new_nst, errors = parse_json(new_nst_json)
-        halt 400, errors.to_json if errors
-
-      else
-        # Compatibility support for JSON content-type
-        # Parses and validates JSON format
-        new_nst, errors = parse_json(request.body.read)
-        halt 400, errors.to_json if errors
-    end
+    new_nst = validate_json_yaml
 
     # Validate NS
     # Check if mandatory fields Vendor, Name, Version are included
@@ -356,15 +303,8 @@ class CatalogueV2 < SonataCatalogue
     end
     logger.debug "Catalogue: leaving PUT /v2/nsts?#{query_string}\" with NST #{new_nst}"
 
-    response = ''
-    case request.content_type
-      when 'application/json'
-        response = new_nst.to_json
-      when 'application/x-yaml'
-        response = json_to_yaml(new_nst.to_json)
-      else
-        halt 415
-    end
+    response = resp_json_yaml(new_nst)
+
     halt 200, {'Content-type' => request.content_type}, response
   end
 
@@ -475,27 +415,7 @@ class CatalogueV2 < SonataCatalogue
         json_return 200, "#{par_key} updated to {#{query_string}}"
       else
         # Compatibility support for YAML content-type
-        case request.content_type
-          when 'application/x-yaml'
-            # Validate YAML format
-            # When updating a NST, the json object sent to API must contain just data inside
-            # of the nstd, without the json field nstd: before
-            nst, errors = parse_yaml(request.body.read)
-            halt 400, errors.to_json if errors
-
-            # Translate from YAML format to JSON format
-            new_nst_json = yaml_to_json(nst)
-
-            # Validate JSON format
-            new_nst, errors = parse_json(new_nst_json)
-            halt 400, errors.to_json if errors
-
-          else
-            # Compatibility support for JSON content-type
-            # Parses and validates JSON format
-            new_nst, errors = parse_json(request.body.read)
-            halt 400, errors.to_json if errors
-        end
+        new_nst = validate_json_yaml
 
         # Validate NST
         # Check if mandatory fields Vendor, Name, Version are included
@@ -547,15 +467,8 @@ class CatalogueV2 < SonataCatalogue
         end
         logger.debug "Catalogue: leaving PUT /v2/nsts/#{params[:id]}\" with NST #{new_nst}"
 
-        response = ''
-        case request.content_type
-          when 'application/json'
-            response = new_nst.to_json
-          when 'application/x-yaml'
-            response = json_to_yaml(new_nst.to_json)
-          else
-            halt 415
-        end
+        response = resp_json_yaml(new_nst)
+
         halt 200, {'Content-type' => request.content_type}, response
       end
     end

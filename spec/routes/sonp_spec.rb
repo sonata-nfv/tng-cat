@@ -38,33 +38,6 @@ require 'pp'
 require 'rspec/its'
 require 'yaml'
 
-RSpec.describe CatalogueV1 do
-
-  def app
-    @app ||= CatalogueV1
-  end
-
-  describe 'GET \'/\'' do
-    before do
-      stub_request(:get, 'localhost:5000').to_return(status: 200)
-      get '/'
-    end
-    subject { last_response }
-    its(:status) { is_expected.to eq 200 }
-  end
-
-  describe 'GET /son-packages' do
-    context 'without (UU)ID given' do
-      before do
-        headers = { 'CONTENT_TYPE' => 'application/json' }
-        get '/son-packages', nil, headers
-      end
-      subject { last_response }
-      its(:status) { is_expected.to eq 200 }
-    end
-  end
-end
-
 RSpec.describe CatalogueV2 do
 
   def app

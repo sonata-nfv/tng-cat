@@ -111,15 +111,8 @@ class CatalogueV2 < SonataCatalogue
         logger.info "Catalogue: leaving GET v2/policies?#{query_string} with 'No PLDs were found'"
       end
 
-      response = ''
-      case request.content_type
-        when 'application/json'
-          response = policies.to_json
-        when 'application/x-yaml'
-          response = json_to_yaml(policies.to_json)
-        else
-          halt 415
-      end
+      response = resp_json_yaml(policies)
+
       halt 200, {'Content-type' => request.content_type}, response
     end
   end
@@ -141,15 +134,8 @@ class CatalogueV2 < SonataCatalogue
       end
       logger.debug "Catalogue: leaving GET v2/policies/#{params[:id]}\" with PLD #{pl}"
 
-      response = ''
-      case request.content_type
-        when 'application/json'
-          response = pl.to_json
-        when 'application/x-yaml'
-          response = json_to_yaml(pl.to_json)
-        else
-          halt 415
-      end
+      response = resp_json_yaml(pl)
+
       halt 200, {'Content-type' => request.content_type}, response
 
     end
@@ -165,27 +151,7 @@ class CatalogueV2 < SonataCatalogue
     halt 415 unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
 
     # Compatibility support for YAML content-type
-    case request.content_type
-      when 'application/x-yaml'
-        # Validate YAML format
-        # When updating a PLD, the json object sent to API must contain just data inside
-        # of the pld, without the json field pld: before
-        pl, errors = parse_yaml(request.body.read)
-        halt 400, errors.to_json if errors
-
-        # Translate from YAML format to JSON format
-        new_pl_json = yaml_to_json(pl)
-
-        # Validate JSON format
-        new_pl, errors = parse_json(new_pl_json)
-        halt 400, errors.to_json if errors
-
-      else
-        # Compatibility support for JSON content-type
-        # Parses and validates JSON format
-        new_pl, errors = parse_json(request.body.read)
-        halt 400, errors.to_json if errors
-    end
+    new_pl = validate_json_yaml
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
@@ -239,15 +205,8 @@ class CatalogueV2 < SonataCatalogue
     end
 
     puts 'New Policy has been added'
-    response = ''
-    case request.content_type
-      when 'application/json'
-        response = pl.to_json
-      when 'application/x-yaml'
-        response = json_to_yaml(pl.to_json)
-      else
-        halt 415
-    end
+    response = resp_json_yaml(pl)
+
     halt 201, {'Content-type' => request.content_type}, response
   end
 
@@ -271,27 +230,7 @@ class CatalogueV2 < SonataCatalogue
     json_error 400, 'Update parameters are null' if keyed_params.empty?
 
     # Compatibility support for YAML content-type
-    case request.content_type
-      when 'application/x-yaml'
-        # Validate YAML format
-        # When updating a PLD, the json object sent to API must contain just data inside
-        # of the pld, without the json field pld: before
-        pl, errors = parse_yaml(request.body.read)
-        halt 400, errors.to_json if errors
-
-        # Translate from YAML format to JSON format
-        new_pl_json = yaml_to_json(pl)
-
-        # Validate JSON format
-        new_pl, errors = parse_json(new_pl_json)
-        halt 400, errors.to_json if errors
-
-      else
-        # Compatibility support for JSON content-type
-        # Parses and validates JSON format
-        new_pl, errors = parse_json(request.body.read)
-        halt 400, errors.to_json if errors
-    end
+    new_pl = validate_json_yaml
 
     # Validate Policy
     # Check if mandatory field Vendor, Name, Version are included
@@ -355,15 +294,8 @@ class CatalogueV2 < SonataCatalogue
     end
     logger.debug "Catalogue: leaving PUT v2/policies?#{query_string}\" with PLD #{new_pl}"
 
-    response = ''
-    case request.content_type
-      when 'application/json'
-        response = new_pl.to_json
-      when 'application/x-yaml'
-        response = json_to_yaml(new_pl.to_json)
-      else
-        halt 415
-    end
+    response = resp_json_yaml(new_pl)
+
     halt 200, {'Content-type' => request.content_type}, response
   end
 
@@ -415,27 +347,7 @@ class CatalogueV2 < SonataCatalogue
 
       else
         # Compatibility support for YAML content-type
-        case request.content_type
-          when 'application/x-yaml'
-            # Validate YAML format
-            # When updating a PLD, the json object sent to API must contain just data inside
-            # of the pld, without the json field pld: before
-            pl, errors = parse_yaml(request.body.read)
-            halt 400, errors.to_json if errors
-
-            # Translate from YAML format to JSON format
-            new_pl_json = yaml_to_json(pl)
-
-            # Validate JSON format
-            new_pl, errors = parse_json(new_pl_json)
-            halt 400, errors.to_json if errors
-
-          else
-            # Compatibility support for JSON content-type
-            # Parses and validates JSON format
-            new_pl, errors = parse_json(request.body.read)
-            halt 400, errors.to_json if errors
-        end
+        new_pl = validate_json_yaml
 
         # Validate Policy Descriptor
         # Check if mandatory field Name is included
@@ -487,15 +399,8 @@ class CatalogueV2 < SonataCatalogue
         end
         logger.debug "Catalogue: leaving PUT v2/policies/#{params[:id]}\" with PLD #{new_pl}"
 
-        response = ''
-        case request.content_type
-          when 'application/json'
-            response = new_pl.to_json
-          when 'application/x-yaml'
-            response = json_to_yaml(new_pl.to_json)
-          else
-            halt 415
-        end
+        response = resp_json_yaml(new_pl)
+
         halt 200, {'Content-type' => request.content_type}, response
       end
     end
@@ -524,7 +429,9 @@ class CatalogueV2 < SonataCatalogue
       rescue Mongoid::Errors::DocumentNotFound => e
         json_error 404, "The PLD Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist"
       end
+
       logger.debug "Catalogue: leaving DELETE /v2/policies?#{query_string}\" with PLD #{pl}"
+
       # Delete entry in dict mapping
       del_ent_dict(pl, :pld)
       pl.destroy
@@ -535,11 +442,12 @@ class CatalogueV2 < SonataCatalogue
   end
 
   # @method delete_pld_sp_pl_id
-  # @overload delete '/catalogues/policies/:id/?'
+  # @overload delete '/policies/:id/?'
   #	  Delete a policy by its ID
   #	  @param :id [Symbol] id Policy ID
   # Delete a Policy by uuid
   delete '/policies/:id/?' do
+
     unless params[:id].nil?
       logger.debug "Catalogue: DELETE /v2/policies/#{params[:id]}"
       begin
@@ -548,12 +456,15 @@ class CatalogueV2 < SonataCatalogue
         logger.error e
         json_error 404, "The PLD ID #{params[:id]} does not exist" unless pl
       end
+
       logger.debug "Catalogue: leaving DELETE /v2/policies/#{params[:id]}\" with PLD #{pl}"
+
       # Delete entry in dict mapping
       del_ent_dict(pl, :pld)
       pl.destroy
       halt 200, 'OK: PLD removed'
     end
+
     logger.debug "Catalogue: leaving DELETE /v2/policies/#{params[:id]} with 'No PLD ID specified'"
     json_error 400, 'No PLD ID specified'
   end

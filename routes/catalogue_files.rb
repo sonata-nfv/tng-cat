@@ -31,9 +31,6 @@
 ## acknowledge the contributions of their colleagues of the 5GTANGO
 ## partner consortium (www.5gtango.eu).
 
-# @see SonCatalogue
-# class SonataCatalogue < Sinatra::Application
-
 
 class CatalogueV2 < SonataCatalogue
   ### FILE API METHODS ###
@@ -86,15 +83,7 @@ class CatalogueV2 < SonataCatalogue
     file_list = file_list.paginate(page_number: params[:page_number],
                                    page_size: params[:page_size])
 
-    response = ''
-    case request.content_type
-      when 'application/json'
-        response = file_list.to_json
-      when 'application/x-yaml'
-        response = json_to_yaml(file_list.to_json)
-      else
-        halt 415
-    end
+    response = resp_json_yaml
     halt 200, {'Content-type' => request.content_type}, response
   end
 
@@ -124,20 +113,6 @@ class CatalogueV2 < SonataCatalogue
 
         # Set custom header with Filename
         headers 'Filename' => (file['file_name'].to_s)
-
-        grid_file.data # big huge blob
-        # temp = Tempfile.new("#{files['file_name'].to_s}", 'wb')
-        # path_file = File.basename(temp.path)
-        # grid_file.each do |chunk|
-        #   temp.write(chunk) # streaming write
-        # end
-        # temp.close
-        # # Client file recovery
-        # str_name = file['file_name'].split('.')
-        # str_name[0] << "_" + Time.now.to_i.to_s.delete(" ")
-        # temp = File.new(str_name.join("."), 'wb')
-        # temp.write(grid_file.data)
-        # temp.close
 
         logger.debug "Catalogue: leaving GET /files/#{params[:id]}"
         halt 200, {'Content-type' => request.content_type}, grid_file.data

@@ -33,10 +33,10 @@
 source 'https://rubygems.org'
 
 gem 'addressable', '~> 2.3.8'
-gem 'rake', '~> 11.2.2'
-gem 'sinatra', '~> 2.0.1', require: 'sinatra/base'
-gem 'sinatra-contrib', '~> 2.0.1', require: false
-gem 'puma', '~> 3.4.0'
+gem 'rake', '~> 11.2', '>= 11.2.2'
+gem 'sinatra', '~> 2.0.2', require: 'sinatra/base'
+gem 'sinatra-contrib', '~> 2.0.2', require: false
+gem 'puma', '~> 3.11.0'
 gem 'json', '~>1.8'
 gem 'json-schema', '~>2.5'
 gem 'curb', '~> 0.9.3' # Better performance Rest gem
@@ -48,13 +48,13 @@ gem 'jsonpath', '~> 0.5.8'
 
 
 group :development, :test do
-  gem 'webmock', '~> 2.1.0'
-  gem 'rspec', '~> 3.5.0'
-  gem 'rspec-mocks', '~> 3.5.0'
+  gem 'webmock', '~> 3.1.1'
+  gem 'rspec', '~> 3.7.0'
+  gem 'rspec-mocks', '~> 3.7.0'
   gem 'rack-test', '~> 0.6', require: 'rack/test'
   gem 'rspec-its', '~> 1.2.0'
-  gem 'rubocop', '~> 0.48.1'
-  gem 'rubocop-checkstyle_formatter', '~> 0.2.0', require: false
+  gem 'rubocop', '~> 0.52.1'
+  gem 'rubocop-checkstyle_formatter', '~> 0.4.0', require: false
   gem 'license_finder', '~> 2.1.2'
 end
 

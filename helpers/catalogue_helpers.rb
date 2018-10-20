@@ -506,6 +506,7 @@ class SonataCatalogue < Sinatra::Application
     nsds = []
     testds = []
     mapping.each do |content|
+      next if content['content-type'].split('.')[-2] == 'osm'
       if content['content-type'].split('.')[-1] == 'vnfd'
         if instanced_descriptor?(:vnfd, content)
           vnfds << content['id']
@@ -538,6 +539,7 @@ class SonataCatalogue < Sinatra::Application
     vnfds, nsds, testds, files, cant_delete_vnfds = [], [], [], [], []
     cant_delete_nsds, cant_delete_testds, cant_delete_files = [], [], []
     mapping.each do |content|
+      next if content['content-type'].split('.')[-2] == 'osm'
       if content['content-type'].split('.')[-1] == 'vnfd'
         if check_dependencies( content, package.pd, active_criteria)
           logger.info 'VNFD ' + content['id'][:name] + ' has more than one dependency'

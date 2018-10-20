@@ -605,6 +605,8 @@ class CatalogueV2 < SonataCatalogue
     params['page_size'] ||= DEFAULT_PAGE_SIZE
     logger.info "Catalogue: entered GET /v2/network-services?#{query_string}"
 
+    json_error 415, 'Support of x-yaml and json' unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+    
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
     # Split keys in meta_data and data
@@ -681,10 +683,8 @@ class CatalogueV2 < SonataCatalogue
     case request.content_type
       when 'application/json'
         response = nss.to_json
-      when 'application/x-yaml'
-        response = json_to_yaml(nss.to_json)
       else
-        halt 415
+        response = json_to_yaml(nss.to_json)
     end
     halt 200, {'Content-type' => request.content_type}, response
   end
@@ -698,6 +698,8 @@ class CatalogueV2 < SonataCatalogue
     unless params[:id].nil?
       logger.debug "Catalogue: GET /v2/network-services/#{params[:id]}"
 
+      json_error 415, 'Support of x-yaml and json' unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+
       begin
         ns = Nsd.find(params[:id])
       rescue Mongoid::Errors::DocumentNotFound => e
@@ -710,10 +712,8 @@ class CatalogueV2 < SonataCatalogue
       case request.content_type
         when 'application/json'
           response = ns.to_json
-        when 'application/x-yaml'
-          response = json_to_yaml(ns.to_json)
         else
-          halt 415
+          response = json_to_yaml(ns.to_json)
       end
       halt 200, {'Content-type' => request.content_type}, response
 
@@ -727,7 +727,7 @@ class CatalogueV2 < SonataCatalogue
   # Post a NS in JSON or YAML format
   post '/network-services' do
     # Return if content-type is invalid
-    halt 415 unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+    json_error 415, 'Support of x-yaml and json' unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
 
     # Compatibility support for YAML content-type
     case request.content_type
@@ -766,7 +766,17 @@ class CatalogueV2 < SonataCatalogue
     begin
       ns = Nsd.find_by({ 'nsd.name' => new_ns['name'], 'nsd.vendor' => new_ns['vendor'],
                          'nsd.version' => new_ns['version'] })
-      halt 409, "Duplicate with NSD ID => #{ns['_id']}"
+      ns.update_attributes(pkg_ref: ns['pkg_ref'] + 1)
+
+      # response = {"uuid" => ns['_id'], "referenced" => ns['pkg_ref']}
+      response = ''
+      case request.content_type
+        when 'application/json'
+          response = ns.to_json
+        else
+          response = json_to_yaml(ns.to_json)
+      end
+      halt 200, {'Content-type' => request.content_type}, response
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
     end
@@ -790,6 +800,7 @@ class CatalogueV2 < SonataCatalogue
     # Generate the UUID for the descriptor
     new_nsd['_id'] = SecureRandom.uuid
     new_nsd['status'] = 'active'
+    new_nsd['pkg_ref'] = 1
     # Signature will be supported
     new_nsd['signature'] = nil
     new_nsd['md5'] = checksum new_ns.to_s
@@ -810,10 +821,8 @@ class CatalogueV2 < SonataCatalogue
     case request.content_type
       when 'application/json'
         response = ns.to_json
-      when 'application/x-yaml'
-        response = json_to_yaml(ns.to_json)
       else
-        halt 415
+        response = json_to_yaml(ns.to_json)
     end
     halt 201, {'Content-type' => request.content_type}, response
   end
@@ -831,7 +840,7 @@ class CatalogueV2 < SonataCatalogue
     keyed_params = keyed_hash(params)
 
     # Return if content-type is invalid
-    halt 415 unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+    json_error 415, 'Support of x-yaml and json' unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
 
     # Return 400 if params are empty
     json_error 400, 'Update parameters are null' if keyed_params.empty?
@@ -907,6 +916,7 @@ class CatalogueV2 < SonataCatalogue
     new_nsd['_id'] = SecureRandom.uuid # Unique UUIDs per NSD entries
     new_nsd['nsd'] = new_ns
     new_nsd['status'] = 'active'
+    new_nsd['pkg_ref'] = 1
     new_nsd['signature'] = nil
     new_nsd['md5'] = checksum new_ns.to_s
     new_nsd['username'] = username
@@ -926,10 +936,8 @@ class CatalogueV2 < SonataCatalogue
     case request.content_type
       when 'application/json'
         response = new_ns.to_json
-      when 'application/x-yaml'
-        response = json_to_yaml(new_ns.to_json)
       else
-        halt 415
+        response = json_to_yaml(new_ns.to_json)
     end
     halt 200, {'Content-type' => request.content_type}, response
   end
@@ -940,7 +948,7 @@ class CatalogueV2 < SonataCatalogue
   ## Catalogue - UPDATE
   put '/network-services/:id/?' do
     # Return if content-type is invalid
-    halt 415 unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+    json_error 415, 'Support of x-yaml and json' unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
@@ -1040,6 +1048,7 @@ class CatalogueV2 < SonataCatalogue
         new_nsd['_id'] = SecureRandom.uuid # Unique UUIDs per NSD entries
         new_nsd['nsd'] = new_ns
         new_nsd['status'] = 'active'
+        new_nsd['pkg_ref'] = 1
         new_nsd['signature'] = nil
         new_nsd['md5'] = checksum new_ns.to_s
         new_nsd['username'] = username
@@ -1059,10 +1068,8 @@ class CatalogueV2 < SonataCatalogue
         case request.content_type
           when 'application/json'
             response = new_ns.to_json
-          when 'application/x-yaml'
-            response = json_to_yaml(new_ns.to_json)
           else
-            halt 415
+            response = json_to_yaml(new_ns.to_json)
         end
         halt 200, {'Content-type' => request.content_type}, response
       end
@@ -1092,10 +1099,19 @@ class CatalogueV2 < SonataCatalogue
         json_error 404, "The NSD Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist"
       end
       logger.debug "Catalogue: leaving DELETE /v2/network-services?#{query_string}\" with NSD #{ns}"
-      ns.destroy
-      # Delete entry in dict mapping
-      del_ent_dict(ns, :nsd)
-      halt 200, 'OK: NSD removed'
+
+      if ns['pkg_ref'] == 1
+        # Referenced only once. Delete in this case
+        # Delete entry in dict mapping
+        del_ent_dict(ns, :nsd)
+        ns.destroy
+        halt 200, 'OK: NSD removed'
+      else
+        # Referenced above once. Decrease counter
+        ns.update_attributes(pkg_ref: ns['pkg_ref'] - 1)
+        halt 200, "OK: NSD referenced => #{ns['pkg_ref']}"
+      end
+
     end
     logger.debug "Catalogue: leaving DELETE /v2/network-services?#{query_string} with 'No NSD Vendor, Name, Version specified'"
     json_error 400, 'No NSD Vendor, Name, Version specified'
@@ -1116,10 +1132,19 @@ class CatalogueV2 < SonataCatalogue
         json_error 404, "The NSD ID #{params[:id]} does not exist" unless ns
       end
       logger.debug "Catalogue: leaving DELETE /v2/network-services/#{params[:id]}\" with NSD #{ns}"
-      ns.destroy
-      # Delete entry in dict mapping
-      del_ent_dict(ns, :nsd)
-      halt 200, 'OK: NSD removed'
+
+      if ns['pkg_ref'] == 1
+        # Referenced only once. Delete in this case
+        # Delete entry in dict mapping
+        del_ent_dict(ns, :nsd)
+        ns.destroy
+        halt 200, 'OK: NSD removed'
+      else
+        # Referenced above once. Decrease counter
+        ns.update_attributes(pkg_ref: ns['pkg_ref'] - 1)
+        halt 200, "OK: NSD referenced => #{ns['pkg_ref']}"
+      end
+
     end
     logger.debug "Catalogue: leaving DELETE /v2/network-services/#{params[:id]} with 'No NSD ID specified'"
     json_error 400, 'No NSD ID specified'

@@ -164,6 +164,7 @@ class FileContainer
   field :package_name, type: String
   field :mapping, type: Hash
   field :signature, type: String
+  field :pkg_ref, type: Integer
   field :md5, type: String
   field :username, type: String
 end
@@ -181,29 +182,11 @@ class Files
   # embeds_one :dependencies_mapping, class_name: "Dependencies_mapping"
   field :grid_fs_id, type: String
   field :file_name, type: String
+  field :pkg_ref, type: Integer
   field :signature, type: String
   field :md5, type: String
   field :username, type: String
 end
-
-# # Sonata class for Catalogue Element Dependencies
-# class Dependencies_mapping
-#   include Mongoid::Document
-#   include Mongoid::Timestamps
-#   include Mongoid::Pagination
-#   include Mongoid::Attributes::Dynamic
-#   # store_in collection: 'mapping_db'
-#
-#   field :tgo_package_uuid, type: String
-#   field :pd, type: Hash
-#   field :nsds, type: Array
-#   field :vnfds, type: Array
-#   field :deps, type: Array
-#   field :testds, type: Array
-#   # embedded_in :fileContainer, inverse_of: :dependencies_mapping
-#   # field :status, type: String
-#   validates :tgo_package_uuid, :pd, :nsds, :vnfds, :testds, :presence => true
-# end
 
 
 # Class Slad for service level agreement descriptors

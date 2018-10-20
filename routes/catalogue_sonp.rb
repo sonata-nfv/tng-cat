@@ -393,6 +393,12 @@ class CatalogueV2 < SonataCatalogue
     file, errors = request.body
     halt 400, errors.to_json if errors
 
+    if keyed_params.key?(:username)
+      username = keyed_params[:username]
+    else
+      username = nil
+    end
+
     ### Implemented here the MD5 checksum for the file
     # file_hash = checksum file.string
 
@@ -405,14 +411,53 @@ class CatalogueV2 < SonataCatalogue
     # rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
     # end
-    # -> package_name
-    # Check if tgo-package already exists in the catalogue by filename (grid-fs-name identifier)
-    begin
-      tgopkg = FileContainer.find_by({ 'package_name' => filename })
-      halt 409, "Duplicated tgo-package ID => #{tgopkg['_id']}"
-    rescue Mongoid::Errors::DocumentNotFound => e
-      # Continue
+    # # -> package_name
+    # # Check if tgo-package already exists in the catalogue by filename (grid-fs-name identifier)
+    # begin
+    #   tgopkg = FileContainer.find_by({ 'package_name' => filename })
+    #   halt 409, "Duplicated tgo-package ID => #{tgopkg['_id']}"
+    # rescue Mongoid::Errors::DocumentNotFound => e
+    #   # Continue
+    # end
+
+    # Check if file is already in the Catalogues by md5, means same content.
+    # If yes, increase ++ the pkg_ref
+    file_in = FileContainer.where('md5' => checksum(file.string))
+    if file_in.size.to_i > 0
+      file_same = file_in.select {|ii| ii['package_name'] == filename}
+      if file_same.empty?
+        tgop_id = SecureRandom.uuid
+        FileContainer.new.tap do |file_container|
+          file_container._id = tgop_id
+          file_container.grid_fs_id = file_in.first['grid_fs_id']
+          # file_container.mapping = nil
+          file_container.package_name = filename
+          file_container.pkg_ref = 1
+          file_container.md5 = checksum(file.string)
+          file_container.username = username
+          file_container.signature = signature
+          file_container.save
+        end
+        logger.debug "Catalogue: leaving POST /v2/tgo-packages/ with id #{tgop_id} mapped to existing md5 #{checksum(file.string)}"
+      elsif file_same.count == 1
+        file_same.first.update_attributes(pkg_ref: file_same.first['pkg_ref'] + 1)
+        tgop_id = file_same.first['_id']
+        logger.debug "Catalogue: leaving POST /v2/tgo-packages/ with id #{tgop_id} increased pkg_ref at #{file_same.first['pkg_ref']}"
+      else
+        logger.debug "Catalogue: leaving POST /v2/tgo-packages/ with md5 #{checksum(file.string)} as more than one file has same filename"
+        json_error 500, "More than one tgo-package has same filename. Packages are unique per one class metadata"
+      end
+      response = {"uuid" => tgop_id}
+      halt 200, {'Content-type' => 'application/json'}, response.to_json
     end
+    # begin
+    #   file_in = FileContainer.find_by('md5' => checksum(file.string))
+    #   file_in.update_attributes(pkg_ref: file_in['pkg_ref'] + 1)
+    #   response = {"uuid" => file_in['_id'], "referenced" => file_in['pkg_ref']}
+    #   halt 200, {'Content-type' => 'application/json'}, response.to_json
+    # rescue Mongoid::Errors::DocumentNotFound => e
+    #   # Continue
+    # end
 
     grid_fs = Mongoid::GridFs
 
@@ -422,11 +467,6 @@ class CatalogueV2 < SonataCatalogue
                             # _id: SecureRandom.uuid,
     )
 
-    if keyed_params.key?(:username)
-      username = keyed_params[:username]
-    else
-      username = nil
-    end
 
     tgop_id = SecureRandom.uuid
     FileContainer.new.tap do |file_container|
@@ -434,6 +474,7 @@ class CatalogueV2 < SonataCatalogue
       file_container.grid_fs_id = grid_file.id
       # file_container.mapping = nil
       file_container.package_name = filename
+      file_container.pkg_ref = 1
       file_container.md5 = grid_file.md5
       file_container.username = username
       file_container.signature = signature
@@ -520,18 +561,28 @@ class CatalogueV2 < SonataCatalogue
         tgop = FileContainer.find_by('_id' => params[:id])
       rescue Mongoid::Errors::DocumentNotFound => e
         logger.error e
-        json_error 404, "The son-package ID #{params[:id]} does not exist" unless tgop
+        json_error 404, "The tgo-package ID #{params[:id]} does not exist" unless tgop
       end
 
-      # Remove files from grid
-      grid_fs = Mongoid::GridFs
-      grid_fs.delete(tgop['grid_fs_id'])
-      tgop.destroy
-
-      logger.debug "Catalogue: leaving DELETE /v2/son-packages/#{params[:id]}\" with tgo-package #{tgop}"
-      halt 200, 'OK: tgo-package removed'
+      if tgop['pkg_ref'] == 1
+        # Referenced only once. Delete in this case
+        tgop.destroy
+        tgop_md5 = FileContainer.where('md5' => tgop['md5'])
+        if tgop_md5.size.to_i.zero?
+          # Remove files from grid
+          grid_fs = Mongoid::GridFs
+          grid_fs.delete(tgop['grid_fs_id'])
+          logger.debug "Catalogue: leaving DELETE /v2/tgo-packages/#{params[:id]}\" with tgo-package #{tgop}"
+        end
+        logger.debug "Catalogue: leaving DELETE /v2/files/#{params[:id]}\". Package referenced also by #{tgop_md5}"
+        halt 200, 'OK: tgo-package removed'
+      else
+        # Referenced above once. Decrease counter
+        tgop.update_attributes(pkg_ref: tgop['pkg_ref'] - 1)
+        halt 200, "OK: File referenced => #{tgop['pkg_ref']} "
+      end
     end
-    logger.debug "Catalogue: leaving DELETE /v2/son-packages/#{params[:id]} with 'No tgo-package ID specified'"
+    logger.debug "Catalogue: leaving DELETE /v2/tgo-packages/#{params[:id]} with 'No tgo-package ID specified'"
     json_error 400, 'No tgo-package ID specified'
   end
 end

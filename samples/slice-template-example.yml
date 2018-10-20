@@ -1,50 +1,17 @@
-##
-## This slice network template 
-##
-## @author Ricard Vilalta
-##
 ---
+NSI_list_ref:
+- 5918c2cf-8a99-4e55-9854-1d3ee76e4c38
+- 5b801cbb-95b4-4963-99cd-e6b712d28907
+author: Pol Alemany, CTTC
+name: NST_squi_haproxy_example_1
+notificationTypes: ''
+nstNsdIds:
+- 1efe07ab-7ada-42b0-bec0-a5bb1ab091fc
+onboardingState: ENABLED
+operationalState: ENABLED
+usageState: NOT_IN_USE
+userDefinedData: ''
+vendor: 5gTango
+version: '1.0'
 
-s_nssai:
-  - sst: 1 # eMBB
-    sd: 1
-      
-descriptor_schema: "https://raw.githubusercontent.com/sonata-nfv/tng-schema/master/slice-descriptor/nst-schema.yml"
 
-vendor: "eu.5gtango.slice-descriptor"
-name: "slice"
-version: "0.1"
-author: "Ricard Vilalta, CTTC"
-description: >
-  "Example Slice."
-
-# The network services reused by this service (recursively)
-network_services:
-  - ns_id: "ns_sonata"
-    ns_vendor: "eu.5gtango.slice-descriptor"
-    ns_name: "5gtango-demo"
-    ns_version: "0.1"
-    
-
-##
-## The Slice service interface points to the 
-## outside world.
-##
-service_interface_points:
-  - id: "mgmt"
-    interface: "ipv4"
-    type: "management"
-  - id: "input"
-    interface: "ipv4"
-    type: "external"
-  - id: "output"
-    interface: "ipv4"
-    type: "external"
-
-##
-## The Slice 5QI
-##
-
-qos:
-  5qi_value: "6"
-  

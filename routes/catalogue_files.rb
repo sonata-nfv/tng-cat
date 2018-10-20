@@ -49,6 +49,9 @@ class CatalogueV2 < SonataCatalogue
 
     logger.info "Catalogue: entered GET /v2/files?#{query_string}"
 
+    # Return if content-type is invalid
+    json_error 415, 'Support of x-yaml and json' unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
 
@@ -90,10 +93,8 @@ class CatalogueV2 < SonataCatalogue
     case request.content_type
       when 'application/json'
         response = file_list.to_json
-      when 'application/x-yaml'
-        response = json_to_yaml(file_list.to_json)
       else
-        halt 415
+        response = json_to_yaml(file_list.to_json)
     end
     halt 200, {'Content-type' => request.content_type}, response
   end
@@ -164,9 +165,9 @@ class CatalogueV2 < SonataCatalogue
   # Post a file in binary-data
   post '/files' do
     logger.debug "Catalogue: entered POST /v2/files?#{query_string}"
-    # Return if content-type is invalid
-    halt 415 unless request.content_type == 'application/octet-stream'
 
+    # Return if content-type is invalid
+    json_error 415, 'Support of octet-stream' unless request.content_type == 'application/octet-stream'
     att = request.env['HTTP_CONTENT_DISPOSITION']
 
     unless att
@@ -190,10 +191,82 @@ class CatalogueV2 < SonataCatalogue
     file, errors = request.body
     halt 400, errors.to_json if errors
 
+    if keyed_params.key?(:username)
+      username = keyed_params[:username]
+    else
+      username = nil
+    end
+
     # For first version of 5GTANGO avoid the intelligent reuse of files
     # begin
     #   file = Files.find_by({ 'file_name' => filename })
     #   halt 409, "Duplicated file ID => #{file['_id']}"
+    # rescue Mongoid::Errors::DocumentNotFound => e
+    #   # Continue
+    # end
+    #
+    # # Check if file is already in the Catalogues by filename.
+    # # If yes, abort with 409 error
+    # begin
+    #   file_in = Files.find_by('file_name' => filename)
+    #   halt 409, "Duplicated filename File ID => #{file_in['file_name']}"
+    # rescue Mongoid::Errors::DocumentNotFound => e
+    #   # Continue
+    # end
+
+    # Check if file is already in the Catalogues by md5, means same content.
+    # If yes, increase ++ the pkg_ref
+    # begin
+    #   file_in = Files.find_by('md5' => checksum(file.string))
+    #   if file_in['file_name'].include? filename
+    #     dict = file_in['pkg_ref']
+    #     dict.each do |key|
+    #       if key['file_name'] == filename
+    #         key['ref'] += 1
+    #         break
+    #       end
+    #     end
+    #     file_in.set('pkg_ref' => dict)
+    #   else
+    #     file_in.push(file_name: filename)
+    #     file_in.push(pkg_ref: {'file_name' => filename, 'ref' => 1})
+    #   end
+    #
+    #
+    file_in = Files.where('md5' => checksum(file.string))
+    if file_in.size.to_i > 0
+      file_same = file_in.select {|ii| ii['file_name'] == filename}
+      if file_same.empty?
+        file_id = SecureRandom.uuid
+        Files.new.tap do |file_cur|
+          file_cur._id = file_id
+          file_cur.grid_fs_id = file_in.first['grid_fs_id']
+          file_cur.file_name = filename
+          file_cur.md5 = checksum(file.string)
+          file_cur.pkg_ref = 1
+          file_cur.username = username
+          file_cur.signature = signature
+          file_cur.save
+        end
+        logger.debug "Catalogue: leaving POST /v2/files/ with id #{file_id} mapped to existing md5 #{checksum(file.string)}"
+      elsif file_same.count == 1
+        file_same.first.update_attributes(pkg_ref: file_same.first['pkg_ref'] + 1)
+        file_id = file_same.first['_id']
+        logger.debug "Catalogue: leaving POST /v2/files/ with id #{file_id} increased pkg_ref at #{file_same.first['pkg_ref']}"
+      else
+        logger.debug "Catalogue: leaving POST /v2/files/ with #{checksum(file.string)} as more than one file has same filename"
+        json_error 500, "More than one file has same filename. Filenames are unique per one class metadata"
+      end
+      response = {"uuid" => file_id}
+      halt 200, {'Content-type' => 'application/json'}, response.to_json
+    end
+
+
+      # file_in.update_attributes(pkg_ref: file_in['pkg_ref'] + 1)
+      # response = {"uuid" => file_in['_id'], "referenced" => file_in['pkg_ref']}
+      # logger.info "New uuid #{file_in['_id']}"
+    #   halt 200, file_in.to_json
+    #   # halt 200, {'Content-type' => 'application/json'}, response.to_json
     # rescue Mongoid::Errors::DocumentNotFound => e
     #   # Continue
     # end
@@ -206,25 +279,23 @@ class CatalogueV2 < SonataCatalogue
     # _id: SecureRandom.uuid,
                             )
 
-    if keyed_params.key?(:username)
-      username = keyed_params[:username]
-    else
-      username = nil
-    end
+
 
     file_id = SecureRandom.uuid
     Files.new.tap do |file|
       file._id = file_id
       file.grid_fs_id = grid_file.id
       file.file_name = filename
+      # file.file_name = [filename]
       file.md5 = grid_file.md5
+      file.pkg_ref = 1
+      # file.pkg_ref = [{"file_name" => filename, "ref" => 1}]
       file.username = username
       file.signature = signature
       file.save
     end
     logger.debug "Catalogue: leaving POST /v2/files/ with #{grid_file.id}"
     response = {"uuid" => file_id}
-
     halt 201, {'Content-type' => 'application/json'}, response.to_json
   end
 
@@ -239,16 +310,28 @@ class CatalogueV2 < SonataCatalogue
         file = Files.find_by('_id' => params[:id])
       rescue Mongoid::Errors::DocumentNotFound => e
         logger.error e
-        json_error 404, "The file ID #{params[:id]} does not exist" unless file
+        json_error 404, "The File ID #{params[:id]} does not exist" unless file
+      end
+      logger.debug "Catalogue: leaving DELETE /v2/files/#{params[:id]}\" with file #{file}"
+
+      if file['pkg_ref'] == 1
+        # Referenced only once. Delete in this case
+        file.destroy
+        file_md5 = Files.where('md5' => file['md5'])
+        if file_md5.size.to_i.zero?
+          # Remove files from grid
+          grid_fs = Mongoid::GridFs
+          grid_fs.delete(file['grid_fs_id'])
+          logger.debug "Catalogue: leaving DELETE /v2/files/#{params[:id]}\" with file #{file}"
+        end
+        logger.debug "Catalogue: leaving DELETE /v2/files/#{params[:id]}\". File referenced also by #{file_md5}"
+        halt 200, 'OK: File removed'
+      else
+        # Referenced above once. Decrease counter
+        file.update_attributes(pkg_ref: file['pkg_ref'] - 1)
+        halt 200, "OK: File referenced => #{file['pkg_ref']} "
       end
 
-      # Remove files from grid
-      grid_fs = Mongoid::GridFs
-      grid_fs.delete(file['grid_fs_id'])
-      file.destroy
-
-      logger.debug "Catalogue: leaving DELETE /v2/files/#{params[:id]}\" with file #{file}"
-      halt 200, 'OK: file removed'
     end
     logger.debug "Catalogue: leaving DELETE /v2/files/#{params[:id]} with 'No files ID specified'"
     json_error 400, 'No file ID specified'

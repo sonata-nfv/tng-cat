@@ -66,13 +66,17 @@ RSpec.describe CatalogueV2 do
     end
   end
 
+  # Since reuse mechanism in enabled, this test should provide 200 and the number of references
+  # If reuse mechanism not enabled, please change the test accordingly
   let(:test_descriptor) {Rack::Test::UploadedFile.new('./spec/fixtures/testd-example.json','application/json', true)}
   describe 'POST \'/api/v2/tests\'' do
     context 'Duplicated testd' do
       it 'Submit a duplicated testd' do
         headers = { 'CONTENT_TYPE' => 'application/json' }
         post '/tests', test_descriptor, headers
-        expect(last_response.status).to eq(409)
+        expect(last_response.status).to eq(200)
+        expect(last_response.body.to_s).to include('referenced','2')
+        expect(last_response.body.to_s).to include($testd_id.to_s)
       end
     end
   end
@@ -82,7 +86,7 @@ RSpec.describe CatalogueV2 do
   describe 'POST \'/api/v2/tests-bad\'' do
     context 'with incorrect parameters' do
       it 'Submit an invalid testd' do
-        headers = { 'CONTENT_TYPE' => 'application/json' }
+        headers = {'CONTENT_TYPE' => 'application/json'}
         post '/tests', test_bad_descriptor, headers
         expect(last_response.status).to eq(400)
       end
@@ -144,6 +148,9 @@ RSpec.describe CatalogueV2 do
     end
   end
 
+  # Test for deleting the duplicate file referenced two times
+  # Since pkg_ref is equal to 2, two delete methods were needed
+  # But the Rspec needs one method
   describe 'DELETE /api/v2/tests/:uuid' do
     context 'with (UU)ID given' do
       before do
@@ -151,6 +158,7 @@ RSpec.describe CatalogueV2 do
       end
       subject { last_response }
       its(:status) { is_expected.to eq 200 }
+      its(:body) { is_expected.to eq 'OK: TESTD removed'}
     end
   end
 end

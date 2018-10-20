@@ -91,32 +91,72 @@ RSpec.describe CatalogueV2 do
     end
   end
 
-  # Posts two different sonata packages, first one contains as vnfds firewall-vnfd,
-  #    iperf-vnfd and tcpdump-vnfd; second one contains only tcpdump-vnfd
-  #    according to next test that tries to delete the first one, tcpdump-vnfd should
-  #    not be deleted according to intelligent delete feature
+  # # Posts two different sonata packages, first one contains as vnfds firewall-vnfd,
+  # #    iperf-vnfd and tcpdump-vnfd; second one contains only tcpdump-vnfd
+  # #    according to next test that tries to delete the first one, tcpdump-vnfd should
+  # #    not be deleted according to intelligent delete feature
+  # describe 'POST /tgo-packages' do
+  #   context 'post packages simulating gatekeeper operation (posting all descriptors)' do
+  #     before do
+  #       filenames = %w[samples/dependencies_mapping/5gtango-test-package.tgo
+  #                    samples/dependencies_mapping/5gtango-ns-package.tgo]
+  #       $tgop_uuids = []
+  #       filenames.each do |filename|
+  #         headers = { 'CONTENT_TYPE' => 'application/zip',
+  #                     'HTTP_CONTENT_DISPOSITION' => "attachment; filename=#{filename}" }
+  #         response = post '/tgo-packages', File.binread(filename), headers
+  #         tgo_body = JSON.parse(response.body)
+  #         $tgop_uuids << tgo_body['uuid']
+  #         $tgo_filenames = filenames
+  #       end
+  #     end
+  #     subject { last_response }
+  #     its(:status) { is_expected.to eq 201 }
+  #   end
+  # end
+
+  # Posts two different files
   describe 'POST /tgo-packages' do
     context 'post packages simulating gatekeeper operation (posting all descriptors)' do
-      before do
-        filenames = %w[samples/dependencies_mapping/5gtango-test-package.tgo
+      $tgop_uuids = []
+      $tgo_filenames = []
+      filenames = %w[samples/dependencies_mapping/5gtango-ns-package_dup.tgo
                      samples/dependencies_mapping/5gtango-ns-package.tgo]
-        $tgop_uuids = []
-        filenames.each do |filename|
-          headers = { 'CONTENT_TYPE' => 'application/zip',
-                      'HTTP_CONTENT_DISPOSITION' => "attachment; filename=#{filename}" }
-          response = post '/tgo-packages', File.binread(filename), headers
-          tgo_body = JSON.parse(response.body)
-          $tgop_uuids << tgo_body['uuid']
-          $tgo_filenames = filenames
+      filenames.each_with_index do |filename, idx|
+        headers = { 'CONTENT_TYPE' => 'application/zip',
+                    'HTTP_CONTENT_DISPOSITION' => "attachment; filename=#{filename}" }
+        it 'Submit two arbitrary files' do
+          post '/tgo-packages', File.binread(filename), headers
+          $tgop_uuids[idx] = JSON.parse(last_response.body)['uuid']
+          $tgo_filenames[idx] = filename
+          expect(last_response.status).to eq 201
         end
       end
-      subject { last_response }
-      its(:status) { is_expected.to eq 201 }
-
     end
   end
 
+  # # Posts two same with above  files
+  # describe 'POST /tgo-packages' do
+  #   context 'post packages simulating gatekeeper operation (posting all descriptors)' do
+  #     $tgop_uuids_dup = []
+  #     $tgo_filenames_dup = []
+  #     filenames = %w[samples/dependencies_mapping/5gtango-ns-package_dup.tgo
+  #                    samples/dependencies_mapping/5gtango-ns-package.tgo]
+  #     filenames.each_with_index do |filename,idx|
+  #       headers = { 'CONTENT_TYPE' => 'application/zip',
+  #                   'HTTP_CONTENT_DISPOSITION' => "attachment; filename=#{filename}" }
+  #       it 'Submit two arbitrary files' do
+  #         post '/tgo-packages', File.binread(filename), headers
+  #         expect(last_response.status).to eq 200
+  #         $tgop_uuids_dup[idx] = JSON.parse(last_response.body)
+  #         $tgo_filenames_dup[idx] = filename
+  #         expect(last_response.body.to_s).to include($tgop_uuids[idx]['uuid'])
+  #       end
+  #     end
+  #   end
+  # end
 
+  # Upload vnf for simple package
   let(:vnf_descriptor) {Rack::Test::UploadedFile.new('samples/dependencies_mapping/myvnfd.json','application/json', true)}
   describe 'POST \'/api/v2/vnfs\'' do
     context 'with correct parameters' do
@@ -125,51 +165,123 @@ RSpec.describe CatalogueV2 do
         post '/vnfs', vnf_descriptor, headers
         expect(last_response.status).to eq(201)
         vnf_body = JSON.parse(last_response.body)
-        $vnf_testpkg_uuid = vnf_body['uuid']
-        $vnf_testpkg_name = (vnf_body['vnfd']['name'])
-        $vnf_testpkg_vendor = (vnf_body['vnfd']['vendor'])
-        $vnf_testpkg_version = (vnf_body['vnfd']['version'])
+        $vnf_pkg_uuid = vnf_body['uuid']
+        $vnf_pkg_name = (vnf_body['vnfd']['name'])
+        $vnf_pkg_vendor = (vnf_body['vnfd']['vendor'])
+        $vnf_pkg_version = (vnf_body['vnfd']['version'])
       end
     end
   end
+
+  # Upload vnf for simple package
+  let(:vnf_descriptor) {Rack::Test::UploadedFile.new('samples/dependencies_mapping/myvnfd.json','application/json', true)}
+  describe 'POST \'/api/v2/vnfs\'' do
+    context 'with correct parameters' do
+      it 'Submit a vnfd for tgo package mapping' do
+        headers = { 'CONTENT_TYPE' => 'application/json' }
+        post '/vnfs', vnf_descriptor, headers
+        expect(last_response.status).to eq(200)
+        expect(last_response.body.to_s).to include($vnf_pkg_uuid.to_s)
+      end
+    end
+  end
+
+
   #
   let(:ns_descriptor) {Rack::Test::UploadedFile.new('samples/dependencies_mapping/mynsd.json','application/json', true)}
   describe 'POST \'/api/v2/network-services\'' do
     context 'with correct parameters' do
       it 'Submit a nsd' do
-        headers = { 'CONTENT_TYPE' => 'application/json' }
+        headers = {'CONTENT_TYPE' => 'application/json'}
         post '/network-services', ns_descriptor, headers
         expect(last_response.status).to eq(201)
         ns_body = JSON.parse(last_response.body)
-        $ns_testpkg_uuid = ns_body['uuid']
-        $ns_testpkg_name = (ns_body['nsd']['name'])
-        $ns_testpkg_vendor = (ns_body['nsd']['vendor'])
-        $ns_testpkg_version = (ns_body['nsd']['version'])
+        $ns_pkg_uuid = ns_body['uuid']
+        $ns_pkg_name = (ns_body['nsd']['name'])
+        $ns_pkg_vendor = (ns_body['nsd']['vendor'])
+        $ns_pkg_version = (ns_body['nsd']['version'])
       end
     end
   end
 
+  let(:nsdup_descriptor) {Rack::Test::UploadedFile.new('samples/dependencies_mapping/mynsd_dup.json','application/json', true)}
+  describe 'POST \'/api/v2/network-services\'' do
+    context 'with correct parameters' do
+      it 'Submit a nsd' do
+        headers = { 'CONTENT_TYPE' => 'application/json' }
+        post '/network-services', nsdup_descriptor, headers
+        expect(last_response.status).to eq(201)
+        ns_body = JSON.parse(last_response.body)
+        $ns_pkg_uuid_dup = ns_body['uuid']
+        $ns_pkg_name_dup = (ns_body['nsd']['name'])
+        $ns_pkg_vendor_dup = (ns_body['nsd']['vendor'])
+        $ns_pkg_version_dup = (ns_body['nsd']['version'])
+      end
+    end
+  end
 
-  describe 'POST /files' do
+  describe 'POST \'/api/v2/files\'' do
     context 'post arbitrary files' do
-      before do
-        $file_uuids = []
-        filenames = ['samples/dependencies_mapping/cloud.init',
-                     'samples/dependencies_mapping/MyExample']
-        filenames.each do |filename|
-          headers = { 'CONTENT_TYPE' => 'application/octet-stream',
-                      'HTTP_CONTENT_DISPOSITION' => "attachment; filename=#{filename}" }
-          response = post '/files', File.binread(filename), headers
-          filebody = JSON.parse(response.body)
-          $file_uuids << filebody['uuid']
-          $file_names = filenames
+      $file_uuids = []
+      $file_names = []
+      filenames = %w[samples/dependencies_mapping/cloud.init
+                   samples/dependencies_mapping/MyExample]
+      filenames.each_with_index do |filename, idx|
+        headers = { 'CONTENT_TYPE' => 'application/octet-stream',
+                    'HTTP_CONTENT_DISPOSITION' => "attachment; filename=#{filename}" }
+        it 'Submit two arbitrary files' do
+          post '/files', File.binread(filename), headers
+          $file_uuids[idx] = JSON.parse(last_response.body)['uuid']
+          $file_names[idx] = filename
+          expect(last_response.status).to eq 201
         end
       end
-      subject { last_response }
-      its(:status) { is_expected.to eq 201 }
     end
   end
 
+  # describe 'POST \'/api/v2/files\'' do
+  #   context 'post same files with same filenames' do
+  #     filenames = %w[samples/dependencies_mapping/cloud.init
+  #                  samples/dependencies_mapping/MyExample]
+  #     filenames.each do |filename|
+  #       headers = { 'CONTENT_TYPE' => 'application/octet-stream',
+  #                   'HTTP_CONTENT_DISPOSITION' => "attachment; filename=#{filename}" }
+  #       it 'Submit two same files with same filenames' do
+  #         post '/files', File.binread(filename), headers
+  #         expect(last_response.status).to eq 409
+  #         expect(last_response.body.to_s).to include(filename)
+  #       end
+  #     end
+  #   end
+  # end
+
+  describe 'POST \'/api/v2/files\'' do
+    context 'post different files with same content' do
+      $file_names_dup = []
+      $file_uuids_dup = []
+      filenames = %w[samples/dependencies_mapping/MyExample_dup
+                   samples/dependencies_mapping/MyExample_dup.cfg]
+      filenames.each_with_index do |filename, idx|
+        headers = { 'CONTENT_TYPE' => 'application/octet-stream',
+                    'HTTP_CONTENT_DISPOSITION' => "attachment; filename=#{filename}" }
+        it 'Submit two different files with same content' do
+          post '/files', File.binread(filename), headers
+          $file_names_dup[idx] = filename
+          puts $file_uuids_dup
+          if idx == 0
+            expect(last_response.status).to eq 200
+            $file_uuids_dup[idx] = JSON.parse(last_response.body)['uuid']
+          else
+            expect(last_response.status).to eq 201
+            $file_uuids_dup[idx] = JSON.parse(last_response.body)['uuid']
+          end
+        end
+      end
+    end
+  end
+
+  #
+  #
 
   let(:package_descriptor) {Rack::Test::UploadedFile.new('samples/dependencies_mapping/NAPD.json','application/json', true)}
   describe 'POST \'/api/v2/packages\'' do
@@ -182,20 +294,20 @@ RSpec.describe CatalogueV2 do
         pd_body = pd_body['pd']
         pd_body['package_content'].each do |content|
           if content['content-type'].split('.')[-1] == 'vnfd'
-            content['id'] = {name: $vnf_testpkg_name.to_s,
-                             vendor:$vnf_testpkg_vendor.to_s,
-                             version:$vnf_testpkg_version.to_s }
+            content['id'] = {name: $vnf_pkg_name.to_s,
+                             vendor:$vnf_pkg_vendor.to_s,
+                             version:$vnf_pkg_version.to_s }
             content['uuid'] = $vnf_testpkg_uuid.to_s
           elsif content['content-type'].split('.')[-1] == 'nsd'
-            content['id'] = {name: $ns_testpkg_name.to_s,
-                             vendor:$ns_testpkg_vendor.to_s,
-                             version:$ns_testpkg_version.to_s }
-            content['uuid'] = $ns_testpkg_uuid.to_s
+            content['id'] = {name: $ns_pkg_name.to_s,
+                             vendor:$ns_pkg_vendor.to_s,
+                             version:$ns_pkg_version.to_s }
+            content['uuid'] = $ns_pkg_uuid.to_s
           elsif content['content-type'].split('.')[-1] == 'tstd'
-          content['id'] = {name: $ns_testpkg_name.to_s,
-                           vendor:$ns_testpkg_vendor.to_s,
-                           version:$ns_testpkg_version.to_s }
-          content['uuid'] = $ns_testpkg_uuid.to_s
+          content['id'] = {name: $ns_pkg_name.to_s,
+                           vendor:$ns_pkg_vendor.to_s,
+                           version:$ns_pkg_version.to_s }
+          content['uuid'] = $ns_pkg_uuid.to_s
           else
             if content['source'].split('/')[-1] == $file_names[0].split('/')[-1]
               content['uuid'] = $file_uuids[0].to_s
@@ -214,6 +326,52 @@ RSpec.describe CatalogueV2 do
       end
     end
   end
+
+  let(:packagedup_descriptor) {Rack::Test::UploadedFile.new('samples/dependencies_mapping/NAPDdup.json','application/json', true)}
+  describe 'POST \'/api/v2/packages\'' do
+    context 'with correct parameters' do
+      it 'Submit a pd for tgo package mapping' do
+        headers = { 'CONTENT_TYPE' => 'application/json' }
+        post '/packages', packagedup_descriptor, headers
+        pd_body = JSON.parse(last_response.body)
+        $pd_testpkg_id_dup = pd_body['uuid']
+        pd_body = pd_body['pd']
+        pd_body['package_content'].each do |content|
+          if content['content-type'].split('.')[-1] == 'vnfd'
+            content['id'] = {name: $vnf_pkg_name.to_s,
+                             vendor:$vnf_pkg_vendor.to_s,
+                             version:$vnf_pkg_version.to_s }
+            content['uuid'] = $vnf_testpkg_uuid.to_s
+          elsif content['content-type'].split('.')[-1] == 'nsd'
+            content['id'] = {name: $ns_pkg_name_dup.to_s,
+                             vendor:$ns_pkg_vendor_dup.to_s,
+                             version:$ns_pkg_version_dup.to_s }
+            content['uuid'] = $ns_pkg_uuid_dup.to_s
+          elsif content['content-type'].split('.')[-1] == 'tstd'
+            content['id'] = {name: $ns_pkg_name.to_s,
+                             vendor:$ns_pkg_vendor.to_s,
+                             version:$ns_pkg_version.to_s }
+            content['uuid'] = $ns_pkg_uuid.to_s
+          else
+            if content['source'].split('/')[-1] == $file_names_dup[0].split('/')[-1]
+              content['uuid'] = $file_uuids_dup[0].to_s
+            elsif content['source'].split('/')[-1] == $file_names_dup[1].split('/')[-1]
+              content['uuid'] = $file_uuids_dup[1].to_s
+            end
+          end
+        end
+        pd_body['package_file_uuid'] = $tgop_uuids[1].to_s
+        pd_body['package_file_name'] = $tgo_filenames[1].to_s
+        delete '/packages_debug/' + $pd_testpkg_id_dup.to_s
+        post '/packages', pd_body.to_json, headers
+        pd_body_fin = JSON.parse(last_response.body)
+        $pd_testpkg_id_dup_fin = pd_body_fin['uuid']
+        expect(last_response.status).to eq(201)
+      end
+    end
+  end
+
+
   # describe 'POST \'/api/v2/tgo-packages/mappings\'' do
   #   context 'with correct parameters' do
   #     it 'Submit a pd for tgo package mapping' do
@@ -241,19 +399,19 @@ RSpec.describe CatalogueV2 do
   #     end
   #   end
   # end
-
-  describe 'GET tgo-packages' do
-    context 'with uuid given' do
-      before do
-        headers = { 'CONTENT_TYPE' => 'application/json' }
-        get '/tgo-packages?' + $tgop_uuids[0].to_s, nil, headers
-      end
-      subject { last_response }
-      its(:status) { is_expected.to eq 200 }
-    end
-  end
-
-
+  #
+  # describe 'GET tgo-packages' do
+  #   context 'with uuid given' do
+  #     before do
+  #       headers = { 'CONTENT_TYPE' => 'application/json' }
+  #       get '/tgo-packages?' + $tgop_uuids[0].to_s, nil, headers
+  #     end
+  #     subject { last_response }
+  #     its(:status) { is_expected.to eq 200 }
+  #   end
+  # end
+  #
+  #
   describe 'GET /packages/:id/files/' do
     context 'with uuid given' do
       before do
@@ -264,7 +422,25 @@ RSpec.describe CatalogueV2 do
     end
   end
 
+  describe 'GET /packages/:id/files/' do
+    context 'with uuid given' do
+      before do
+        get '/packages/' + $pd_testpkg_id_dup_fin[0].to_s + '/files',
+            subject { last_response }
+        its(:status) { is_expected.to eq 200 }
+      end
+    end
+  end
 
+  describe 'GET /packages/:id/files/:file_uuid' do
+    context 'with uuid given' do
+      before do
+        get '/packages/' + $pd_testpkg_id_dup_fin[0].to_s + '/files/'+ $file_uuids.to_s,
+            subject { last_response }
+        its(:status) { is_expected.to eq 200 }
+      end
+    end
+  end
 
   describe 'GET /packages/:id/files/:file_uuid' do
     context 'with uuid given' do
@@ -369,6 +545,33 @@ RSpec.describe CatalogueV2 do
         expect(result['result']['delete']['files'].length).to eq(2)
         expect(result['result']['delete']['files'][0]['uuid']).to eq($file_uuids[1].to_s)
         expect(result['result']['delete']['files'][1]['uuid']).to eq($file_uuids[0].to_s)
+      end
+      subject { last_response }
+      its(:status) { is_expected.to eq 200 }
+    end
+  end
+
+  # Tries to delete first package posted in previous test resulting
+  describe 'DELETE /api/v2/packages' do
+    context 'deleting pds' do
+      before do
+        puts 'Deleting sonata-demo.son'
+        delete_response = delete '/packages/' + $pd_testpkg_id_dup_fin.to_s
+        puts delete_response.body
+        puts
+        expect(delete_response.status).to eq(200)
+        result = JSON.parse(delete_response.body)
+        expect(result['result']['delete']['vnfds'].length).to eq(1)
+        expect(result['result']['delete']['vnfds'][0]['name']).to eq('myvnf')
+        expect(result['result']['delete']['vnfds'][0]['vendor']).to eq('eu.5gtango')
+        expect(result['result']['delete']['vnfds'][0]['version']).to eq('0.1')
+        expect(result['result']['delete']['nsds'].length).to eq(1)
+        expect(result['result']['delete']['nsds'][0]['name']).to eq('mynsasda')
+        expect(result['result']['delete']['nsds'][0]['vendor']).to eq('eu.5gtangoasdada')
+        expect(result['result']['delete']['nsds'][0]['version']).to eq('0.123')
+        expect(result['result']['delete']['files'].length).to eq(2)
+        expect(result['result']['delete']['files'][0]['uuid']).to eq($file_uuids_dup[0].to_s)
+        expect(result['result']['delete']['files'][1]['uuid']).to eq($file_uuids_dup[1].to_s)
       end
       subject { last_response }
       its(:status) { is_expected.to eq 200 }

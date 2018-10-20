@@ -43,6 +43,9 @@ class CatalogueV2 < SonataCatalogue
     params['page_size'] ||= DEFAULT_PAGE_SIZE
     logger.info "Catalogue: entered GET /v2/tests?#{query_string}"
 
+    # Return if content-type is invalid
+    json_error 415, 'Support of x-yaml and json' unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
 
@@ -115,10 +118,8 @@ class CatalogueV2 < SonataCatalogue
     case request.content_type
       when 'application/json'
         response = tests.to_json
-      when 'application/x-yaml'
-        response = json_to_yaml(tests.to_json)
       else
-        halt 415
+        response = json_to_yaml(tests.to_json)
     end
     halt 200, {'Content-type' => request.content_type}, response
   end
@@ -129,6 +130,10 @@ class CatalogueV2 < SonataCatalogue
   #	  @param :id [Symbol] id TEST ID
   # Show a Test Descriptor by internal ID (uuid)
   get '/tests/:id/?' do
+
+    # Return if content-type is invalid
+    json_error 415, 'Support of x-yaml and json' unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+
     unless params[:id].nil?
       logger.debug "Catalogue: GET /v2/tests/#{params[:id]}"
 
@@ -144,10 +149,8 @@ class CatalogueV2 < SonataCatalogue
       case request.content_type
         when 'application/json'
           response = test.to_json
-        when 'application/x-yaml'
-          response = json_to_yaml(test.to_json)
         else
-          halt 415
+          response = json_to_yaml(test.to_json)
       end
       halt 200, {'Content-type' => request.content_type}, response
 
@@ -161,7 +164,7 @@ class CatalogueV2 < SonataCatalogue
   # Post a Test Descriptor in JSON or YAML format
   post '/tests' do
     # Return if content-type is invalid
-    halt 415 unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+    json_error 415, 'Support of x-yaml and json' unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
 
     # Compatibility support for YAML content-type
     case request.content_type
@@ -197,14 +200,25 @@ class CatalogueV2 < SonataCatalogue
     json_error 400, 'ERROR: TEST Name not found' unless new_test.has_key?('name')
     json_error 400, 'ERROR: TEST Version not found' unless new_test.has_key?('version')
 
+    # Comment for file re-usage. Introduce the reference counting of package
     # Check if Test Descriptor already exists in the catalogue by name, vendor and version
     begin
       test = Testd.find_by({ 'testd.name' => new_test['name'], 'testd.vendor' => new_test['vendor'],
                            'testd.version' => new_test['version'] })
-      halt 409, "Duplicated TEST with ID => #{test['_id']}"
+      test.update_attributes(pkg_ref: test['pkg_ref'] + 1)
+      response = {"uuid" => test['_id'], "referenced" => test['pkg_ref']}
+      case request.content_type
+        when 'application/json'
+          response = response.to_json
+        else
+          response = json_to_yaml(response.to_json)
+      end
+      halt 200, {'Content-type' => request.content_type}, response
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
     end
+
+
     # Check if Test Descriptor has an ID (it should not) and if it already exists in the catalogue
     begin
       test = Testd.find_by({ '_id' => new_test['_id'] })
@@ -225,6 +239,7 @@ class CatalogueV2 < SonataCatalogue
     # Generate the UUID for the descriptor
     new_testd['_id'] = SecureRandom.uuid
     new_testd['status'] = 'active'
+    new_testd['pkg_ref'] = 1
     new_testd['signature'] = nil
     new_testd['md5'] = checksum new_test.to_s
     new_testd['username'] = username
@@ -243,10 +258,8 @@ class CatalogueV2 < SonataCatalogue
     case request.content_type
       when 'application/json'
         response = test.to_json
-      when 'application/x-yaml'
-        response = json_to_yaml(test.to_json)
       else
-        halt 415
+        response = json_to_yaml(test.to_json)
     end
     halt 201, {'Content-type' => request.content_type}, response
   end
@@ -265,7 +278,8 @@ class CatalogueV2 < SonataCatalogue
     keyed_params = keyed_hash(params)
 
     # Return if content-type is invalid
-    halt 415 unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+    # Return if content-type is invalid
+    json_error 415, 'Support of x-yaml and json' unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
 
     # Return if params are empty
     json_error 400, 'Update parameters are null' if keyed_params.empty?
@@ -341,6 +355,7 @@ class CatalogueV2 < SonataCatalogue
     new_testd['_id'] = SecureRandom.uuid # Unique UUIDs per Test Descriptor entries
     new_testd['testd'] = new_test
     new_testd['status'] = 'active'
+    new_testd['pkg_ref'] = 1
     new_testd['signature'] = nil
     new_testd['md5'] = checksum new_test.to_s
     new_testd['username'] = username
@@ -359,10 +374,8 @@ class CatalogueV2 < SonataCatalogue
     case request.content_type
       when 'application/json'
         response = new_test.to_json
-      when 'application/x-yaml'
-        response = json_to_yaml(new_test.to_json)
       else
-        halt 415
+        response = json_to_yaml(new_test.to_json)
     end
     halt 200, {'Content-type' => request.content_type}, response
   end
@@ -373,7 +386,7 @@ class CatalogueV2 < SonataCatalogue
   ## Catalogue - UPDATE
   put '/tests/:id/?' do
     # Return if content-type is invalid
-    halt 415 unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+    json_error 415, 'Support of x-yaml and json' unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
 
     unless params[:id].nil?
       logger.debug "Catalogue: PUT /v2/tests/#{params[:id]}"
@@ -473,6 +486,7 @@ class CatalogueV2 < SonataCatalogue
         new_testd['_id'] = SecureRandom.uuid # Unique UUIDs per TESTD entries
         new_testd['testd'] = new_test
         new_testd['status'] = 'active'
+        new_testd['pkg_ref'] = 1
         new_testd['signature'] = nil
         new_testd['md5'] = checksum new_test.to_s
         new_testd['username'] = username
@@ -491,10 +505,8 @@ class CatalogueV2 < SonataCatalogue
         case request.content_type
           when 'application/json'
             response = new_test.to_json
-          when 'application/x-yaml'
-            response = json_to_yaml(new_test.to_json)
           else
-            halt 415
+            response = json_to_yaml(new_test.to_json)
         end
         halt 200, {'Content-type' => request.content_type}, response
       end
@@ -524,10 +536,17 @@ class CatalogueV2 < SonataCatalogue
         json_error 404, "The TESTD Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist"
       end
       logger.debug "Catalogue: leaving DELETE /v2/tests?#{query_string}\" with TESTD #{test}"
-      # Delete entry in dict mapping
-      del_ent_dict(test, :testd)
-      test.destroy
-      halt 200, 'OK: TESTD removed'
+      if test['pkg_ref'] == 1
+        # Referenced only once. Delete in this case
+        # Delete entry in dict mapping
+        del_ent_dict(test, :testd)
+        test.destroy
+        halt 200, 'OK: TESTD removed'
+      else
+        # Referenced above once. Decrease counter
+        test.update_attributes(pkg_ref: test['pkg_ref'] - 1)
+        halt 200, "OK: TESTD referenced => #{test['pkg_ref']}"
+      end
     end
     logger.debug "Catalogue: leaving DELETE /v2/tests?#{query_string} with 'No TESTD Vendor, Name, Version specified'"
     json_error 400, 'No TESTD Vendor, Name, Version specified'
@@ -548,10 +567,19 @@ class CatalogueV2 < SonataCatalogue
         json_error 404, "The TESTD ID #{params[:id]} does not exist" unless test
       end
       logger.debug "Catalogue: leaving DELETE /v2/tests/#{params[:id]}\" with TESTD #{test}"
-      # Delete entry in dict mapping
-      del_ent_dict(test, :testd)
-      test.destroy
-      halt 200, 'OK: TESTD removed'
+
+      if test['pkg_ref'] == 1
+        # Referenced only once. Delete in this case
+        # Delete entry in dict mapping
+        del_ent_dict(test, :testd)
+        test.destroy
+        halt 200, 'OK: TESTD removed'
+      else
+        # Referenced above once. Decrease counter
+        test.update_attributes(pkg_ref: test['pkg_ref'] - 1)
+        halt 200, "OK: TESTD referenced => #{test['pkg_ref']}"
+      end
+
     end
     logger.debug "Catalogue: leaving DELETE /v2/tests/#{params[:id]} with 'No TESTD ID specified'"
     json_error 400, 'No TESTD ID specified'

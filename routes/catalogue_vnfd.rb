@@ -582,6 +582,9 @@ class CatalogueV2 < SonataCatalogue
     params['page_size'] ||= DEFAULT_PAGE_SIZE
     logger.info "Catalogue: entered GET /v2/vnfs?#{query_string}"
 
+    # Return if content-type is invalid
+    json_error 415, 'Support of x-yaml and json' unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
 
@@ -655,10 +658,8 @@ class CatalogueV2 < SonataCatalogue
     case request.content_type
       when 'application/json'
         response = vnfs.to_json
-      when 'application/x-yaml'
-        response = json_to_yaml(vnfs.to_json)
       else
-        halt 415
+        response = json_to_yaml(vnfs.to_json)
     end
     halt 200, {'Content-type' => request.content_type}, response
   end
@@ -669,6 +670,10 @@ class CatalogueV2 < SonataCatalogue
   #	  @param :id [Symbol] id VNF ID
   # Show a VNF by internal ID (uuid)
   get '/vnfs/:id/?' do
+
+    # Return if content-type is invalid
+    json_error 415, 'Support of x-yaml and json' unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+
     unless params[:id].nil?
       logger.debug "Catalogue: GET /v2/vnfs/#{params[:id]}"
 
@@ -684,10 +689,8 @@ class CatalogueV2 < SonataCatalogue
       case request.content_type
         when 'application/json'
           response = vnf.to_json
-        when 'application/x-yaml'
-          response = json_to_yaml(vnf.to_json)
         else
-          halt 415
+          response = json_to_yaml(vnf.to_json)
       end
       halt 200, {'Content-type' => request.content_type}, response
 
@@ -701,7 +704,7 @@ class CatalogueV2 < SonataCatalogue
   # Post a VNF in JSON or YAML format
   post '/vnfs' do
     # Return if content-type is invalid
-    halt 415 unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+    json_error 415, 'Support of x-yaml and json' unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
 
     # Compatibility support for YAML content-type
     case request.content_type
@@ -737,14 +740,25 @@ class CatalogueV2 < SonataCatalogue
     json_error 400, 'ERROR: VNF Name not found' unless new_vnf.has_key?('name')
     json_error 400, 'ERROR: VNF Version not found' unless new_vnf.has_key?('version')
 
+    # Comment for file re-usage. Introduce the reference counting of package
     # Check if VNFD already exists in the catalogue by name, vendor and version
     begin
       vnf = Vnfd.find_by({ 'vnfd.name' => new_vnf['name'], 'vnfd.vendor' => new_vnf['vendor'],
                            'vnfd.version' => new_vnf['version'] })
-      halt 409, "Duplicated VNF with ID => #{vnf['_id']}"
+      vnf.update_attributes(pkg_ref: vnf['pkg_ref'] + 1)
+      response = ''
+      # response = {"uuid" => vnf['_id'], "referenced" => vnf['pkg_ref']}
+      case request.content_type
+        when 'application/json'
+          response = vnf.to_json
+        else
+          response = json_to_yaml(vnf.to_json)
+      end
+      halt 200, {'Content-type' => request.content_type}, response
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
     end
+
     # Check if VNFD has an ID (it should not) and if it already exists in the catalogue
     begin
       vnf = Vnfd.find_by({ '_id' => new_vnf['_id'] })
@@ -765,9 +779,11 @@ class CatalogueV2 < SonataCatalogue
     # Generate the UUID for the descriptor
     new_vnfd['_id'] = SecureRandom.uuid
     new_vnfd['status'] = 'active'
+    new_vnfd['pkg_ref'] = 1
     new_vnfd['signature'] = nil
     new_vnfd['md5'] = checksum new_vnf.to_s
     new_vnfd['username'] = username
+
 
     # First, Refresh dictionary about the new entry
     update_entr_dict(new_vnfd, :vnfd)
@@ -783,10 +799,8 @@ class CatalogueV2 < SonataCatalogue
     case request.content_type
       when 'application/json'
         response = vnf.to_json
-      when 'application/x-yaml'
-        response = json_to_yaml(vnf.to_json)
       else
-        halt 415
+        response = json_to_yaml(vnf.to_json)
     end
     halt 201, {'Content-type' => request.content_type}, response
   end
@@ -805,7 +819,7 @@ class CatalogueV2 < SonataCatalogue
     keyed_params = keyed_hash(params)
 
     # Return if content-type is invalid
-    halt 415 unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+    json_error 415, 'Support of x-yaml and json' unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
 
     # Return if params are empty
     json_error 400, 'Update parameters are null' if keyed_params.empty?
@@ -881,6 +895,7 @@ class CatalogueV2 < SonataCatalogue
     new_vnfd['_id'] = SecureRandom.uuid # Unique UUIDs per VNFD entries
     new_vnfd['vnfd'] = new_vnf
     new_vnfd['status'] = 'active'
+    new_vnfd['pkg_ref'] = 1
     new_vnfd['signature'] = nil
     new_vnfd['md5'] = checksum new_vnf.to_s
     new_vnfd['username'] = username
@@ -899,10 +914,8 @@ class CatalogueV2 < SonataCatalogue
     case request.content_type
       when 'application/json'
         response = new_vnf.to_json
-      when 'application/x-yaml'
-        response = json_to_yaml(new_vnf.to_json)
       else
-        halt 415
+        response = json_to_yaml(new_vnf.to_json)
     end
     halt 200, {'Content-type' => request.content_type}, response
   end
@@ -913,7 +926,8 @@ class CatalogueV2 < SonataCatalogue
   ## Catalogue - UPDATE
   put '/vnfs/:id/?' do
     # Return if content-type is invalid
-    halt 415 unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+    # Return if content-type is invalid
+    json_error 415, 'Support of x-yaml and json' unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
 
     unless params[:id].nil?
       logger.debug "Catalogue: PUT /v2/vnfs/#{params[:id]}"
@@ -1013,6 +1027,7 @@ class CatalogueV2 < SonataCatalogue
         new_vnfd['_id'] = SecureRandom.uuid # Unique UUIDs per VNFD entries
         new_vnfd['vnfd'] = new_vnf
         new_vnfd['status'] = 'active'
+        new_vnfd['pkg_ref'] = 1
         new_vnfd['signature'] = nil
         new_vnfd['md5'] = checksum new_vnf.to_s
         new_vnfd['username'] = username
@@ -1031,10 +1046,8 @@ class CatalogueV2 < SonataCatalogue
         case request.content_type
           when 'application/json'
             response = new_vnf.to_json
-          when 'application/x-yaml'
-            response = json_to_yaml(new_vnf.to_json)
           else
-            halt 415
+            response = json_to_yaml(new_vnf.to_json)
         end
         halt 200, {'Content-type' => request.content_type}, response
       end
@@ -1063,11 +1076,19 @@ class CatalogueV2 < SonataCatalogue
       rescue Mongoid::Errors::DocumentNotFound => e
         json_error 404, "The VNFD Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist"
       end
+
       logger.debug "Catalogue: leaving DELETE /v2/vnfs?#{query_string}\" with VNFD #{vnf}"
-      # Delete entry in dict mapping
-      del_ent_dict(vnf, :vnfd)
-      vnf.destroy
-      halt 200, 'OK: VNFD removed'
+
+      if vnf['pkg_ref'] == 1
+        # Delete entry in dict mapping
+        del_ent_dict(vnf, :vnfd)
+        vnf.destroy
+        halt 200, 'OK: VNFD removed'
+      else
+        vnf.update_attributes(pkg_ref: vnf['pkg_ref'] - 1)
+        halt 200, "OK: VNFD referenced => #{vnf['pkg_ref']} "
+      end
+
     end
     logger.debug "Catalogue: leaving DELETE /v2/vnfs?#{query_string} with 'No VNFD Vendor, Name, Version specified'"
     json_error 400, 'No VNFD Vendor, Name, Version specified'
@@ -1088,10 +1109,19 @@ class CatalogueV2 < SonataCatalogue
         json_error 404, "The VNFD ID #{params[:id]} does not exist" unless vnf
       end
       logger.debug "Catalogue: leaving DELETE /v2/vnfs/#{params[:id]}\" with VNFD #{vnf}"
-      # Delete entry in dict mapping
-      del_ent_dict(vnf, :vnfd)
-      vnf.destroy
-      halt 200, 'OK: VNFD removed'
+
+      if vnf['pkg_ref'] == 1
+        # Referenced only once. Delete in this case
+        # Delete entry in dict mapping
+        del_ent_dict(vnf, :vnfd)
+        vnf.destroy
+        halt 200, 'OK: VNFD removed'
+      else
+        # Referenced above once. Decrease counter
+        vnf.update_attributes(pkg_ref: vnf['pkg_ref'] - 1)
+        halt 200, "OK: VNFD referenced => #{vnf['pkg_ref']} "
+      end
+
     end
     logger.debug "Catalogue: leaving DELETE /v2/vnfs/#{params[:id]} with 'No VNFD ID specified'"
     json_error 400, 'No VNFD ID specified'

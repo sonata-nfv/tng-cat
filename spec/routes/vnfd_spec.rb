@@ -185,13 +185,17 @@ RSpec.describe CatalogueV2 do
     end
   end
 
+  # Since reuse mechanism in enabled, this test should provide 200 and the number of references
+  # If reuse mechanism not enabled, please change the test accordingly
   let(:vnf_descriptor) {Rack::Test::UploadedFile.new('./spec/fixtures/vnfd-example.json','application/json', true)}
   describe 'POST \'/api/v2/vnfs\'' do
     context 'Duplicated vnfd' do
       it 'Submit a duplicated vnfd' do
         headers = { 'CONTENT_TYPE' => 'application/json' }
         post '/vnfs', vnf_descriptor, headers
-        expect(last_response.status).to eq(409)
+        expect(last_response.status).to eq(200)
+        expect(JSON.parse(last_response.body)).to include('pkg_ref' => 2)
+        expect(JSON.parse(last_response.body)).to include('uuid' => $vnfd_id)
       end
     end
   end
@@ -263,6 +267,10 @@ RSpec.describe CatalogueV2 do
     end
   end
 
+
+  # Test for deleting the duplicate file referenced two times
+  # Since pkg_ref is equal to 2, two delete methods were needed
+  # But the Rspec needs one method
   describe 'DELETE /api/v2/vnfs/:uuid' do
     context 'with (UU)ID given' do
       before do
@@ -270,6 +278,8 @@ RSpec.describe CatalogueV2 do
       end
       subject { last_response }
       its(:status) { is_expected.to eq 200 }
+      its(:body) { is_expected.to eq 'OK: VNFD removed'}
     end
   end
+
 end

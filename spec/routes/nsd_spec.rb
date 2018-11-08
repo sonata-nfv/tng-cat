@@ -187,13 +187,17 @@ RSpec.describe CatalogueV2 do
     end
   end
 
+  # Since reuse mechanism in enabled, this test should provide 200 and the number of references
+  # If reuse mechanism not enabled, please change the test accordingly
   let(:ns_descriptor) {Rack::Test::UploadedFile.new('./spec/fixtures/nsd-example.json','application/json', true)}
   describe 'POST \'/api/v2/network-services\'' do
     context 'Duplicated nsd' do
       it 'Submit a duplicated nsd' do
         headers = { 'CONTENT_TYPE' => 'application/json' }
         post '/network-services', ns_descriptor, headers
-        expect(last_response.status).to eq(409)
+        expect(last_response.status).to eq(200)
+        expect(last_response.body.to_s).to include('pkg_ref','2')
+        expect(last_response.body.to_s).to include($nsd_id.to_s)
       end
     end
   end
@@ -254,6 +258,22 @@ RSpec.describe CatalogueV2 do
     end
   end
 
+  # describe 'DELETE /api/v2/network-services/:uuid' do
+  #   context 'with (UU)ID given' do
+  #     before do
+  #       delete '/network-services/' + $nsd_id.to_s
+  #     end
+  #     subject { last_response }
+  #     its(:status) { is_expected.to eq 200 }
+  #     its(:body) { is_expected.to include 'referenced => 1'}
+  #   end
+  # end
+  #
+  #
+
+  # Test for deleting the duplicate file referenced two times
+  # Since pkg_ref is equal to 2, two delete methods were needed
+  # But the Rspec needs one method
   describe 'DELETE /api/v2/network-services/:uuid' do
     context 'with (UU)ID given' do
       before do
@@ -261,6 +281,7 @@ RSpec.describe CatalogueV2 do
       end
       subject { last_response }
       its(:status) { is_expected.to eq 200 }
+      its(:body) { is_expected.to eq 'OK: NSD removed'}
     end
   end
 end

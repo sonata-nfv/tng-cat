@@ -381,25 +381,25 @@ class SonataCatalogue < Sinatra::Application
   # @param [Boolean] active_criteria true: checks the status of the package avoiding returning deps on inactive ones
   # @return [Boolean] true if there is some other package (different from target) depending on the descriptor
   def check_dependencies(desc, target_package = nil, active_criteria = false)
-    dependent_packages = Pkgd.where(
-        { 'pd.package_content'  => { '$elemMatch' => { 'id.name' => desc['id'][:name],
-                                                    'id.vendor' => desc['id'][:vendor],
-                                                    'id.version' => desc['id'][:version] } } })
-    dependent_packages.each do |dp|
-      diffp_condition = true
-      if target_package != nil
-        diffp_condition = ( (dp['pd']['name'] != target_package['name']) or
-            (dp['pd']['vendor'] != target_package['vendor']) or
-            (dp['pd']['version'] != target_package['version']) )
-      end
-      if diffp_condition
-        if active_criteria
-          return true if dp['status'].casecmp('ACTIVE') == 0
-        else
-          return true
-        end
-      end
-    end
+    # dependent_packages = Pkgd.where(
+    #     { 'pd.package_content'  => { '$elemMatch' => { 'id.name' => desc['id'][:name],
+    #                                                 'id.vendor' => desc['id'][:vendor],
+    #                                                 'id.version' => desc['id'][:version] } } })
+    # dependent_packages.each do |dp|
+    #   diffp_condition = true
+    #   if target_package != nil
+    #     diffp_condition = ( (dp['pd']['name'] != target_package['name']) or
+    #         (dp['pd']['vendor'] != target_package['vendor']) or
+    #         (dp['pd']['version'] != target_package['version']) )
+    #   end
+    #   if diffp_condition
+    #     if active_criteria
+    #       return true if dp['status'].casecmp('ACTIVE') == 0
+    #     else
+    #       return true
+    #     end
+    #   end
+    # end
     false
   end
 
@@ -588,8 +588,11 @@ class SonataCatalogue < Sinatra::Application
         logger.error 'VNFD Descriptor not found'
         not_found << vnfd_td
       else
-        descriptor.destroy
-        del_ent_dict(descriptor, :vnfd)
+        if descriptor['pkg_ref'] == 1
+         descriptor.destroy
+         del_ent_dict(descriptor, :vnfd)
+        else descriptor.update_attributes(pkg_ref: descriptor['pkg_ref'] - 1)
+        end
       end
     end
     not_found
@@ -608,8 +611,11 @@ class SonataCatalogue < Sinatra::Application
         logger.error 'NSD Descriptor not found ' + nsd_td.to_s
         not_found << nsd_td
       else
-        descriptor.destroy
-        del_ent_dict(descriptor, :nsd)
+        if descriptor['pkg_ref'] == 1
+          descriptor.destroy
+          del_ent_dict(descriptor, :nsd)
+        else descriptor.update_attributes(pkg_ref: descriptor['pkg_ref'] - 1)
+        end
       end
     end
     not_found
@@ -628,13 +634,15 @@ class SonataCatalogue < Sinatra::Application
         logger.error 'Test Descriptor not found ' + testd_td.to_s
         not_found << testd_td
       else
-        descriptor.destroy
-        del_ent_dict(descriptor, :testd)
+        if descriptor['pkg_ref'] == 1
+          descriptor.destroy
+          del_ent_dict(descriptor, :testd)
+        else descriptor.update_attributes(pkg_ref: descriptor['pkg_ref'] - 1)
+        end
       end
     end
     not_found
   end
-
   # Method deleting testds from name, vendor, version
   # @param [Array] testds testds array of hashes
   # @return [Array] Not found array
@@ -646,11 +654,26 @@ class SonataCatalogue < Sinatra::Application
         logger.error 'File not found ' + file.to_s
         not_found << file
       else
-        file_stored.destroy
-        del_ent_dict(file_stored, :files)
-        # Remove files from grid
-        grid_fs = Mongoid::GridFs
-        grid_fs.delete(file_stored['grid_fs_id'])
+        if file_stored['pkg_ref'] == 1
+          # Referenced only once. Delete in this case
+          file_stored.destroy
+          del_ent_dict(file_stored, :files)
+          file_md5 = Files.where('md5' => file_stored['md5'])
+          if file_md5.size.to_i.zero?
+            # Remove files from grid
+            grid_fs = Mongoid::GridFs
+            grid_fs.delete(file_stored['grid_fs_id'])
+          end
+        else
+          # Referenced above once. Decrease counter
+          file_stored.update_attributes(pkg_ref: file_stored['pkg_ref'] - 1)
+        end
+        # file_stored.destroy
+        # del_ent_dict(file_stored, :files)
+        #
+        # # Remove files from grid
+        # grid_fs = Mongoid::GridFs
+        # grid_fs.delete(file_stored['grid_fs_id'])
       end
     end
     not_found
@@ -660,14 +683,33 @@ class SonataCatalogue < Sinatra::Application
   # @param [Hash] descriptor model hash
   # @return [void]
   def delete_pd(descriptor)
+    # # first find dependencies_mapping
+    # pkg = FileContainer.find_by('_id' => descriptor['pd']['package_file_uuid'])
+
     # first find dependencies_mapping
     pkg = FileContainer.find_by('_id' => descriptor['pd']['package_file_uuid'])
+
+    if pkg['pkg_ref'] == 1
+      # Referenced only once. Delete in this case
+      pkg.destroy
+      tgop_md5 = Files.where('md5' => pkg['md5'])
+      if tgop_md5.size.to_i.zero?
+        # Remove files from grid
+        grid_fs = Mongoid::GridFs
+        grid_fs.delete(pkg['grid_fs_id'])
+      end
+    else
+      # Referenced above once. Decrease counter
+      pkg.update_attributes(pkg_ref: pkg['pkg_ref'] - 1)
+    end
     descriptor.destroy
     del_ent_dict(descriptor, :pd)
-    grid_fs = Mongoid::GridFs
-    grid_fs.delete(pkg['grid_fs_id'])
-    pkg.destroy
-    descriptor.destroy
+    # descriptor.destroy
+    # del_ent_dict(descriptor, :pd)
+    # grid_fs = Mongoid::GridFs
+    # grid_fs.delete(pkg['grid_fs_id'])
+    # pkg.destroy
+    # descriptor.destroy
   end
 
   # Method Set status of vnfds from name, vendor, version
@@ -946,7 +988,9 @@ class SonataCatalogue < Sinatra::Application
             },
             nstd: {},
             files: {},
-            pld: {},
+            pld: {
+
+            },
             pd: {}
     }
     dict[type_of_descriptor]

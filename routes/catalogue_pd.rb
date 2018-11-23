@@ -628,10 +628,18 @@ class CatalogueV2 < SonataCatalogue
     params['page_number'] ||= DEFAULT_PAGE_NUMBER
     params['page_size'] ||= DEFAULT_PAGE_SIZE
 
-    logger.info "Catalogue: entered GET /v2/packages?#{query_string}"
-
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
+
+    # Logger details
+    operation = "GET /v2/packages?#{query_string}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
+
+    # Return if content-type is invalid
+    json_error 415, 'Support of x-yaml and json', component, operation, time_req_begin unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
 
     # Split keys in meta_data and data
     # Then transform 'string' params Hash into keys
@@ -655,11 +663,10 @@ class CatalogueV2 < SonataCatalogue
       keyed_params.delete(:'pd.version')
 
       pks = Pkgd.where((keyed_params)).sort( 'pd.version' => -1 ) #.limit(1).first()
-      logger.info "Catalogue: PDs=#{pks}"
       # pks = pks.sort({"version" => -1})
 
       if pks && pks.size.to_i > 0
-        logger.info "Catalogue: leaving GET /v2/packages?#{query_string} with #{pks}"
+        logger.cust_debug(component: component, operation: operation, message: "PDs found #{pks}")
 
         pks_list = []
         checked_list = []
@@ -676,9 +683,10 @@ class CatalogueV2 < SonataCatalogue
               pair.two == pks_name_vendor.two }
           checked_list.push(pks_name_vendor)
         end
+        logger.cust_info(status: 200, start_stop: 'STOP', component: component, operation: operation, message: "Ended at #{Time.now.utc}", time_elapsed: "#{Time.now.utc - time_req_begin }")
 
       else
-        logger.info "Catalogue: leaving GET /v2/packages?#{query_string} with 'No PDs were found'"
+        logger.cust_info(status: 200, component: component, operation: operation, message: "'No PDs were found'", time_elapsed: "#{Time.now.utc - time_req_begin }")
         pks_list = []
       end
       pks = apply_limit_and_offset(pks_list, page_number=params[:page_number],
@@ -688,15 +696,16 @@ class CatalogueV2 < SonataCatalogue
       # Do the query
       keyed_params = parse_keys_dict(:pd, keyed_params)
       pks = Pkgd.where(keyed_params)
+
       # Set total count for results
       headers 'Record-Count' => pks.count.to_s
-      logger.info "Catalogue: PDs=#{pks}"
+
       if pks && pks.size.to_i > 0
-        logger.info "Catalogue: leaving GET /v2/packages?#{query_string} with #{pks}"
+        logger.cust_info(status: 200, component: component, operation: operation, message: "PDs found #{pks}", time_elapsed: "#{Time.now.utc - time_req_begin }")
         # Paginate results
         pks = pks.paginate(page_number: params[:page_number], page_size: params[:page_size])
       else
-        logger.info "Catalogue: leaving GET /v2/packages?#{query_string} with 'No PDs were found'"
+        logger.cust_info(status: 200, component: component, operation: operation, message: 'No PDs were found', time_elapsed: "#{Time.now.utc - time_req_begin }")
       end
     end
 
@@ -706,8 +715,6 @@ class CatalogueV2 < SonataCatalogue
         response = pks.to_json
       when 'application/x-yaml'
         response = json_to_yaml(pks.to_json)
-      else
-        halt 415
     end
     halt 200, {'Content-type' => request.content_type}, response
   end
@@ -718,16 +725,24 @@ class CatalogueV2 < SonataCatalogue
   #	  @param :id [Symbol] package_uuid Package id
   # Show a Package by uuid
   get '/packages/:id/?' do
-    unless params[:id].nil?
-      logger.debug "Catalogue: GET /v2/packages/#{params[:id]}"
 
+    # Logger details
+    operation = "GET /v2/packages/#{params[:id]}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    json_error 415, 'Support of x-yaml and json', component, operation, time_req_begin unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+
+    logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
+
+    unless params[:id].nil?
       begin
         pks = Pkgd.find(params[:id])
       rescue Mongoid::Errors::DocumentNotFound => e
-        logger.error e
-        json_error 404, "The PD ID #{params[:id]} does not exist" unless pks
+        json_error 404, "The PD ID #{params[:id]} does not exist", component, operation, time_req_begin unless pks
       end
-      logger.debug "Catalogue: leaving GET /v2/packages/#{params[:id]}\" with PD #{pks}"
+
+      logger.cust_debug(component: component, operation: operation, message: "PD found #{pks}")
 
       response = ''
       case request.content_type
@@ -735,14 +750,14 @@ class CatalogueV2 < SonataCatalogue
           response = pks.to_json
         when 'application/x-yaml'
           response = json_to_yaml(pks.to_json)
-        else
-          halt 415
       end
+      logger.cust_info(start_stop:'STOP', component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
+
       halt 200, {'Content-type' => request.content_type}, response
 
     end
-    logger.debug "Catalogue: leaving GET /v2/packages/#{params[:id]} with 'No PD ID specified'"
-    json_error 400, 'No PD ID specified'
+    logger.cust_debug(component: component, operation: operation, message: "No PD ID specified")
+    json_error 400, 'No PD ID specified', component, operation, time_req_begin
   end
 
   # @method get_packages_package_id_files_
@@ -750,13 +765,22 @@ class CatalogueV2 < SonataCatalogue
   #	  GET all files with the content type referenced in pd
   #	  @param :id [Symbol] package_uuid Package id
   get '/packages/:id/files/?' do
+
+
+    # Logger details
+    operation = "GET /v2/packages/#{params[:id]}/files"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    json_error 415, 'Support of x-yaml and json', component, operation, time_req_begin unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+
     unless params[:id].nil?
-      logger.debug "Catalogue: GET /v2/packages/#{params[:id]}/files"
+      logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
+
       begin
         pks = Pkgd.find(params[:id])
       rescue Mongoid::Errors::DocumentNotFound => e
-        logger.error e
-        json_error 404, "The PD ID #{params[:id]} does not exist" unless pks
+        json_error 404, "The PD ID #{params[:id]} does not exist", component, operation, time_req_begin unless pks
       end
 
       response = ''
@@ -765,13 +789,13 @@ class CatalogueV2 < SonataCatalogue
           response = pks['pd']['package_content'].to_json
         when 'application/x-yaml'
           response = json_to_yaml(pks['pd']['package_content'].to_json)
-        else
-          halt 415, 'Unsupported media type'
       end
+      logger.cust_info(start_stop:'STOP', component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
+
       halt 200, {'Content-type' => request.content_type}, response
     end
-    logger.debug "Catalogue: leaving GET /v2/packages/#{params[:id]}/files with 'No PD ID specified'"
-    json_error 400, 'No PD ID specified'
+    logger.cust_debug(component: component, operation: operation, message: "No PD ID specified")
+    json_error 400, 'No PD ID specified', component, operation, time_req_begin
   end
 
 
@@ -781,15 +805,21 @@ class CatalogueV2 < SonataCatalogue
   #	  @param :id [Symbol] package_uuid Package id
   # 	@param :file_uuid [Symbol] file_uuid file id
   get '/packages/:id/files/:file_uuid/?' do
+
+    # Logger details
+    operation = "GET /v2/packages/#{params[:id]}/files/#{params[:file_uuid]}}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
     unless params[:id].nil?
-      logger.debug "Catalogue: GET /v2/packages/#{params[:id]}/files/#{params[:file_uuid]}}"
-      logger.info "#{params[:file_uuid]}"
+      logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
+
       begin
         pks = Pkgd.find(params[:id])
       rescue Mongoid::Errors::DocumentNotFound => e
-        logger.error e
-        json_error 404, "The PD ID #{params[:id]} does not exist" unless pks
+        json_error 404, "The PD ID #{params[:id]} does not exist", component, operation, time_req_begin unless pks
       end
+
       content_type = 'application/octet-stream'
       pks['pd']['package_content'].each do |content|
         content_type = content['content-type'] if content['uuid'] == params[:file_uuid]
@@ -797,12 +827,10 @@ class CatalogueV2 < SonataCatalogue
 
       begin
         file = Files.find_by('_id' => params[:file_uuid])
-        logger.info
         p 'Filename: ', file['file_name']
         p 'grid_fs_id: ', file['grid_fs_id']
       rescue Mongoid::Errors::DocumentNotFound => e
-        logger.error e
-        json_error 404, "File with {uuid => #{params[:file_uuid]}} not found"
+        json_error 404, "File with {uuid => #{params[:file_uuid]}} not found", component, operation, time_req_begin
       end
 
       grid_fs = Mongoid::GridFs
@@ -811,20 +839,28 @@ class CatalogueV2 < SonataCatalogue
       # Set custom header with Filename
       headers 'Filename' => (file['file_name'].to_s)
 
-      logger.debug "Catalogue: leaving GET /files/#{params[:id]}"
+      logger.cust_info(start_stop:'STOP', component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
       halt 200, {'Content-type' => content_type}, grid_file.data
 
     end
-    logger.debug "Catalogue: leaving GET /v2/packages/#{params[:id]}/files/#{params[:file_uuid]} with 'No PD ID specified'"
-    json_error 400, 'No PD ID specified'
+    logger.cust_debug(component: component, operation: operation, message: "No PD ID specified")
+    json_error 400, 'No PD ID specified', component, operation, time_req_begin
   end
 
   # @method post_package
   # @overload post '/catalogues/packages'
   # Post a Package in JSON or YAML format
   post '/packages' do
+
+
+    # Logger details
+    operation = 'POST /v2/packages/'
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
     # Return if content-type is invalid
-    halt 415 unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+    json_error 415, 'Support of x-yaml and json', component, operation, time_req_begin unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+
 
     # Compatibility support for YAML content-type
     case request.content_type
@@ -833,21 +869,23 @@ class CatalogueV2 < SonataCatalogue
         # When updating a PD, the json object sent to API must contain just data inside
         # of the pd, without the json field pd: before
         pks, errors = parse_yaml(request.body.read)
-        halt 400, errors.to_json if errors
+        json_error 400, errors.to_json , component, operation, time_req_begin if errors
 
         # Translate from YAML format to JSON format
         new_pks_json = yaml_to_json(pks)
 
         # Validate JSON format
         new_pks, errors = parse_json(new_pks_json)
-        halt 400, errors.to_json if errors
+        json_error 400, errors.to_json , component, operation, time_req_begin if errors
 
       else
         # Compatibility support for JSON content-type
         # Parses and validates JSON format
         new_pks, errors = parse_json(request.body.read)
-        halt 400, errors.to_json if errors
+        json_error 400, errors.to_json , component, operation, time_req_begin if errors
     end
+
+    logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
@@ -856,22 +894,25 @@ class CatalogueV2 < SonataCatalogue
     keyed_params = keyed_hash(params)
 
     # Validate NS
-    json_error 400, 'ERROR: Package Vendor not found' unless new_pks.has_key?('vendor')
-    json_error 400, 'ERROR: Package Name not found' unless new_pks.has_key?('name')
-    json_error 400, 'ERROR: Package Version not found' unless new_pks.has_key?('version')
+    json_error 400, 'Package Vendor not found', component, operation, time_req_begin unless new_pks.has_key?('vendor')
+    json_error 400, 'Package Name not found', component, operation, time_req_begin unless new_pks.has_key?('name')
+    json_error 400, 'Package Version not found', component, operation, time_req_begin unless new_pks.has_key?('version')
 
     # Check if PD already exists in the catalogue by name, vendor and version
     begin
       pks = Pkgd.find_by('pd.name' => new_pks['name'], 'pd.vendor' => new_pks['vendor'],
                            'pd.version' => new_pks['version'])
-      halt 409, "Duplicate with Package ID => #{pks['_id']}"
+      json_error 409, "Duplicate with Package ID => #{pks['_id']}", component, operation, time_req_begin
+
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
     end
+
+
     # Check if PD has an ID (it should not) and if it already exists in the catalogue
     begin
       pks = Pkgd.find_by('_id' => new_pks['_id'])
-      halt 409, 'Duplicated Package ID'
+      json_error 409, "Duplicated Package ID => #{pks['_id']}", component, operation, time_req_begin
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
     end
@@ -885,11 +926,10 @@ class CatalogueV2 < SonataCatalogue
     # Save to DB
     new_pd = {}
     new_pd['pd'] = new_pks
+
     # Generate the UUID for the descriptor
     new_pd['_id'] = SecureRandom.uuid
     new_pd['status'] = 'active'
-    # new_pd['package_file_id'] = nil
-    # new_pd['package_file_name'] = nil
     new_pd['signature'] = nil
     new_pd['md5'] = checksum new_pks.to_s
     new_pd['username'] = username
@@ -899,8 +939,9 @@ class CatalogueV2 < SonataCatalogue
 
     begin
       pks = Pkgd.create!(new_pd)
+      logger.cust_info(status: 201, start_stop:'STOP', component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
     rescue Moped::Errors::OperationFailure => e
-      json_return 200, 'Duplicated Package ID' if e.message.include? 'E11000'
+      json_return 200, 'Duplicated Package ID', component, operation, time_req_begin if e.message.include? 'E11000'
     end
 
     puts 'New Package has been added'
@@ -910,61 +951,27 @@ class CatalogueV2 < SonataCatalogue
         response = pks.to_json
       when 'application/x-yaml'
         response = json_to_yaml(pks.to_json)
-      else
-        halt 415
     end
+
     halt 201, {'Content-type' => request.content_type}, response
   end
 
-  # # @method post_tgo_package/mappings
-  # post '/tgo-packages/mappings' do
-  #   logger.debug "Catalogue: entered POST /v2/tgo-packages/mappings"
-  #   halt 415 unless request.content_type == 'application/x-yaml' or request.content_type == 'application/json'
-  #
-  #   # Compatibility support for YAML content-type
-  #   case request.content_type
-  #     when 'application/x-yaml'
-  #       # Validate YAML format
-  #       mapping, errors = parse_yaml(request.body.read)
-  #       halt 400, 'Error in parsing file' if errors
-  #
-  #       # Translate from YAML format to JSON format
-  #       new_mapping_json = yaml_to_json(mapping)
-  #
-  #       # Validate JSON format
-  #       new_mapping, errors = parse_json(new_mapping_json)
-  #
-  #     else
-  #       # Compatibility support for JSON content-type
-  #       # Parses and validates JSON format
-  #       new_mapping, errors = parse_json(request.body.read)
-  #   end
-  #   halt 400, 'Error in parsing file' if errors
-  #
-  #   # Check if a package matches with the uuid with the uuid from the mapping file
-  #   begin
-  #     tgopkg = FileContainer.find_by('_id' => new_mapping['tgo_package_uuid'])
-  #   rescue Mongoid::Errors::DocumentNotFound
-  #     halt 400, "Package with {id => #{new_mapping['tgo_package_uuid']}} not found"
-  #   end
-  #
-  #   begin
-  #     if tgo_package_dep_mapping(new_mapping, tgopkg)
-  #       new_mapping.delete('tgo_package_uuid')
-  #       tgopkg.update_attributes(mapping: new_mapping)
-  #     end
-  #   rescue Moped::Errors::OperationFailure => e
-  #     json_error 400, 'ERROR: Operation of updating mappings failed'
-  #   end
-  #   halt 200, "Updated mappings of tgo-package with {id => #{tgopkg['_id']}}"
-  # end
 
   # @method update_package_group_name_version
   # @overload put '/catalogues/packages/vendor/:package_group/name/:package_name/version/:package_version
   #	Update a Package vendor, name and version in JSON or YAML format
   ## Catalogue - UPDATE
   put '/packages/?' do
-    logger.info "Catalogue: entered PUT /v2/packages?#{query_string}"
+
+    # Logger details
+    operation = "PUT /v2/packages?#{query_string}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    # Return if content-type is invalid
+    json_error 415, 'Support of x-yaml and json', component, operation, time_req_begin unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+
+    logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
@@ -972,11 +979,9 @@ class CatalogueV2 < SonataCatalogue
     # Transform 'string' params Hash into keys
     keyed_params = keyed_hash(params)
 
-    # Return if content-type is invalid
-    halt 415 unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
 
     # Return if params are empty
-    json_error 400, 'Update parameters are null' if keyed_params.empty?
+    json_error 400, 'Update parameters are null', component, operation, time_req_begin if keyed_params.empty?
 
     # Compatibility support for YAML content-type
     case request.content_type
@@ -985,27 +990,27 @@ class CatalogueV2 < SonataCatalogue
         # When updating a PD, the json object sent to API must contain just data inside
         # of the pd, without the json field pd: before
         pks, errors = parse_yaml(request.body.read)
-        halt 400, errors.to_json if errors
+        json_error 400, errors.to_json , component, operation, time_req_begin if errors
 
         # Translate from YAML format to JSON format
         new_pks_json = yaml_to_json(pks)
 
         # Validate JSON format
         new_pks, errors = parse_json(new_pks_json)
-        halt 400, errors.to_json if errors
+        json_error 400, errors.to_json , component, operation, time_req_begin if errors
 
       else
         # Compatibility support for JSON content-type
         # Parses and validates JSON format
         new_pks, errors = parse_json(request.body.read)
-        halt 400, errors.to_json if errors
+        json_error 400, errors.to_json , component, operation, time_req_begin if errors
     end
 
     # Validate Package
     # Check if mandatory fields Vendor, Name, Version are included
-    json_error 400, 'ERROR: Package Vendor not found' unless new_pks.has_key?('vendor')
-    json_error 400, 'ERROR: Package Name not found' unless new_pks.has_key?('name')
-    json_error 400, 'ERROR: Package Version not found' unless new_pks.has_key?('version')
+    json_error 400, 'Package Vendor not found', component, operation, time_req_begin unless new_pks.has_key?('vendor')
+    json_error 400, 'Package Name not found', component, operation, time_req_begin unless new_pks.has_key?('name')
+    json_error 400, 'Package Version not found', component, operation, time_req_begin unless new_pks.has_key?('version')
 
     # Set headers
     case request.content_type
@@ -1018,21 +1023,23 @@ class CatalogueV2 < SonataCatalogue
 
     # Retrieve stored version
     if keyed_params[:vendor].nil? && keyed_params[:name].nil? && keyed_params[:version].nil?
-      json_error 400, 'Update Vendor, Name and Version parameters are null'
+      json_error 400, 'Update Vendor, Name and Version parameters are null', component, operation, time_req_begin
     else
       begin
         pks = Pkgd.find_by('pd.vendor' => keyed_params[:vendor], 'pd.name' => keyed_params[:name],
                                 'pd.version' => keyed_params[:version])
-        puts 'Package is found'
+
       rescue Mongoid::Errors::DocumentNotFound => e
-        json_error 404, "The PD Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist"
+        json_error 404, "The PD Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist", component, operation, time_req_begin
       end
     end
+
+
     # Check if PD already exists in the catalogue by Name, Vendor and Version
     begin
       pks = Pkgd.find_by('pd.name' => new_pks['name'], 'pd.vendor' => new_pks['vendor'],
                            'pd.version' => new_pks['version'])
-      json_return 200, 'Duplicated PD Name, Vendor and Version'
+      json_return 200, 'Duplicated PD Name, Vendor and Version', component, operation, time_req_begin
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
     end
@@ -1061,9 +1068,10 @@ class CatalogueV2 < SonataCatalogue
     begin
       new_pks = Pkgd.create!(new_pd)
     rescue Moped::Errors::OperationFailure => e
-      json_return 200, 'Duplicated Package ID' if e.message.include? 'E11000'
+      json_return 200, 'Duplicated Package ID', component, operation, time_req_begin if e.message.include? 'E11000'
     end
-    logger.debug "Catalogue: leaving PUT /v2/packages?#{query_string}\" with PD #{new_pks}"
+    logger.cust_debug(component: component, operation: operation, message: "PD #{new_pks}")
+    logger.cust_info(status: 200, start_stop:'STOP', component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
     response = ''
     case request.content_type
@@ -1071,8 +1079,6 @@ class CatalogueV2 < SonataCatalogue
         response = new_pks.to_json
       when 'application/x-yaml'
         response = json_to_yaml(new_pks.to_json)
-      else
-        halt 415
     end
     halt 200, {'Content-type' => request.content_type}, response
   end
@@ -1082,14 +1088,20 @@ class CatalogueV2 < SonataCatalogue
   #	Update a Package in JSON or YAML format
   ## Catalogue - UPDATE
   put '/packages/:id/?' do
+
+    # Logger details
+    operation = "PUT /v2/packages/#{params[:id]}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
     # Return if content-type is invalid
-    halt 415 unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+    json_error 415, 'Support of x-yaml and json', component, operation, time_req_begin unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
 
     unless params[:id].nil?
-      logger.debug "Catalogue: PUT /v2/packages/#{params[:id]}"
+      logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
 
       # Transform 'string' params Hash into keys
       keyed_params = keyed_hash(params)
@@ -1097,16 +1109,17 @@ class CatalogueV2 < SonataCatalogue
       # Check for special case (:status param == <new_status>)
       if keyed_params.key?(:status)
         # Do update of Descriptor status -> update_ns_status
-        logger.info "Catalogue: entered PUT /v2/packages/#{query_string}"
+        logger.cust_debug(component: component, operation: operation, message: "PUT /v2/packages/#{query_string}")
+
 
         # Validate Package
         # Retrieve stored version
         begin
           puts 'Searching ' + params[:id].to_s
           pks = Pkgd.find_by('_id' => params[:id])
-          puts 'Package is found'
+          logger.cust_debug(component: component, operation: operation, message: 'Package is found')
         rescue Mongoid::Errors::DocumentNotFound => e
-          json_error 404, 'This PD does not exists'
+          json_error 404, 'This PD does not exists', component, operation, time_req_begin
         end
 
         # Validate new status
@@ -1114,30 +1127,29 @@ class CatalogueV2 < SonataCatalogue
         if valid_status.include? keyed_params[:status]
           # Update to new status
           begin
-            # pks.update_attributes(:status => params[:new_status])
             pks.update_attributes(status: keyed_params[:status])
           rescue Moped::Errors::OperationFailure => e
-            json_error 400, 'ERROR: Operation failed'
+            json_error 400, 'Operation failed', component, operation, time_req_begin
           end
         else
-          json_error 400, "Invalid new status #{keyed_params[:status]}"
+          json_error 400, "Invalid new status #{keyed_params[:status]}", component, operation, time_req_begin
         end
 
-        halt 200, "Status updated to {#{query_string}}"
+        json_return 200, "Status updated to {#{query_string}}", component, operation, time_req_begin
 
         # Check for special case (:sonp_uuid param == <uuid>)
       elsif keyed_params.key?(:sonp_uuid)
         # Do update of Package meta-data to include son-package uuid
-        logger.info "Catalogue: entered PUT /v2/packages/#{query_string}"
+        logger.cust_debug(component: component, operation: operation, message: "PUT /v2/packages/#{query_string}")
 
         # Validate Package
         # Retrieve stored version
         begin
           puts 'Searching ' + params[:id].to_s
           pks = Pkgd.find_by('_id' => params[:id])
-          puts 'Package is found'
+          logger.cust_debug(component: component, operation: operation, message: 'Package is found')
         rescue Mongoid::Errors::DocumentNotFound => e
-          json_error 404, 'This PD does not exists'
+          json_error 404, 'This PD does not exists', component, operation, time_req_begin
         end
 
         # Validate son-package uuid
@@ -1145,19 +1157,20 @@ class CatalogueV2 < SonataCatalogue
           puts 'Searching ' + params[:sonp_uuid].to_s
           sonp = FileContainer.find_by('_id' => params[:sonp_uuid])
           p 'Filename: ', sonp['package_name']
-          puts 'son-package is found'
+          logger.cust_debug(component: component, operation: operation, message: 'son-package is found')
         rescue Mongoid::Errors::DocumentNotFound => e
-          json_error 404, 'Submitted son-package UUID not exists'
+          json_error 404, 'Submitted son-package UUID not exists', component, operation, time_req_begin
         end
 
         # Add new son-package uuid field
         begin
           pks.update_attributes(son_package_uuid: keyed_params[:sonp_uuid])
         rescue Moped::Errors::OperationFailure => e
-          json_error 400, 'ERROR: Operation failed'
+          json_error 400, 'Operation failed', component, operation, time_req_begin
         end
-        logger.debug "Catalogue: leaving PUT /v2/packages/#{query_string} succesfully"
-        halt 200, "PD updated with son-package uuid: #{keyed_params[:sonp_uuid]}"
+
+        logger.cust_debug(component: component, operation: operation, message: "PUT /v2/packages/#{query_string}")
+        json_return 200, "PD updated with son-package uuid: #{keyed_params[:sonp_uuid]}", component, operation, time_req_begin
 
       else
         # Compatibility support for YAML content-type
@@ -1167,42 +1180,42 @@ class CatalogueV2 < SonataCatalogue
             # When updating a PD, the json object sent to API must contain just data inside
             # of the pd, without the json field pd: before
             pks, errors = parse_yaml(request.body.read)
-            halt 400, errors.to_json if errors
+            json_error 400, errors.to_json , component, operation, time_req_begin if errors
 
             # Translate from YAML format to JSON format
             new_ns_json = yaml_to_json(pks)
 
             # Validate JSON format
             new_pks, errors = parse_json(new_ns_json)
-            halt 400, errors.to_json if errors
+            json_error 400, errors.to_json , component, operation, time_req_begin if errors
 
           else
             # Compatibility support for JSON content-type
             # Parses and validates JSON format
             new_pks, errors = parse_json(request.body.read)
-            halt 400, errors.to_json if errors
+            json_error 400, errors.to_json , component, operation, time_req_begin if errors
         end
 
         # Validate Package
         # Check if mandatory fields Vendor, Name, Version are included
-        json_error 400, 'ERROR: Package Vendor not found' unless new_pks.has_key?('vendor')
-        json_error 400, 'ERROR: Package Name not found' unless new_pks.has_key?('name')
-        json_error 400, 'ERROR: Package Version not found' unless new_pks.has_key?('version')
+        json_error 400, 'Package Vendor not found', component, operation, time_req_begin unless new_pks.has_key?('vendor')
+        json_error 400, 'Package Name not found', component, operation, time_req_begin unless new_pks.has_key?('name')
+        json_error 400, 'Package Version not found', component, operation, time_req_begin unless new_pks.has_key?('version')
 
         # Retrieve stored version
         begin
           puts 'Searching ' + params[:id].to_s
           pks = Pkgd.find_by('_id' => params[:id])
-          puts 'Package is found'
+          logger.cust_debug(component: component, operation: operation, message: 'Package is found')
         rescue Mongoid::Errors::DocumentNotFound => e
-          json_error 404, "The PD ID #{params[:id]} does not exist"
+          json_error 404, "The PD ID #{params[:id]} does not exist", component, operation, time_req_begin
         end
 
         # Check if Package already exists in the catalogue by name, vendor and version
         begin
           pks = Pkgd.find_by('pd.name' => new_pks['name'], 'pd.vendor' => new_pks['vendor'],
                                   'pd.version' => new_pks['version'])
-          json_return 200, 'Duplicated Package Name, Vendor and Version'
+          json_return 200, 'Duplicated Package Name, Vendor and Version', component, operation, time_req_begin
         rescue Mongoid::Errors::DocumentNotFound => e
           # Continue
         end
@@ -1219,8 +1232,6 @@ class CatalogueV2 < SonataCatalogue
         new_pd['_id'] = SecureRandom.uuid # Unique UUIDs per PD entries
         new_pd['pd'] = new_pks
         new_pd['status'] = 'active'
-        # new_pd['package_file_id'] = nil
-        # new_pd['package_file_name'] = nil
         new_pd['signature'] = nil
         new_pd['md5'] = checksum new_pks.to_s
         new_pd['username'] = username
@@ -1231,9 +1242,11 @@ class CatalogueV2 < SonataCatalogue
         begin
           new_pks = Pkgd.create!(new_pd)
         rescue Moped::Errors::OperationFailure => e
-          json_return 200, 'Duplicated Package ID' if e.message.include? 'E11000'
+          json_return 200, 'Duplicated Package ID', component, operation, time_req_begin if e.message.include? 'E11000'
         end
-        logger.debug "Catalogue: leaving PUT /v2/packages/#{params[:id]}\" with PD #{new_pks}"
+
+        logger.cust_debug(component: component, operation: operation, message: "PD #{new_pks}")
+        logger.cust_info(status: 200, start_stop:'STOP', component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
         response = ''
         case request.content_type
@@ -1247,8 +1260,8 @@ class CatalogueV2 < SonataCatalogue
         halt 200, {'Content-type' => request.content_type}, response
       end
     end
-    logger.debug "Catalogue: leaving PUT /v2/packages/#{params[:id]} with 'No PD ID specified'"
-    json_error 400, 'No PD ID specified'
+    logger.cust_debug(component: component, operation: operation, message: 'No PD ID specified')
+    json_error 400, 'No PD ID specified', component, operation, time_req_begin
   end
 
   # @method status_package

@@ -34,3 +34,4 @@
 
 require_relative 'catalogue_helpers'
 require_relative 'sonata'
+require_relative 'CustomLogger'

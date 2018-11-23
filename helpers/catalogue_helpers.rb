@@ -278,16 +278,20 @@ class SonataCatalogue < Sinatra::Application
   end
 
   # Method that returns an error code and a message in json format
-  def json_error(code, message)
+  def json_error(code, message, component = '', operation = '', time = Time.now.utc)
     msg = {'error' => message}
-    logger.error msg.to_s
+    logger.cust_error(status:code, start_stop: 'STOP',
+                      component: component, message: message,
+                      operation: operation, time_elapsed: (Time.now.utc - time).to_s)
     halt code, {'Content-type' => 'application/json'}, msg.to_json
   end
 
   # Method that returns a code and a message in json format
-  def json_return(code, message)
+  def json_return(code, message, component = '', operation = '', time = Time.now.utc)
     msg = {'OK' => message}
-    logger.info msg.to_s
+    logger.cust_info(status:code, start_stop: 'STOP',
+                      component: component, message: message,
+                      operation: operation, time_elapsed: (Time.now.utc - time).to_s)
     halt code, {'Content-type' => 'application/json'}, msg.to_json
   end
 

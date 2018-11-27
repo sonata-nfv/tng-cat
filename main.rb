@@ -57,8 +57,8 @@ configure do
   log_file.sync = true
   use Rack::CommonLogger, log_file
 
-  logger = Logger.new(log_file)
-  logger.level = Logger::DEBUG
+  logger = CustomLog.new(log_file)
+  logger.level = CustomLog::DEBUG
   set :logger, logger
 
   # Configuration for Authentication and Authorization layer
@@ -124,10 +124,10 @@ configure do
 end
 
 before do
-  logger.level = Logger::DEBUG
+  logger.level = CustomLog::DEBUG
 
   log_file = File.new("#{settings.root}/log/#{settings.environment}.log", 'a+')
-  STDOUT.reopen(log_file)
+  # STDOUT.reopen(log_file)
   STDOUT.sync = true
 
   # SECURITY CHECKS
@@ -140,7 +140,7 @@ before do
     settings.access_token = access_token unless access_token.nil?
     end
   end
-  STDOUT.sync = false
+  # STDOUT.sync = false
 
   # ALTERNATIVE SECURITY FUNCTIONS CAN BE TEMPORARY DISABLED!
   # Get authorization token
@@ -214,6 +214,6 @@ class SonataCatalogue < Sinatra::Application
   Mongoid.load!('config/mongoid.yml')
 
   before {
-    env['rack.logger'] = Logger.new "#{settings.root}/log/#{settings.environment}.log"
+    env['rack.logger'] = CustomLog.new "#{settings.root}/log/#{settings.environment}.log"
   }
 end

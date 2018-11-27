@@ -269,19 +269,30 @@ RSpec.describe CatalogueV2 do
   #   end
   # end
   #
-  #
 
   # Test for deleting the duplicate file referenced two times
   # Since pkg_ref is equal to 2, two delete methods were needed
   # But the Rspec needs one method
   describe 'DELETE /api/v2/network-services/:uuid' do
     context 'with (UU)ID given' do
-      before do
+      it 'Delete network-service' do
         delete '/network-services/' + $nsd_id.to_s
+        expect(JSON.parse(last_response.body)).to include('OK' => 'NSD referenced => 1')
       end
-      subject { last_response }
-      its(:status) { is_expected.to eq 200 }
-      its(:body) { is_expected.to eq 'OK: NSD removed'}
     end
   end
+
+
+  # Test for deleting the duplicate file referenced two times
+  # Since pkg_ref is equal to 2, two delete methods were needed
+  # But the Rspec needs one method
+  describe 'DELETE /api/v2/network-services/:uuid' do
+    context 'with (UU)ID given' do
+      it 'Delete network-service' do
+        delete '/network-services/' + $nsd_id.to_s
+        expect(JSON.parse(last_response.body)).to include('OK' => 'NSD removed' )
+      end
+    end
+  end
+
 end

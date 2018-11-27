@@ -44,13 +44,20 @@ class CatalogueV2 < SonataCatalogue
   #	Returns a list of files
   #	-> List many files
   get '/files/?' do
+
+    # Logger details
+    operation = "GET /v2/files?#{query_string}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    logger.cust_info(start_stop: 'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
+
     params['page_number'] ||= DEFAULT_PAGE_NUMBER
     params['page_size'] ||= DEFAULT_PAGE_SIZE
 
-    logger.info "Catalogue: entered GET /v2/files?#{query_string}"
 
     # Return if content-type is invalid
-    json_error 415, 'Support of x-yaml and json' unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+    json_error 415, 'Support of x-yaml and json', component, operation, time_req_begin unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
@@ -83,11 +90,13 @@ class CatalogueV2 < SonataCatalogue
     file_list = Files.where(new_params)
     # Set total count for results
     headers 'Record-Count' => file_list.count.to_s
-    logger.info "Catalogue: leaving GET /v2/files?#{query_string} with #{file_list}"
+    logger.cust_debug(component: component, operation: operation, message: "Files=#{file_list}")
+
 
     # Paginate results
     file_list = file_list.paginate(page_number: params[:page_number],
                                    page_size: params[:page_size])
+    logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
     response = ''
     case request.content_type
@@ -105,19 +114,25 @@ class CatalogueV2 < SonataCatalogue
   #	  @param :id [Symbol]file ID
   # file internal database identifier
   get '/files/:id/?' do
-    # Dir.chdir(File.dirname(__FILE__))
-    logger.debug "Catalogue: entered GET /v2/files/#{params[:id]}"
+
+    # Logger details
+    operation = "GET /v2/files/#{params[:id]}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    logger.cust_info(start_stop: 'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
+
 
     # Check headers
     case request.content_type
       when 'application/octet-stream'
         begin
           file = Files.find_by({ '_id' => params[:id] })
-          p 'Filename: ', file['file_name']
-          p 'grid_fs_id: ', file['grid_fs_id']
+          logger.cust_debug(component: component, operation: operation, message: "Filename=#{file['file_name']}")
+          logger.cust_debug(component: component, operation: operation, message: "Files=#{file['grid_fs_id']}")
+
         rescue Mongoid::Errors::DocumentNotFound => e
-          logger.error e
-          halt 404
+          json_error 404, "The file ID #{params[:id]} does not exist", component, operation, time_req_begin unless file
         end
 
         grid_fs = Mongoid::GridFs
@@ -139,23 +154,25 @@ class CatalogueV2 < SonataCatalogue
         # temp = File.new(str_name.join("."), 'wb')
         # temp.write(grid_file.data)
         # temp.close
+        logger.cust_debug(component: component, operation: operation, message: "/files/#{params[:id]}")
+        logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
-        logger.debug "Catalogue: leaving GET /files/#{params[:id]}"
         halt 200, {'Content-type' => request.content_type}, grid_file.data
 
       when 'application/json'
         begin
           file = Files.find_by('_id' => params[:id])
         rescue Mongoid::Errors::DocumentNotFound => e
-          logger.error e
-          json_error 404, "The file ID #{params[:id]} does not exist" unless file
+          json_error 404, "The file ID #{params[:id]} does not exist", component, operation, time_req_begin unless file
         end
 
-        logger.debug "Catalogue: leaving GET /v2/files/#{params[:id]}"
+        logger.cust_debug(component: component, operation: operation, message: "/files/#{params[:id]}")
+        logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
         halt 200, {'Content-type' => 'application/json'}, file.to_json
 
       else
-        halt 415
+        # Return if content-type is invalid
+        json_error 415, 'Support of octet-stream and json', component, operation, time_req_begin
     end
   end
 
@@ -164,15 +181,20 @@ class CatalogueV2 < SonataCatalogue
   # @overload post '/catalogues/files'
   # Post a file in binary-data
   post '/files' do
-    logger.debug "Catalogue: entered POST /v2/files?#{query_string}"
+
+    # Logger details
+    operation = "POST /v2/files?#{query_string}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    logger.cust_info(start_stop: 'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
 
     # Return if content-type is invalid
-    json_error 415, 'Support of octet-stream' unless request.content_type == 'application/octet-stream'
+    json_error 415, 'Support of octet-stream', component, operation, time_req_begin unless request.content_type == 'application/octet-stream'
     att = request.env['HTTP_CONTENT_DISPOSITION']
 
     unless att
-      error = "HTTP Content-Disposition is missing"
-      halt 400, error.to_json
+      json_error 400, "HTTP Content-Disposition is missing", component, operation, time_req_begin
     end
     if request.env['HTTP_SIGNATURE']
       signature = request.env['HTTP_SIGNATURE']
@@ -189,7 +211,7 @@ class CatalogueV2 < SonataCatalogue
 
     # Reads body data
     file, errors = request.body
-    halt 400, errors.to_json if errors
+    json_error 400, errors, component, operation, time_req_begin if errors
 
     if keyed_params.key?(:username)
       username = keyed_params[:username]
@@ -248,15 +270,17 @@ class CatalogueV2 < SonataCatalogue
           file_cur.signature = signature
           file_cur.save
         end
-        logger.debug "Catalogue: leaving POST /v2/files/ with id #{file_id} mapped to existing md5 #{checksum(file.string)}"
+        logger.cust_debug(component: component, operation: operation, message: "id #{file_id} mapped to existing md5 #{checksum(file.string)}")
       elsif file_same.count == 1
         file_same.first.update_attributes(pkg_ref: file_same.first['pkg_ref'] + 1)
         file_id = file_same.first['_id']
-        logger.debug "Catalogue: leaving POST /v2/files/ with id #{file_id} increased pkg_ref at #{file_same.first['pkg_ref']}"
+        logger.cust_debug(component: component, operation: operation, message: "id #{file_id} increased pkg_ref at #{file_same.first['pkg_ref']}")
       else
-        logger.debug "Catalogue: leaving POST /v2/files/ with #{checksum(file.string)} as more than one file has same filename"
-        json_error 500, "More than one file has same filename. Filenames are unique per one class metadata"
+        logger.cust_debug(component: component, operation: operation, message: "#{checksum(file.string)} as more than one file has same filename")
+
+        json_error 500, "More than one file has same filename. Filenames are unique per one class metadata", component, operation, time_req_begin
       end
+      logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
       response = {"uuid" => file_id}
       halt 200, {'Content-type' => 'application/json'}, response.to_json
     end
@@ -294,7 +318,8 @@ class CatalogueV2 < SonataCatalogue
       file.signature = signature
       file.save
     end
-    logger.debug "Catalogue: leaving POST /v2/files/ with #{grid_file.id}"
+    logger.cust_debug(component: component, operation: operation, message: "Grid_file id #{grid_file.id}")
+    logger.cust_info(status: 201, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
     response = {"uuid" => file_id}
     halt 201, {'Content-type' => 'application/json'}, response.to_json
   end
@@ -304,15 +329,22 @@ class CatalogueV2 < SonataCatalogue
   #	  Delete a file by its ID
   #	  @param :id [Symbol] file ID
   delete '/files/:id/?' do
+
+    # Logger details
+    operation = "DELETE /v2/files/#{params[:id]}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    logger.cust_info(start_stop: 'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
+
     unless params[:id].nil?
-      logger.debug "Catalogue: entered DELETE /v2/files/#{params[:id]}"
       begin
         file = Files.find_by('_id' => params[:id])
       rescue Mongoid::Errors::DocumentNotFound => e
-        logger.error e
-        json_error 404, "The File ID #{params[:id]} does not exist" unless file
+        json_error 404, "The File ID #{params[:id]} does not exist", component, operation, time_req_begin unless file
       end
-      logger.debug "Catalogue: leaving DELETE /v2/files/#{params[:id]}\" with file #{file}"
+      logger.cust_debug(component: component, operation: operation, message: "File #{file}")
+
 
       if file['pkg_ref'] == 1
         # Referenced only once. Delete in this case
@@ -322,18 +354,18 @@ class CatalogueV2 < SonataCatalogue
           # Remove files from grid
           grid_fs = Mongoid::GridFs
           grid_fs.delete(file['grid_fs_id'])
-          logger.debug "Catalogue: leaving DELETE /v2/files/#{params[:id]}\" with file #{file}"
+          logger.cust_debug(component: component, operation: operation, message: "File #{file}")
         end
-        logger.debug "Catalogue: leaving DELETE /v2/files/#{params[:id]}\". File referenced also by #{file_md5}"
-        halt 200, 'OK: File removed'
+        logger.cust_debug(component: component, operation: operation, message: "File referenced also by #{file_md5}")
+        json_return 200, 'File removed', component, operation, time_req_begin
       else
         # Referenced above once. Decrease counter
         file.update_attributes(pkg_ref: file['pkg_ref'] - 1)
-        halt 200, "OK: File referenced => #{file['pkg_ref']} "
+        json_return 200, "File referenced => #{file['pkg_ref']}", component, operation, time_req_begin
       end
 
     end
-    logger.debug "Catalogue: leaving DELETE /v2/files/#{params[:id]} with 'No files ID specified'"
-    json_error 400, 'No file ID specified'
+    logger.cust_debug(component: component, operation: operation, message: "No files ID specified")
+    json_error 400, 'No file ID specified', component, operation, time_req_begin
   end
 end

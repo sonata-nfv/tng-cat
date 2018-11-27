@@ -244,10 +244,19 @@ class CatalogueV2 < SonataCatalogue
   #	Returns a list of tgo-packages
   #	-> List many tgo-packages
   get '/tgo-packages/?' do
+
+    # Logger details
+    operation = "GET /v2/tgo-packages?#{query_string}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
+
+    # Return if content-type is invalid
+    json_error 415, 'Support of x-yaml and json', component, operation, time_req_begin unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+
     params['page_number'] ||= DEFAULT_PAGE_NUMBER
     params['page_size'] ||= DEFAULT_PAGE_SIZE
-
-    logger.info "Catalogue: entered GET /v2/tgo-packages?#{query_string}"
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
@@ -280,7 +289,7 @@ class CatalogueV2 < SonataCatalogue
     file_list = FileContainer.where(new_params)
     # Set total count for results
     headers 'Record-Count' => file_list.count.to_s
-    logger.info "Catalogue: leaving GET /v2/tgo-packages?#{query_string} with #{file_list}"
+    logger.cust_debug(component: component, operation: operation, message: "tgo-Packages #{file_list}")
 
     # Paginate results
     file_list = file_list.paginate(page_number: params[:page_number], page_size: params[:page_size])
@@ -291,8 +300,6 @@ class CatalogueV2 < SonataCatalogue
         response = file_list.to_json
       when 'application/x-yaml'
         response = json_to_yaml(file_list.to_json)
-      else
-        halt 415
     end
     halt 200, {'Content-type' => request.content_type}, response
   end
@@ -303,19 +310,27 @@ class CatalogueV2 < SonataCatalogue
   #	  @param :id [Symbol] tgo-package ID
   # tgo-package internal database identifier
   get '/tgo-packages/:id/?' do
-    # Dir.chdir(File.dirname(__FILE__))
-    logger.debug "Catalogue: entered GET /v2/tgo-packages/#{params[:id]}"
+
+    # Logger details
+    operation = "GET /v2/tgo-packages/#{params[:id]}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
+
+    # Return if content-type is invalid
+    json_error 415, 'Support of x-yaml and json', component, operation, time_req_begin unless (request.content_type == 'application/zip' or request.content_type == 'application/json')
+
 
     # Check headers
     case request.content_type
       when 'application/zip'
         begin
           tgop = FileContainer.find_by({ '_id' => params[:id] })
-          p 'Filename: ', tgop['package_name']
-          p 'grid_fs_id: ', tgop['grid_fs_id']
+          logger.cust_debug(component: component, operation: operation, message: "Filename=#{tgop['package_name']}")
+          logger.cust_debug(component: component, operation: operation, message: "grid_fs_id=#{tgop['grid_fs_id']}")
         rescue Mongoid::Errors::DocumentNotFound => e
-          logger.error e
-          halt 404
+          json_error 404, "The file ID #{params[:id]} does not exist", component, operation, time_req_begin unless file
         end
 
         grid_fs = Mongoid::GridFs
@@ -337,8 +352,9 @@ class CatalogueV2 < SonataCatalogue
         # temp = File.new("../" + str_name.join("."), 'wb')
         # temp.write(grid_file.data)
         # temp.close
+        logger.cust_debug(component: component, operation: operation, message: "/tgo-packages/#{params[:id]}")
+        logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
-        logger.debug "Catalogue: leaving GET /tgo-packages/#{params[:id]}"
         halt 200, {'Content-type' => 'application/zip'}, grid_file.data
         # halt 200, "{Name => #{File.basename(temp.path)}}"
 
@@ -346,15 +362,13 @@ class CatalogueV2 < SonataCatalogue
         begin
           tgop = FileContainer.find_by('_id' => params[:id])
         rescue Mongoid::Errors::DocumentNotFound => e
-          logger.error e
-          json_error 404, "The tgo-package ID #{params[:id]} does not exist" unless tgop
+          json_error 404, "The tgo-package ID #{params[:id]} does not exist", component, operation, time_req_begin unless tgop
         end
 
-        logger.debug "Catalogue: leaving GET /v2/tgo-packages/#{params[:id]}"
+        logger.cust_debug(component: component, operation: operation, message: "/tgo-packages/#{params[:id]}")
+        logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
         halt 200, {'Content-type' => 'application/json'}, tgop.to_json
 
-      else
-        halt 415
     end
   end
 
@@ -362,9 +376,16 @@ class CatalogueV2 < SonataCatalogue
   # @overload post '/catalogues/tgo-package'
   # Post a tgo Package in binary-data
   post '/tgo-packages' do
-    logger.debug "Catalogue: entered POST /v2/tgo-packages?#{query_string}"
+
+    # Logger details
+    operation = "POST /v2/tgo-packages/"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
+
     # Return if content-type is invalid
-    halt 415 unless request.content_type == 'application/zip'
+    json_error 415, 'Support of x-yaml and json', component, operation, time_req_begin unless request.content_type == 'application/zip'
 
     att = request.env['HTTP_CONTENT_DISPOSITION']
     # tgop_vendor = request.env['HTTP_VENDOR']
@@ -373,8 +394,7 @@ class CatalogueV2 < SonataCatalogue
     # tgop_username = request.env['HTTP_USERNAME']
 
     unless att
-      error = "HTTP Content-Disposition is missing"
-      halt 400, error.to_json
+      json_error 400, "HTTP Content-Disposition is missing", component, operation, time_req_begin
     end
     if request.env['HTTP_SIGNATURE']
       signature = request.env['HTTP_SIGNATURE']
@@ -391,7 +411,7 @@ class CatalogueV2 < SonataCatalogue
 
     # Reads body data
     file, errors = request.body
-    halt 400, errors.to_json if errors
+    json_error 400, errors, component, operation, time_req_begin if errors
 
     if keyed_params.key?(:username)
       username = keyed_params[:username]
@@ -438,15 +458,16 @@ class CatalogueV2 < SonataCatalogue
           file_container.signature = signature
           file_container.save
         end
-        logger.debug "Catalogue: leaving POST /v2/tgo-packages/ with id #{tgop_id} mapped to existing md5 #{checksum(file.string)}"
+        logger.cust_debug(component: component, operation: operation, message: "id #{tgop_id} mapped to existing md5 #{checksum(file.string)}")
       elsif file_same.count == 1
         file_same.first.update_attributes(pkg_ref: file_same.first['pkg_ref'] + 1)
         tgop_id = file_same.first['_id']
-        logger.debug "Catalogue: leaving POST /v2/tgo-packages/ with id #{tgop_id} increased pkg_ref at #{file_same.first['pkg_ref']}"
+        logger.cust_debug(component: component, operation: operation, message: "id #{tgop_id} increased pkg_ref at #{file_same.first['pkg_ref']}")
       else
-        logger.debug "Catalogue: leaving POST /v2/tgo-packages/ with md5 #{checksum(file.string)} as more than one file has same filename"
-        json_error 500, "More than one tgo-package has same filename. Packages are unique per one class metadata"
+        logger.cust_debug(component: component, operation: operation, message: "md5 #{checksum(file.string)} as more than one file has same filename")
+        json_error 500, "More than one tgo-package has same filename. Packages are unique per one class metadata", component, operation, time_req_begin
       end
+      logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
       response = {"uuid" => tgop_id}
       halt 200, {'Content-type' => 'application/json'}, response.to_json
     end
@@ -480,7 +501,7 @@ class CatalogueV2 < SonataCatalogue
       file_container.signature = signature
       file_container.save
     end
-    logger.debug "Catalogue: leaving POST /v2/tgo-packages/ with #{grid_file.id}"
+    logger.cust_debug(component: component, operation: operation, message: "grid_file_id=#{grid_file.id}")
     response = {"uuid" => tgop_id}
 
     # # Requirements:
@@ -491,6 +512,8 @@ class CatalogueV2 < SonataCatalogue
     #   logger.error e.message
     #   halt 400, {'Content-type' => 'text/plain'}, e.message
     # end
+    logger.cust_info(status: 201, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
+
     halt 201, {'Content-type' => 'application/json'}, response.to_json
   end
 
@@ -500,11 +523,18 @@ class CatalogueV2 < SonataCatalogue
   #	Update a son-package in JSON or YAML format
   ## Catalogue - UPDATE
   put '/tgo-packages/:id/?' do
+
+    # Logger details
+    operation = "PUT /v2/tgo-packages/#{params[:id]}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
+
     # Return if content-type is invalid
-    halt 415 unless request.content_type == 'application/x-yaml' or request.content_type == 'application/json'
+    json_error 415, 'Support of x-yaml and json', component, operation, time_req_begin unless request.content_type == 'application/x-yaml' or request.content_type == 'application/json'
 
     unless params[:id].nil?
-      logger.debug "Catalogue: PUT /tgo-packages/#{params[:id]}"
 
       #Delete key "captures" if present
       params.delete(:captures) if params.key?(:captures)
@@ -514,16 +544,15 @@ class CatalogueV2 < SonataCatalogue
       if [:vendor, :name, :version].all? {|s| keyed_params.key? s }
         # if keyed_params.key?(:vendor, :name, :version)
         # Do update of Son-Package meta-data
-        logger.info "Catalogue: entered PUT /tgo-packages/#{query_string}"
+        logger.cust_debug(component: component, operation: operation, message: "/tgo-packages/#{query_string}")
+
 
         # Validate tgo-package uuid
         begin
-          puts 'Searching ' + params[:tgop_uuid].to_s
           tgop = FileContainer.find_by({ '_id' => params[:id] })
-          p 'Filename: ', tgop['package_name']
-          puts 'tgo-package is found'
+          logger.cust_debug(component: component, operation: operation, message: "tgo-package is found")
         rescue Mongoid::Errors::DocumentNotFound => e
-          json_error 404, 'Submitted tgo-package UUID not exists'
+          json_error 404, 'Submitted tgo-package UUID not exists', component, operation, time_req_begin
         end
 
         # begin
@@ -542,9 +571,9 @@ class CatalogueV2 < SonataCatalogue
           # tgo_dep_mapping.update('pd' => {vendor: keyed_params[:vendor], name: keyed_params[:name],
           #                                 version: keyed_params[:version]})
         rescue Moped::Errors::OperationFailure => e
-          json_error 400, 'ERROR: Operation failed'
+          json_error 400, 'Operation failed', component, operation, time_req_begin
         end
-
+        logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
         halt 200, "File tgo-package updated attributes: #{keyed_params[:vendor]}, #{keyed_params[:name]}, #{keyed_params[:version]}"
       end
     end
@@ -555,34 +584,40 @@ class CatalogueV2 < SonataCatalogue
   #	  Delete a tgo-package by its ID
   #	  @param :id [Symbol] tgo-package ID
   delete '/tgo-packages/:id/?' do
+
+    # Logger details
+    operation = "DELETE /v2/tgo-packages/#{params[:id]}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
+
     unless params[:id].nil?
-      logger.debug "Catalogue: entered DELETE /v2/tgo-packages/#{params[:id]}"
       begin
         tgop = FileContainer.find_by('_id' => params[:id])
       rescue Mongoid::Errors::DocumentNotFound => e
-        logger.error e
-        json_error 404, "The tgo-package ID #{params[:id]} does not exist" unless tgop
+        json_error 404, "The tgo-package ID #{params[:id]} does not exist", component, operation, time_req_begin unless tgop
       end
 
       if tgop['pkg_ref'] == 1
         # Referenced only once. Delete in this case
         tgop.destroy
-        tgop_md5 = FileContainer.where('md5' => tgop['md5'])
+        tgop_md5 = Files.where('md5' => tgop['md5'])
         if tgop_md5.size.to_i.zero?
           # Remove files from grid
           grid_fs = Mongoid::GridFs
           grid_fs.delete(tgop['grid_fs_id'])
-          logger.debug "Catalogue: leaving DELETE /v2/tgo-packages/#{params[:id]}\" with tgo-package #{tgop}"
+          logger.cust_debug(component: component, operation: operation, message: "tgo-package #{tgop}")
         end
-        logger.debug "Catalogue: leaving DELETE /v2/files/#{params[:id]}\". Package referenced also by #{tgop_md5}"
-        halt 200, 'OK: tgo-package removed'
+        logger.cust_debug(component: component, operation: operation, message: "Package referenced also by #{tgop_md5}")
+        json_return 200, 'tgo-package removed', component, operation, time_req_begin
       else
         # Referenced above once. Decrease counter
         tgop.update_attributes(pkg_ref: tgop['pkg_ref'] - 1)
-        halt 200, "OK: File referenced => #{tgop['pkg_ref']} "
+        json_return 200, "File referenced => #{tgop['pkg_ref']}", component, operation, time_req_begin
       end
     end
-    logger.debug "Catalogue: leaving DELETE /v2/tgo-packages/#{params[:id]} with 'No tgo-package ID specified'"
-    json_error 400, 'No tgo-package ID specified'
+    logger.cust_debug(component: component, operation: operation, message: "No tgo-package ID specified")
+    json_error 400, 'No tgo-package ID specified', component, operation, time_req_begin
   end
 end

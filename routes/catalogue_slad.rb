@@ -40,9 +40,19 @@ class CatalogueV2 < SonataCatalogue
   #	Returns a list of SLA template descriptors
   # -> List many descriptors
   get '/slas/template-descriptors/?' do
+
+    # Logger details
+    operation = "GET /v2/slas/template-descriptors?#{query_string}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
+
+    # Return if content-type is invalid
+    json_error 415, 'Support of x-yaml and json' unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+
     params['page_number'] ||= DEFAULT_PAGE_NUMBER
     params['page_size'] ||= DEFAULT_PAGE_SIZE
-    logger.info "Catalogue: entered GET /v2/slas/template-descriptors?#{query_string}"
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
@@ -69,10 +79,9 @@ class CatalogueV2 < SonataCatalogue
       keyed_params.delete(:'slad.version')
 
       slas = Slad.where((keyed_params)).sort({ 'slad.version' => -1 })
-      logger.info "Catalogue: SLADs=#{slas}"
 
       if slas && slas.size.to_i > 0
-        logger.info "Catalogue: leaving GET /v2/slas/template-descriptors?#{query_string} with #{slas}"
+        logger.cust_debug(component: component, operation: operation, message: "SLADs=#{slas}")
 
         slas_list = []
         checked_list = []
@@ -89,7 +98,7 @@ class CatalogueV2 < SonataCatalogue
           checked_list.push(slas_name_vendor)
         end
       else
-        logger.info "Catalogue: leaving GET /v2/slas/template-descriptors?#{query_string} with 'No SLADs were found'"
+        logger.cust_debug(component: component, operation: operation, message: "No SLADs were found")
         slas_list = []
 
       end
@@ -101,13 +110,13 @@ class CatalogueV2 < SonataCatalogue
       slas = Slad.where(keyed_params)
       # Set total count for results
       headers 'Record-Count' => slas.count.to_s
-      logger.info "Catalogue: SLADs=#{slas}"
+
       if slas && slas.size.to_i > 0
-        logger.info "Catalogue: leaving GET /v2/slas/template-descriptors?#{query_string} with #{slas}"
+        logger.cust_debug(component: component, operation: operation, message: "SLADs=#{slas}")
         # Paginate results
         slas = slas.paginate(page_number: params[:page_number], page_size: params[:page_size])
       else
-        logger.info "Catalogue: leaving GET /v2/slas/template-descriptors?#{query_string} with 'No SLADs were found'"
+        logger.cust_debug(component: component, operation: operation, message: "No SLADs were found")
       end
     end
 
@@ -120,6 +129,7 @@ class CatalogueV2 < SonataCatalogue
       else
         halt 415
     end
+    logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
     halt 200, {'Content-type' => request.content_type}, response
   end
 
@@ -129,16 +139,26 @@ class CatalogueV2 < SonataCatalogue
   #	  @param :id [Symbol] id SLA ID
   # Show a SLAd by internal ID (uuid)
   get '/slas/template-descriptors/:id/?' do
+
+    # Logger details
+    operation = "GET /v2/slas/template-descriptors/#{params[:id]}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
+
+    # Return if content-type is invalid
+    json_error 415, 'Support of x-yaml and json' unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+
     unless params[:id].nil?
-      logger.debug "Catalogue: GET /v2/slas/template-descriptors/#{params[:id]}"
 
       begin
         sla = Slad.find(params[:id])
       rescue Mongoid::Errors::DocumentNotFound => e
-        logger.error e
-        json_error 404, "The SLAD ID #{params[:id]} does not exist" unless sla
+        logger.cust_debug(component: component, operation: operation, message: e)
+        json_error 404, "The SLAD ID #{params[:id]} does not exist", component, operation, time_req_begin unless sla
       end
-      logger.debug "Catalogue: leaving GET /v2/slas/template-descriptors/#{params[:id]}\" with SLAD #{sla}"
+      logger.cust_debug(component: component, operation: operation, message: "SLAD #{sla}")
 
       response = ''
       case request.content_type
@@ -146,22 +166,30 @@ class CatalogueV2 < SonataCatalogue
           response = sla.to_json
         when 'application/x-yaml'
           response = json_to_yaml(sla.to_json)
-        else
-          halt 415
       end
+      logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
+
       halt 200, {'Content-type' => request.content_type}, response
 
     end
-    logger.debug "Catalogue: leaving GET /v2/slas/template-descriptors/#{params[:id]} with 'No SLAD ID specified'"
-    json_error 400, 'No SLAD ID specified'
+    logger.cust_debug(component: component, operation: operation, message: "No SLAD ID specified")
+    json_error 400, 'No SLAD ID specified', component, operation, time_req_begin
   end
 
   # @method post_slas
   # @overload post '/catalogues/sla/template-descriptors/'
   # Post an SLAd in JSON or YAML format
   post '/slas/template-descriptors' do
+
+    # Logger details
+    operation = "POST /v2/slas/template-descriptors/"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
+
     # Return if content-type is invalid
-    halt 415 unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+    json_error 415, 'Support of x-yaml and json' unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
 
     # Compatibility support for YAML content-type
     case request.content_type
@@ -170,20 +198,20 @@ class CatalogueV2 < SonataCatalogue
         # When updating a SLAD, the json object sent to API must contain just data inside
         # of the slad, without the json field slad: before
         sla, errors = parse_yaml(request.body.read)
-        halt 400, errors.to_json if errors
+        json_error 400, errors, component, operation, time_req_begin if errors
 
         # Translate from YAML format to JSON format
         new_sla_json = yaml_to_json(sla)
 
         # Validate JSON format
         new_sla, errors = parse_json(new_sla_json)
-        halt 400, errors.to_json if errors
+        json_error 400, errors, component, operation, time_req_begin if errors
 
       else
         # Compatibility support for JSON content-type
         # Parses and validates JSON format
         new_sla, errors = parse_json(request.body.read)
-        halt 400, errors.to_json if errors
+        json_error 400, errors, component, operation, time_req_begin if errors
     end
 
     #Delete key "captures" if present
@@ -193,22 +221,22 @@ class CatalogueV2 < SonataCatalogue
     keyed_params = keyed_hash(params)
 
     # Validate SLA
-    json_error 400, 'ERROR: SLA Vendor not found' unless new_sla.has_key?('vendor')
-    json_error 400, 'ERROR: SLA Name not found' unless new_sla.has_key?('name')
-    json_error 400, 'ERROR: SLA Version not found' unless new_sla.has_key?('version')
+    json_error 400, 'SLA Vendor not found', component, operation, time_req_begin unless new_sla.has_key?('vendor')
+    json_error 400, 'SLA Name not found', component, operation, time_req_begin unless new_sla.has_key?('name')
+    json_error 400, 'SLA Version not found', component, operation, time_req_begin unless new_sla.has_key?('version')
 
     # Check if SLAD already exists in the catalogue by name, vendor and version
     begin
       sla = Slad.find_by({ 'slad.name' => new_sla['name'], 'slad.vendor' => new_sla['vendor'],
                            'slad.version' => new_sla['version'] })
-      halt 409, "Duplicate with SLA Template ID => #{sla['_id']}"
+      json_error 409, "Duplicate with SLA Template ID => #{sla['_id']}", component, operation, time_req_begin
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
     end
     # Check if SLAD has an ID (it should not) and if it already exists in the catalogue
     begin
       sla = Slad.find_by({ '_id' => new_sla['_id'] })
-      halt 409, 'Duplicated SLA ID'
+      json_error 409, 'Duplicated SLA ID', component, operation, time_req_begin
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
     end
@@ -237,18 +265,18 @@ class CatalogueV2 < SonataCatalogue
     begin
       sla = Slad.create!(new_slad)
     rescue Moped::Errors::OperationFailure => e
-      json_return 200, 'Duplicated SLA ID' if e.message.include? 'E11000'
+      json_return 200, 'Duplicated SLA ID', component, operation, time_req_begin  if e.message.include? 'E11000'
     end
 
-    puts 'New SLA has been added'
+    logger.cust_debug(component: component, operation: operation, message: "New SLA has been added")
+    logger.cust_info(status: 201, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
+
     response = ''
     case request.content_type
       when 'application/json'
         response = sla.to_json
       when 'application/x-yaml'
         response = json_to_yaml(sla.to_json)
-      else
-        halt 415
     end
     halt 201, {'Content-type' => request.content_type}, response
   end
@@ -258,7 +286,16 @@ class CatalogueV2 < SonataCatalogue
   # Update a SLA by vendor, name and version in JSON or YAML format
   ## Catalogue - UPDATE
   put '/slas/template-descriptors/?' do
-    logger.info "Catalogue: entered PUT /v2/slas/template-descriptors/#{query_string}"
+
+    # Logger details
+    operation = "PUT /v2/slas/template-descriptors/#{query_string}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
+
+    # Return if content-type is invalid
+    json_error 415, 'Support of x-yaml and json' unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
@@ -266,11 +303,8 @@ class CatalogueV2 < SonataCatalogue
     # Transform 'string' params Hash into keys
     keyed_params = keyed_hash(params)
 
-    # Return if content-type is invalid
-    halt 415 unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
-
     # Return if params are empty
-    json_error 400, 'Update parameters are null' if keyed_params.empty?
+    json_error 400, 'Update parameters are null', component, operation, time_req_begin if keyed_params.empty?
 
     # Compatibility support for YAML content-type
     case request.content_type
@@ -279,27 +313,27 @@ class CatalogueV2 < SonataCatalogue
         # When updating a SLAD, the json object sent to API must contain just data inside
         # of the slad, without the json field slad: before
         sla, errors = parse_yaml(request.body.read)
-        halt 400, errors.to_json if errors
+        json_error 400, errors, component, operation, time_req_begin if errors
 
         # Translate from YAML format to JSON format
         new_sla_json = yaml_to_json(sla)
 
         # Validate JSON format
         new_sla, errors = parse_json(new_sla_json)
-        halt 400, errors.to_json if errors
+        json_error 400, errors, component, operation, time_req_begin if errors
 
       else
         # Compatibility support for JSON content-type
         # Parses and validates JSON format
         new_sla, errors = parse_json(request.body.read)
-        halt 400, errors.to_json if errors
+        json_error 400, errors, component, operation, time_req_begin if errors
     end
 
     # Validate SLA
     # Check if mandatory fields Vendor, Name, Version are included
-    json_error 400, 'ERROR: SLA Vendor not found' unless new_sla.has_key?('vendor')
-    json_error 400, 'ERROR: SLA Name not found' unless new_sla.has_key?('name')
-    json_error 400, 'ERROR: SLA Version not found' unless new_sla.has_key?('version')
+    json_error 400, 'SLA Vendor not found', component, operation, time_req_begin unless new_sla.has_key?('vendor')
+    json_error 400, 'SLA Name not found', component, operation, time_req_begin unless new_sla.has_key?('name')
+    json_error 400, 'SLA Version not found', component, operation, time_req_begin unless new_sla.has_key?('version')
 
     # Set headers
     case request.content_type
@@ -312,21 +346,21 @@ class CatalogueV2 < SonataCatalogue
 
     # Retrieve stored version
     if keyed_params[:vendor].nil? && keyed_params[:name].nil? && keyed_params[:version].nil?
-      json_error 400, 'Update Vendor, Name and Version parameters are null'
+      json_error 400, 'Update Vendor, Name and Version parameters are null', component, operation, time_req_begin
     else
       begin
         sla = Slad.find_by({ 'slad.vendor' => keyed_params[:vendor], 'slad.name' => keyed_params[:name],
                             'slad.version' => keyed_params[:version] })
-        puts 'SLA is found'
+        logger.cust_debug(component: component, operation: operation, message: "SLA is found")
       rescue Mongoid::Errors::DocumentNotFound => e
-        json_error 404, "The SLAD Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist"
+        json_error 404, "The SLAD Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist", component, operation, time_req_begin
       end
     end
     # Check if SLA already exists in the catalogue by Name, Vendor and Version
     begin
       sla = Slad.find_by({ 'slad.name' => new_sla['name'], 'slad.vendor' => new_sla['vendor'],
                            'slad.version' => new_sla['version'] })
-      json_return 200, 'Duplicated SLA Name, Vendor and Version'
+      json_return 200, 'Duplicated SLA Name, Vendor and Version', component, operation, time_req_begin
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
     end
@@ -354,9 +388,10 @@ class CatalogueV2 < SonataCatalogue
     begin
       new_sla = Slad.create!(new_slad)
     rescue Moped::Errors::OperationFailure => e
-      json_return 200, 'Duplicated SLA ID' if e.message.include? 'E11000'
+      json_return 200, 'Duplicated SLA ID', component, operation, time_req_begin if e.message.include? 'E11000'
     end
-    logger.debug "Catalogue: leaving PUT /v2/sla/template-descriptors?#{query_string}\" with SLAD #{new_sla}"
+    logger.cust_debug(component: component, operation: operation, message: "SLAD #{new_sla}")
+    logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
     response = ''
     case request.content_type
@@ -364,8 +399,6 @@ class CatalogueV2 < SonataCatalogue
         response = new_sla.to_json
       when 'application/x-yaml'
         response = json_to_yaml(new_sla.to_json)
-      else
-        halt 415
     end
     halt 200, {'Content-type' => request.content_type}, response
   end
@@ -375,11 +408,19 @@ class CatalogueV2 < SonataCatalogue
   #	Update a SLA by its ID in JSON or YAML format
   ## Catalogue - UPDATE
   put '/slas/template-descriptors/:id/?' do
+
+    # Logger details
+    operation = "PUT /v2/slas/template-descriptors/#{params[:id]}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
+
+
     # Return if content-type is invalid
-    halt 415 unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+    json_error 415, 'Support of x-yaml and json' unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
 
     unless params[:id].nil?
-      logger.debug "Catalogue: PUT /v2/slas/template-descriptors/#{params[:id]}"
 
       #Delete key "captures" if present
       params.delete(:captures) if params.key?(:captures)
@@ -389,7 +430,6 @@ class CatalogueV2 < SonataCatalogue
 
       if keyed_params.key?(:status) || keyed_params.key?(:published)
         # Do update of Descriptor status -> update_sla_status
-        logger.info "Catalogue: entered PUT /v2/slas/template-descriptors/#{query_string}"
         valid_published = %w[true false]
         valid_status = %w[active inactive]
         out_query1 = ''
@@ -398,11 +438,10 @@ class CatalogueV2 < SonataCatalogue
         # Validate SLA
         # Retrieve stored version
         begin
-          puts 'Searching ' + params[:id].to_s
           sla = Slad.find_by('_id' => params[:id])
-          puts 'SLA is found'
+          logger.cust_debug(component: component, operation: operation, message: "SLA is found")
         rescue Mongoid::Errors::DocumentNotFound => e
-          json_error 404, 'This SLAD does not exists'
+          json_error 404, 'This SLAD does not exists', component, operation, time_req_begin
         end
         # Validate state
         if keyed_params.key?(:published)
@@ -411,10 +450,10 @@ class CatalogueV2 < SonataCatalogue
               sla.update_attributes(published: keyed_params[:published] == 'true')
               out_query1 = 'published => ' + keyed_params[:published].to_s
             rescue Moped::Errors::OperationFailure => e
-              json_error 400, 'ERROR: Operation failed'
+              json_error 400, 'Operation failed', component, operation, time_req_begin
             end
           else
-            json_error 400, "Invalid new published state #{keyed_params[:published]}"
+            json_error 400, "Invalid new published state #{keyed_params[:published]}", component, operation, time_req_begin
           end
         end
 
@@ -426,22 +465,22 @@ class CatalogueV2 < SonataCatalogue
               sla.update_attributes(status: keyed_params[:status])
               out_query2 = 'status => ' + keyed_params[:status].to_s
             rescue Moped::Errors::OperationFailure => e
-              json_error 400, 'ERROR: Operation failed'
+              json_error 400, 'Operation failed', component, operation, time_req_begin
             end
 
           else
-            json_error 400, "Invalid new status #{keyed_params[:status]}"
+            json_error 400, "Invalid new status #{keyed_params[:status]}", component, operation, time_req_begin
           end
         end
 
         if out_query2.empty? ^ out_query1.empty?
           if out_query1.empty?
-            halt 200, "Updated to {#{out_query2}}"
+            json_return 200, "Updated to {#{out_query2}}", component, operation, time_req_begin
           else
-            halt 200, "Updated to {#{out_query1}}"
+            json_return 200, "Updated to {#{out_query1}}", component, operation, time_req_begin
           end
         else
-          halt 200, "Updated to {#{out_query1}} and {#{out_query2}}"
+          json_return 200, "Updated to {#{out_query1}} and {#{out_query2}}", component, operation, time_req_begin
         end
       else
         # Compatibility support for YAML content-type
@@ -451,42 +490,41 @@ class CatalogueV2 < SonataCatalogue
             # When updating a SLAD, the json object sent to API must contain just data inside
             # of the slad, without the json field slad: before
             sla, errors = parse_yaml(request.body.read)
-            halt 400, errors.to_json if errors
+            json_error 400, errors, component, operation, time_req_begin if errors
 
             # Translate from YAML format to JSON format
             new_sla_json = yaml_to_json(sla)
 
             # Validate JSON format
             new_sla, errors = parse_json(new_sla_json)
-            halt 400, errors.to_json if errors
+            json_error 400, errors, component, operation, time_req_begin if errors
 
           else
             # Compatibility support for JSON content-type
             # Parses and validates JSON format
             new_sla, errors = parse_json(request.body.read)
-            halt 400, errors.to_json if errors
+            json_error 400, errors, component, operation, time_req_begin if errors
         end
 
         # Validate SLA
         # Check if mandatory fields Vendor, Name, Version are included
-        json_error 400, 'ERROR: SLA Vendor not found' unless new_sla.has_key?('vendor')
-        json_error 400, 'ERROR: SLA Name not found' unless new_sla.has_key?('name')
-        json_error 400, 'ERROR: SLA Version not found' unless new_sla.has_key?('version')
+        json_error 400, 'SLA Vendor not found', component, operation, time_req_begin unless new_sla.has_key?('vendor')
+        json_error 400, 'SLA Name not found', component, operation, time_req_begin unless new_sla.has_key?('name')
+        json_error 400, 'SLA Version not found', component, operation, time_req_begin unless new_sla.has_key?('version')
 
         # Retrieve stored version
         begin
-          puts 'Searching ' + params[:id].to_s
           sla = Slad.find_by({ '_id' => params[:id] })
-          puts 'SLA is found'
+          logger.cust_debug(component: component, operation: operation, message: "SLA is found")
         rescue Mongoid::Errors::DocumentNotFound => e
-          json_error 404, "The SLAD ID #{params[:id]} does not exist"
+          json_error 404, "The SLAD ID #{params[:id]} does not exist", component, operation, time_req_begin
         end
 
         # Check if SLA already exists in the catalogue by name, vendor and version
         begin
           sla = Slad.find_by({ 'slad.name' => new_sla['name'], 'slad.vendor' => new_sla['vendor'],
                                'slad.version' => new_sla['version'] })
-          json_return 200, 'Duplicated SLA Name, Vendor and Version'
+          json_return 200, 'Duplicated SLA Name, Vendor and Version', component, operation, time_req_begin
         rescue Mongoid::Errors::DocumentNotFound => e
           # Continue
         end
@@ -518,9 +556,11 @@ class CatalogueV2 < SonataCatalogue
         begin
           new_sla = Slad.create!(new_slad)
         rescue Moped::Errors::OperationFailure => e
-          json_return 200, 'Duplicated SLA ID' if e.message.include? 'E11000'
+          json_return 200, 'Duplicated SLA ID', component, operation, time_req_begin if e.message.include? 'E11000'
         end
-        logger.debug "Catalogue: leaving PUT /v2/slas/template-descriptors/#{params[:id]}\" with SLAD #{new_sla}"
+
+        logger.cust_debug(component: component, operation: operation, message: "SLAD #{new_sla}")
+        logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
         response = ''
         case request.content_type
@@ -528,21 +568,27 @@ class CatalogueV2 < SonataCatalogue
             response = new_sla.to_json
           when 'application/x-yaml'
             response = json_to_yaml(new_sla.to_json)
-          else
-            halt 415
         end
         halt 200, {'Content-type' => request.content_type}, response
       end
     end
-    logger.debug "Catalogue: leaving PUT /v2/slas/template-descriptors/#{params[:id]} with 'No SLA ID specified'"
-    json_error 400, 'No SLA ID specified'
+    logger.cust_debug(component: component, operation: operation, message: "No SLA ID specified")
+    json_error 400, 'No SLA ID specified', component, operation, time_req_begin
   end
 
   # @method delete_slad_sp_sla
   # @overload delete '/sla/template-descriptor/?'
   #	Delete a SLA by vendor, name and version
   delete '/slas/template-descriptors/?' do
-    logger.info "Catalogue: entered DELETE /v2/slas/template-descriptors?#{query_string}"
+
+
+    # Logger details
+    operation = "DELETE /v2/slas/template-descriptors?#{query_string}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
+
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
@@ -554,19 +600,19 @@ class CatalogueV2 < SonataCatalogue
       begin
         sla = Slad.find_by({ 'slad.vendor' => keyed_params[:vendor], 'slad.name' => keyed_params[:name],
                             'slad.version' => keyed_params[:version] })
-        puts 'SLA is found'
+        logger.cust_debug(component: component, operation: operation, message: "SLA is found")
       rescue Mongoid::Errors::DocumentNotFound => e
-        json_error 404, "The SLAD Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist"
+        json_error 404, "The SLAD Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist", component, operation, time_req_begin
       end
       # Check if SLAD is unpublished and inactive. Then, it cannot be deleted
-      logger.debug "Catalogue: leaving DELETE /v2/sla/template-descriptors?#{query_string}\" with SLAD #{sla}"
+      logger.cust_debug(component: component, operation: operation, message: "SLAD #{sla}")
       # Delete entry in dict mapping
       del_ent_dict(sla, :slad)
       sla.destroy
-      halt 200, 'OK: SLAD removed'
+      json_return 200, 'SLAD removed', component, operation, time_req_begin
     end
-    logger.debug "Catalogue: leaving DELETE /v2/slas/template-descriptors?#{query_string} with 'No SLAD Vendor, Name, Version specified'"
-    json_error 400, 'No SLAD Vendor, Name, Version specified'
+    logger.cust_debug(component: component, operation: operation, message: "No SLAD Vendor, Name, Version specified")
+    json_error 400, 'No SLAD Vendor, Name, Version specified', component, operation, time_req_begin
   end
 
   # @method delete_slad_sp_sla_id
@@ -575,21 +621,30 @@ class CatalogueV2 < SonataCatalogue
   #	  @param :id [Symbol] id SLA ID
   # Delete a SLA by uuid
   delete '/slas/template-descriptors/:id/?' do
+
+    # Logger details
+    operation = "DELETE /v2/slas/template-descriptors?#{params[:id]}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
+
+
     unless params[:id].nil?
       logger.debug "Catalogue: DELETE /v2/slas/template-descriptors/#{params[:id]}"
       begin
         sla = Slad.find(params[:id])
       rescue Mongoid::Errors::DocumentNotFound => e
-        logger.error e
-        json_error 404, "The SLAD ID #{params[:id]} does not exist" unless sla
+        json_error 404, "The SLAD ID #{params[:id]} does not exist", component, operation, time_req_begin unless sla
       end
-      logger.debug "Catalogue: leaving DELETE /v2/slas/template-descriptors?#{query_string}\" with SLAD #{sla}"
+      logger.cust_debug(component: component, operation: operation, message: "SLAD #{sla}")
+
       # Delete entry in dict mapping
       del_ent_dict(sla, :slad)
       sla.destroy
-      halt 200, 'OK: SLAD removed'
+      json_return 200, 'SLAD removed', component, operation, time_req_begin
     end
-    logger.debug "Catalogue: leaving DELETE /v2/slas/template-descriptors/#{params[:id]} with 'No SLAD ID specified'"
-    json_error 400, 'No SLAD ID specified'
+    logger.cust_debug(component: component, operation: operation, message: "No SLAD ID specified")
+    json_error 400, 'No SLAD ID specified', component, operation, time_req_begin
   end
 end

@@ -40,9 +40,19 @@ class CatalogueV2 < SonataCatalogue
   #	Returns a list of NSTs
   # -> List many descriptors
   get '/nsts/?' do
+
+    # Logger details
+    operation = "GET /v2/nsts?#{query_string}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
+
+    # Return if content-type is invalid
+    json_error 415, 'Support of x-yaml and json', component, operation, time_req_begin unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+
     params['page_number'] ||= DEFAULT_PAGE_NUMBER
     params['page_size'] ||= DEFAULT_PAGE_SIZE
-    logger.info "Catalogue: entered GET /v2/nsts?#{query_string}"
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
@@ -69,10 +79,9 @@ class CatalogueV2 < SonataCatalogue
       keyed_params.delete(:'nstd.version')
 
       nsts = Nstd.where((keyed_params)).sort( 'nstd.version' => -1 ) #.limit(1).first()
-      logger.info "Catalogue: NSTs=#{nsts}"
 
       if nsts && nsts.size.to_i > 0
-        logger.info "Catalogue: leaving GET /v2/nsts?#{query_string} with #{nsts}"
+        logger.cust_debug(component: component, operation: operation, message: "NSTs=#{nsts}")
 
         nsts_list = []
         checked_list = []
@@ -86,11 +95,11 @@ class CatalogueV2 < SonataCatalogue
             nsts_name_vendor = Pair.new(nstd.nstd['name'], nstd.nstd['vendor'])
           end
           nsts_list.push(nstd) unless checked_list.any? { |pair| pair.one == nsts_name_vendor.one &&
-              pair.two == nsts_name_vendor.two }
+              pair.two == nsts_name_vendor.two}
           checked_list.push(nsts_name_vendor)
         end
       else
-        logger.info "Catalogue: leaving GET /v2/nsts?#{query_string} with 'No NSTs were found'"
+        logger.cust_debug(component: component, operation: operation, message: "No NSTs were found")
         nsts_list = []
 
       end
@@ -102,15 +111,15 @@ class CatalogueV2 < SonataCatalogue
       nsts = Nstd.where(keyed_params)
       # Set total count for results
       headers 'Record-Count' => nsts.count.to_s
-      logger.info "Catalogue: NSTs=#{nsts}"
       if nsts && nsts.size.to_i > 0
-        logger.info "Catalogue: leaving GET /v2/nsts?#{query_string} with #{nsts}"
+        logger.cust_debug(component: component, operation: operation, message: "NSTs=#{nsts}")
         # Paginate results
         nsts = nsts.paginate(page_number: params[:page_number], page_size: params[:page_size])
       else
-        logger.info "Catalogue: leaving GET /v2/nsts?#{query_string} with 'No NSTs were found'"
+        logger.cust_debug(component: component, operation: operation, message: "No NSTs were found")
       end
     end
+    logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
     response = ''
     case request.content_type
@@ -118,8 +127,6 @@ class CatalogueV2 < SonataCatalogue
         response = nsts.to_json
       when 'application/x-yaml'
         response = json_to_yaml(nsts.to_json)
-      else
-        halt 415
     end
     halt 200, {'Content-type' => request.content_type}, response
   end
@@ -130,16 +137,26 @@ class CatalogueV2 < SonataCatalogue
   #	  @param :id [Symbol] id NST ID
   # Show a NST by internal ID (uuid)
   get '/nsts/:id/?' do
+
+    # Logger details
+    operation = "GET /v2/nsts/#{params[:id]}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
+
+    # Return if content-type is invalid
+    json_error 415, 'Support of x-yaml and json', component, operation, time_req_begin unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+
     unless params[:id].nil?
-      logger.debug "Catalogue: GET /v2/nsts/#{params[:id]}"
 
       begin
         nst = Nstd.find(params[:id])
       rescue Mongoid::Errors::DocumentNotFound => e
-        logger.error e
-        json_error 404, "The NST ID #{params[:id]} does not exist" unless nst
+        json_error 404, "The NST ID #{params[:id]} does not exist", component, operation, time_req_begin unless nst
       end
-      logger.debug "Catalogue: leaving GET /v2/nsts/#{params[:id]}\" with NST #{nst}"
+      logger.cust_debug(component: component, operation: operation, message: "NST found #{nst}")
+      logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
       response = ''
       case request.content_type
@@ -147,22 +164,29 @@ class CatalogueV2 < SonataCatalogue
           response = nst.to_json
         when 'application/x-yaml'
           response = json_to_yaml(nst.to_json)
-        else
-          halt 415
       end
+
       halt 200, {'Content-type' => request.content_type}, response
 
     end
-    logger.debug "Catalogue: leaving GET /v2/nsts/#{params[:id]} with 'No NST ID specified'"
-    json_error 400, 'No NST ID specified'
+    logger.cust_debug(component: component, operation: operation, message: "No NST ID specified")
+    json_error 400, 'No NST ID specified', component, operation, time_req_begin
   end
 
   # @method post_nsts
   # @overload post '/catalogues/nsts'
   # Post a NST in JSON or YAML format
   post '/nsts' do
+
+    # Logger details
+    operation = "POST /v2/nsts"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    logger.cust_info(start_stop: 'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
+
     # Return if content-type is invalid
-    halt 415 unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+    json_error 415, 'Support of x-yaml and json', component, operation, time_req_begin unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
 
     # Compatibility support for YAML content-type
     case request.content_type
@@ -171,20 +195,20 @@ class CatalogueV2 < SonataCatalogue
         # When updating a NST, the json object sent to API must contain just data inside
         # of the nst, without the json field nst: before
         nst, errors = parse_yaml(request.body.read)
-        halt 400, errors.to_json if errors
+        json_error 400, errors, component, operation, time_req_begin if errors
 
         # Translate from YAML format to JSON format
         new_nst_json = yaml_to_json(nst)
 
         # Validate JSON format
         new_nst, errors = parse_json(new_nst_json)
-        halt 400, errors.to_json if errors
+        json_error 400, errors, component, operation, time_req_begin if errors
 
       else
         # Compatibility support for JSON content-type
         # Parses and validates JSON format
         new_nst, errors = parse_json(request.body.read)
-        halt 400, errors.to_json if errors
+        json_error 400, errors, component, operation, time_req_begin if errors
     end
 
     #Delete key "captures" if present
@@ -194,22 +218,22 @@ class CatalogueV2 < SonataCatalogue
     keyed_params = keyed_hash(params)
 
     # Validate NST
-    json_error 400, 'ERROR: NST Vendor not found' unless new_nst.has_key?('vendor')
-    json_error 400, 'ERROR: NST Name not found' unless new_nst.has_key?('name')
-    json_error 400, 'ERROR: NST Version not found' unless new_nst.has_key?('version')
+    json_error 400, 'NST Vendor not found', component, operation, time_req_begin unless new_nst.has_key?('vendor')
+    json_error 400, 'NST Name not found', component, operation, time_req_begin unless new_nst.has_key?('name')
+    json_error 400, 'NST Version not found', component, operation, time_req_begin unless new_nst.has_key?('version')
 
     # Check if NST already exists in the catalogue by name, vendor and version
     begin
       nst = Nstd.find_by('nstd.name' => new_nst['name'], 'nstd.vendor' => new_nst['vendor'],
                            'nstd.version' => new_nst['version'])
-      halt 409, "Duplicate with NSTD ID => #{nst['_id']}"
+      json_error 409, "Duplicate with NSTD ID => #{nst['_id']}", component, operation, time_req_begin
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
     end
     # Check if NST has an ID (it should not) and if it already exists in the catalogue
     begin
       nst = Nstd.find_by('_id' => new_nst['_id'])
-      halt 409, 'Duplicated NST ID'
+      json_error 409, 'Duplicated NST ID', component, operation, time_req_begin
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
     end
@@ -236,18 +260,17 @@ class CatalogueV2 < SonataCatalogue
     begin
       nst = Nstd.create!(new_nstd)
     rescue Moped::Errors::OperationFailure => e
-      json_return 200, 'Duplicated NST ID' if e.message.include? 'E11000'
+      json_return 200, 'Duplicated NST ID', component, operation, time_req_begin if e.message.include? 'E11000'
     end
+    logger.cust_debug(component: component, operation: operation, message: "New NST has been added")
+    logger.cust_info(status: 201, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
-    puts 'New NST has been added'
     response = ''
     case request.content_type
       when 'application/json'
         response = nst.to_json
       when 'application/x-yaml'
         response = json_to_yaml(nst.to_json)
-      else
-        halt 415
     end
     halt 201, {'Content-type' => request.content_type}, response
   end
@@ -257,7 +280,13 @@ class CatalogueV2 < SonataCatalogue
   # Update a NST by vendor, name and version in JSON or YAML format
   ## Catalogue - UPDATE
   put '/nsts/?' do
-    logger.info "Catalogue: entered PUT /v2/nsts?#{query_string}"
+
+    # Logger details
+    operation = "POST /v2/nsts?#{query_string}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    logger.cust_info(start_stop: 'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
@@ -266,10 +295,10 @@ class CatalogueV2 < SonataCatalogue
     keyed_params = keyed_hash(params)
 
     # Return if content-type is invalid
-    halt 415 unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+    json_error 415, 'Support of x-yaml and json', component, operation, time_req_begin unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
 
     # Return if params are empty
-    json_error 400, 'Update parameters are null' if keyed_params.empty?
+    json_error 400, 'Update parameters are null', component, operation, time_req_begin if keyed_params.empty?
 
     # Compatibility support for YAML content-type
     case request.content_type
@@ -278,27 +307,27 @@ class CatalogueV2 < SonataCatalogue
         # When updating a NST, the json object sent to API must contain just data inside
         # of the nstd, without the json field nstd: before
         nst, errors = parse_yaml(request.body.read)
-        halt 400, errors.to_json if errors
+        json_error 400, errors, component, operation, time_req_begin if errors
 
         # Translate from YAML format to JSON format
         new_nst_json = yaml_to_json(nst)
 
         # Validate JSON format
         new_nst, errors = parse_json(new_nst_json)
-        halt 400, errors.to_json if errors
+        json_error 400, errors, component, operation, time_req_begin if errors
 
       else
         # Compatibility support for JSON content-type
         # Parses and validates JSON format
         new_nst, errors = parse_json(request.body.read)
-        halt 400, errors.to_json if errors
+        json_error 400, errors, component, operation, time_req_begin if errors
     end
 
     # Validate NS
     # Check if mandatory fields Vendor, Name, Version are included
-    json_error 400, 'ERROR: NST Vendor not found' unless new_nst.has_key?('vendor')
-    json_error 400, 'ERROR: NST Name not found' unless new_nst.has_key?('name')
-    json_error 400, 'ERROR: NST Version not found' unless new_nst.has_key?('version')
+    json_error 400, 'NST Vendor not found', component, operation, time_req_begin unless new_nst.has_key?('vendor')
+    json_error 400, 'NST Name not found', component, operation, time_req_begin unless new_nst.has_key?('name')
+    json_error 400, 'NST Version not found', component, operation, time_req_begin unless new_nst.has_key?('version')
 
     # Set headers
     case request.content_type
@@ -311,21 +340,21 @@ class CatalogueV2 < SonataCatalogue
 
     # Retrieve stored version
     if keyed_params[:vendor].nil? && keyed_params[:name].nil? && keyed_params[:version].nil?
-      json_error 400, 'Update Vendor, Name and Version parameters are null'
+      json_error 400, 'Update Vendor, Name and Version parameters are null', component, operation, time_req_begin
     else
       begin
         nst = Nstd.find_by('nstd.vendor' => keyed_params[:vendor], 'nstd.name' => keyed_params[:name],
                             'nstd.version' => keyed_params[:version])
-        puts 'NST is found'
+        logger.cust_debug(component: component, operation: operation, message: "NST is found")
       rescue Mongoid::Errors::DocumentNotFound => e
-        json_error 404, "The NST Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist"
+        json_error 404, "The NST Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist", component, operation, time_req_begin
       end
     end
     # Check if NST already exists in the catalogue by Name, Vendor and Version
     begin
       nst = Nstd.find_by('nstd.name' => new_nst['name'], 'nstd.vendor' => new_nst['vendor'],
                            'nstd.version' => new_nst['version'])
-      json_return 200, 'Duplicated NST Name, Vendor and Version'
+      json_return 200, 'Duplicated NST Name, Vendor and Version', component, operation, time_req_begin
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
     end
@@ -352,9 +381,10 @@ class CatalogueV2 < SonataCatalogue
     begin
       new_nst = Nstd.create!(new_nstd)
     rescue Moped::Errors::OperationFailure => e
-      json_return 200, 'Duplicated NST ID' if e.message.include? 'E11000'
+      json_return 200, 'Duplicated NST ID', component, operation, time_req_begin if e.message.include? 'E11000'
     end
-    logger.debug "Catalogue: leaving PUT /v2/nsts?#{query_string}\" with NST #{new_nst}"
+    logger.cust_debug(component: component, operation: operation, message: "NST #{new_nst}")
+    logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
     response = ''
     case request.content_type
@@ -362,8 +392,7 @@ class CatalogueV2 < SonataCatalogue
         response = new_nst.to_json
       when 'application/x-yaml'
         response = json_to_yaml(new_nst.to_json)
-      else
-        halt 415
+
     end
     halt 200, {'Content-type' => request.content_type}, response
   end
@@ -373,11 +402,19 @@ class CatalogueV2 < SonataCatalogue
   #	Update a NST by its ID in JSON or YAML format
   ## Catalogue - UPDATE
   put '/nsts/:id/?' do
+
+    # Logger details
+    operation = "PUT /v2/nsts/#{params[:id]}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    logger.cust_info(start_stop: 'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
+
     # Return if content-type is invalid
-    halt 415 unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+    json_error 415, 'Support of x-yaml and json', component, operation, time_req_begin unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+
 
     unless params[:id].nil?
-      logger.debug "Catalogue: PUT /v2/nsts/#{params[:id]}"
 
       #Delete key "captures" if present
       params.delete(:captures) if params.key?(:captures)
@@ -388,16 +425,15 @@ class CatalogueV2 < SonataCatalogue
       # Check for special case (:status param == <new_status>)
       if keyed_params.key?(:status)
         # Do update of Descriptor status -> update_nst_status
-        logger.info "Catalogue: entered PUT /v2/nsts/#{query_string}"
+        logger.cust_debug(component: component, operation: operation, message: "/v2/nsts/#{query_string}")
 
         # Validate NST
         # Retrieve stored version
         begin
-          puts 'Searching ' + params[:id].to_s
           nst = Nstd.find_by('_id' => params[:id])
-          puts 'NST is found'
+          logger.cust_debug(component: component, operation: operation, message: "NST is found")
         rescue Mongoid::Errors::DocumentNotFound => e
-          json_error 404, 'This NST does not exists'
+          json_error 404, 'This NST does not exists', component, operation, time_req_begin
         end
 
         #Validate new status
@@ -407,27 +443,25 @@ class CatalogueV2 < SonataCatalogue
           begin
             nst.update_attributes(status: keyed_params[:status])
           rescue Moped::Errors::OperationFailure => e
-            json_error 400, 'ERROR: Operation failed'
+            json_error 400, 'Operation failed', component, operation, time_req_begin
           end
         else
-          json_error 400, "Invalid new status #{keyed_params[:status]}"
+          json_error 400, "Invalid new status #{keyed_params[:status]}", component, operation, time_req_begin
         end
-        halt 200, "Status updated to {#{query_string}}"
+        json_error 200, "Status updated to {#{query_string}}", component, operation, time_req_begin
 
 
       elsif keyed_params.length == 2
         # Case where another field is subject to change
-        logger.info "Catalogue: entered PUT /v2/nsts/#{query_string}"
-
+        logger.cust_debug(component: component, operation: operation, message: "/v2/nsts/#{query_string}")
 
         # Validate NST
         # Retrieve stored version
         begin
-          puts 'Searching ' + params[:id].to_s
           nst = Nstd.find_by('_id' => params[:id])
-          puts 'NST is found'
+          logger.cust_debug(component: component, operation: operation, message: "NST is found")
         rescue Mongoid::Errors::DocumentNotFound => e
-          json_error 404, 'This NST does not exist'
+          json_error 404, 'This NST does not exist', component, operation, time_req_begin
         end
         params.delete('id')
 
@@ -438,7 +472,7 @@ class CatalogueV2 < SonataCatalogue
 
         # check if the provided field is in the root level of descriptor (without Catalogues metadata)
         unless nst_doc['nstd'].keys.include? par_key
-          json_error 404, "The field #{query_string} is not in the root level of descriptor"
+          json_error 404, "The field #{query_string} is not in the root level of descriptor", component, operation, time_req_begin
         end
 
         # Check if is a string type. Not able to change arrays or hashes for now
@@ -456,23 +490,23 @@ class CatalogueV2 < SonataCatalogue
                 check_field.delete(keyed_params.values[0])
                 nst.set({keyed_params.keys[0].to_s.rpartition('.')[0].to_sym => check_field})
               else
-                json_error 400, "There is no element equal to #{keyed_params.values[0]}"
+                json_error 400, "There is no element equal to #{keyed_params.values[0]}", component, operation, time_req_begin
               end
             else
-              json_error 400, "In the update of arrays, append/pop can be used only"
+              json_error 400, "In the update of arrays, append/pop can be used only", component, operation, time_req_begin
             end
           elsif check_field.is_a? String
             nst.update_attributes(keyed_params.keys[0] => keyed_params.values[0])
-            logger.info "Change #{keyed_params.keys[0]} to #{keyed_params.values[0]}"
+            logger.cust_debug(component: component, operation: operation, message: "Change #{keyed_params.keys[0]} to #{keyed_params.values[0]}")
           else
-            json_error 400, "The field should be String or Array"
+            json_error 400, "The field should be String or Array", component, operation, time_req_begin
           end
 
         rescue Moped::Errors::OperationFailure => e
-          json_error 400, 'ERROR: Operation failed'
+          json_error 400, 'Operation failed', component, operation, time_req_begin
         end
 
-        json_return 200, "#{par_key} updated to {#{query_string}}"
+        json_return 200, "#{par_key} updated to {#{query_string}}", component, operation, time_req_begin
       else
         # Compatibility support for YAML content-type
         case request.content_type
@@ -481,42 +515,41 @@ class CatalogueV2 < SonataCatalogue
             # When updating a NST, the json object sent to API must contain just data inside
             # of the nstd, without the json field nstd: before
             nst, errors = parse_yaml(request.body.read)
-            halt 400, errors.to_json if errors
+            json_error 400, errors, component, operation, time_req_begin if errors
 
             # Translate from YAML format to JSON format
             new_nst_json = yaml_to_json(nst)
 
             # Validate JSON format
             new_nst, errors = parse_json(new_nst_json)
-            halt 400, errors.to_json if errors
+            json_error 400, errors, component, operation, time_req_begin if errors
 
           else
             # Compatibility support for JSON content-type
             # Parses and validates JSON format
             new_nst, errors = parse_json(request.body.read)
-            halt 400, errors.to_json if errors
+            json_error 400, errors, component, operation, time_req_begin if errors
         end
 
         # Validate NST
         # Check if mandatory fields Vendor, Name, Version are included
-        json_error 400, 'ERROR: NST Vendor not found' unless new_nst.has_key?('vendor')
-        json_error 400, 'ERROR: NST Name not found' unless new_nst.has_key?('name')
-        json_error 400, 'ERROR: NST Version not found' unless new_nst.has_key?('version')
+        json_error 400, 'NST Vendor not found', component, operation, time_req_begin unless new_nst.has_key?('vendor')
+        json_error 400, 'NST Name not found', component, operation, time_req_begin unless new_nst.has_key?('name')
+        json_error 400, 'NST Version not found', component, operation, time_req_begin unless new_nst.has_key?('version')
 
         # Retrieve stored version
         begin
-          puts 'Searching ' + params[:id].to_s
           nst = Nstd.find_by('_id' => params[:id])
-          puts 'NST is found'
+          logger.cust_debug(component: component, operation: operation, message: "NST is found")
         rescue Mongoid::Errors::DocumentNotFound => e
-          json_error 404, "The NST ID #{params[:id]} does not exist"
+          json_error 404, "The NST ID #{params[:id]} does not exist", component, operation, time_req_begin
         end
 
         # Check if NST already exists in the catalogue by name, vendor and version
         begin
           nst = Nstd.find_by('nstd.name' => new_nst['name'], 'nstd.vendor' => new_nst['vendor'],
                                'nstd.version' => new_nst['version'])
-          json_return 200, 'Duplicated NST Name, Vendor and Version'
+          json_return 200, 'Duplicated NST Name, Vendor and Version', component, operation, time_req_begin
         rescue Mongoid::Errors::DocumentNotFound => e
           # Continue
         end
@@ -543,9 +576,11 @@ class CatalogueV2 < SonataCatalogue
         begin
           new_nst = Nstd.create!(new_nstd)
         rescue Moped::Errors::OperationFailure => e
-          json_return 200, 'Duplicated NST ID' if e.message.include? 'E11000'
+          json_return 200, 'Duplicated NST ID', component, operation, time_req_begin if e.message.include? 'E11000'
         end
-        logger.debug "Catalogue: leaving PUT /v2/nsts/#{params[:id]}\" with NST #{new_nst}"
+        logger.cust_debug(component: component, operation: operation, message: "NST #{new_nst}")
+        logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
+
 
         response = ''
         case request.content_type
@@ -553,21 +588,25 @@ class CatalogueV2 < SonataCatalogue
             response = new_nst.to_json
           when 'application/x-yaml'
             response = json_to_yaml(new_nst.to_json)
-          else
-            halt 415
         end
         halt 200, {'Content-type' => request.content_type}, response
       end
     end
-    logger.debug "Catalogue: leaving PUT /v2/nsts/#{params[:id]} with 'No NST ID specified'"
-    json_error 400, 'No NST ID specified'
+    logger.cust_debug(component: component, operation: operation, message: "No NST ID specified")
+    json_error 400, 'No NST ID specified', component, operation, time_req_begin
   end
 
   # @method delete_nstd_sp_nst
   # @overload delete '/nsts/?'
   #	Delete a NST by vendor, name and version
   delete '/nsts/?' do
-    logger.info "Catalogue: entered DELETE /v2/nsts?#{query_string}"
+
+    # Logger details
+    operation = "DELETE /v2/nsts?#{query_string}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    logger.cust_info(start_stop: 'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
@@ -579,18 +618,18 @@ class CatalogueV2 < SonataCatalogue
       begin
         nst = Nstd.find_by('nstd.vendor' => keyed_params[:vendor], 'nstd.name' => keyed_params[:name],
                             'nstd.version' => keyed_params[:version])
-        puts 'NST is found'
+        logger.cust_debug(component: component, operation: operation, message: "NST is found")
       rescue Mongoid::Errors::DocumentNotFound => e
-        json_error 404, "The NST Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist"
+        json_error 404, "The NST Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist", component, operation, time_req_begin
       end
-      logger.debug "Catalogue: leaving DELETE /v2/nsts?#{query_string}\" with NST #{nst}"
+      logger.cust_debug(component: component, operation: operation, message: "NST #{nst}")
       # Delete entry in dict mapping
       del_ent_dict(nst, :nstd)
       nst.destroy
-      halt 200, 'OK: NST removed'
+      json_return 200, 'NST removed', component, operation, time_req_begin
     end
-    logger.debug "Catalogue: leaving DELETE /v2/nsts?#{query_string} with 'No NST Vendor, Name, Version specified'"
-    json_error 400, 'No NST Vendor, Name, Version specified'
+    logger.cust_debug(component: component, operation: operation, message: "No NST Vendor, Name, Version specified")
+    json_error 400, 'No NST Vendor, Name, Version specified', component, operation, time_req_begin
   end
 
   # @method delete_nstd_sp_nst_id
@@ -599,21 +638,26 @@ class CatalogueV2 < SonataCatalogue
   #	  @param :id [Symbol] id NST ID
   # Delete a NST by uuid
   delete '/nsts/:id/?' do
+    # Logger details
+    operation = "DELETE /v2/nsts/#{params[:id]}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    logger.cust_info(start_stop: 'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
+
     unless params[:id].nil?
-      logger.debug "Catalogue: DELETE /v2/nsts/#{params[:id]}"
       begin
         nst = Nstd.find(params[:id])
       rescue Mongoid::Errors::DocumentNotFound => e
-        logger.error e
-        json_error 404, "The NST ID #{params[:id]} does not exist" unless nst
+        json_error 404, "The NST ID #{params[:id]} does not exist", component, operation, time_req_begin unless nst
       end
-      logger.debug "Catalogue: leaving DELETE /v2/nsts/#{params[:id]}\" with NST #{nst}"
+      logger.cust_debug(component: component, operation: operation, message: "NST #{nst}")
       # Delete entry in dict mapping
       del_ent_dict(nst, :nstd)
       nst.destroy
-      halt 200, 'OK: NST removed'
+      json_return 200, 'NST removed', component, operation, time_req_begin
     end
-    logger.debug "Catalogue: leaving DELETE /v2/nsts/#{params[:id]} with 'No NST ID specified'"
-    json_error 400, 'No NST ID specified'
+    logger.cust_debug(component: component, operation: operation, message: "No NST ID specified")
+    json_error 400, 'No NST ID specified', component, operation, time_req_begin
   end
 end

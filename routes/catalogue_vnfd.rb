@@ -580,13 +580,22 @@ class CatalogueV2 < SonataCatalogue
   get '/vnfs/?' do
     params['page_number'] ||= DEFAULT_PAGE_NUMBER
     params['page_size'] ||= DEFAULT_PAGE_SIZE
-    logger.info "Catalogue: entered GET /v2/vnfs?#{query_string}"
-
-    # Return if content-type is invalid
-    json_error 415, 'Support of x-yaml and json' unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
+
+    # Logger details
+    operation = "GET /v2/vnfs?#{query_string}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+
+    logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
+
+
+    # Return if content-type is invalid
+    json_error 415, 'Support of x-yaml and json', component, operation, time_req_begin unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+
 
     # Split keys in meta_data and data
     # Then transform 'string' params Hash into keys
@@ -610,11 +619,10 @@ class CatalogueV2 < SonataCatalogue
       keyed_params.delete(:'vnfd.version')
 
       vnfs = Vnfd.where((keyed_params)).sort({ 'vnfd.version' => -1 }) #.limit(1).first()
-      logger.info "Catalogue: VNFDs=#{vnfs}"
       # vnfs = vnfs.sort({"version" => -1})
 
       if vnfs && vnfs.size.to_i > 0
-        logger.info "Catalogue: leaving GET /v2/vnfs?#{query_string} with #{vnfs}"
+        logger.cust_debug(component: component, operation: operation, message: "VNFDs=#{vnfs}")
 
         vnfs_list = []
         checked_list = []
@@ -632,7 +640,7 @@ class CatalogueV2 < SonataCatalogue
           checked_list.push(vnfs_name_vendor)
         end
       else
-        logger.info "Catalogue: leaving GET /v2/vnfs?#{query_string} with 'No VNFDs were found'"
+        logger.cust_debug(component: component, operation: operation, message: "No VNFDs were found")
         vnfs_list = []
 
       end
@@ -644,15 +652,17 @@ class CatalogueV2 < SonataCatalogue
       vnfs = Vnfd.where(keyed_params)
       # Set total count for results
       headers 'Record-Count' => vnfs.count.to_s
-      logger.info "Catalogue: VNFDs=#{vnfs}"
       if vnfs && vnfs.size.to_i > 0
-        logger.info "Catalogue: leaving GET /v2/vnfs?#{query_string} with #{vnfs}"
+        logger.cust_debug(component: component, operation: operation, message: "VNFDs=#{vnfs}")
         # Paginate results
         vnfs = vnfs.paginate(page_number: params[:page_number], page_size: params[:page_size])
       else
-        logger.info "Catalogue: leaving GET /v2/vnfs?#{query_string} with 'No VNFDs were found'"
+        logger.cust_debug(component: component, operation: operation, message: "No VNFDs were found")
       end
     end
+
+
+    logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
     response = ''
     case request.content_type
@@ -661,6 +671,8 @@ class CatalogueV2 < SonataCatalogue
       else
         response = json_to_yaml(vnfs.to_json)
     end
+
+
     halt 200, {'Content-type' => request.content_type}, response
   end
 
@@ -671,19 +683,26 @@ class CatalogueV2 < SonataCatalogue
   # Show a VNF by internal ID (uuid)
   get '/vnfs/:id/?' do
 
+    # Logger details
+    operation = "GET /v2/vnfs?#{params[:id]}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+
+    logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
+
     # Return if content-type is invalid
-    json_error 415, 'Support of x-yaml and json' unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+    json_error 415, 'Support of x-yaml and json', component, operation, time_req_begin unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
 
     unless params[:id].nil?
-      logger.debug "Catalogue: GET /v2/vnfs/#{params[:id]}"
 
       begin
         vnf = Vnfd.find(params[:id])
       rescue Mongoid::Errors::DocumentNotFound => e
-        logger.error e
-        json_error 404, "The VNFD ID #{params[:id]} does not exist" unless vnf
+        json_error 404, "The VNFD ID #{params[:id]} does not exist", component, operation, time_req_begin unless vnf
       end
-      logger.debug "Catalogue: leaving GET /v2/vnfs/#{params[:id]}\" with VNFD #{vnf}"
+
+      logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
       response = ''
       case request.content_type
@@ -695,16 +714,28 @@ class CatalogueV2 < SonataCatalogue
       halt 200, {'Content-type' => request.content_type}, response
 
     end
-    logger.debug "Catalogue: leaving GET /v2/vnfs/#{params[:id]} with 'No VNFD ID specified'"
-    json_error 400, 'No VNFD ID specified'
+    json_error 400, 'No VNFD ID specified', component, operation, time_req_begin
   end
 
   # @method post_vnfs
   # @overload post '/catalogues/vnfs'
   # Post a VNF in JSON or YAML format
   post '/vnfs' do
+
+
+    #Delete key "captures" if present
+    params.delete(:captures) if params.key?(:captures)
+
+    # Logger details
+    operation = "POST /v2/vnfs"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+
+    logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
+
     # Return if content-type is invalid
-    json_error 415, 'Support of x-yaml and json' unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+    json_error 415, 'Support of x-yaml and json', component, operation, time_req_begin unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
 
     # Compatibility support for YAML content-type
     case request.content_type
@@ -713,32 +744,29 @@ class CatalogueV2 < SonataCatalogue
         # When updating a VNFD, the json object sent to API must contain just data inside
         # of the vnfd, without the json field vnfd: before
         vnf, errors = parse_yaml(request.body.read)
-        halt 400, errors.to_json if errors
+        json_error 400, errors, component, operation, time_req_begin if errors
 
         # Translate from YAML format to JSON format
         new_vnf_json = yaml_to_json(vnf)
 
         # Validate JSON format
         new_vnf, errors = parse_json(new_vnf_json)
-        halt 400, errors.to_json if errors
+        json_error 400, errors, component, operation, time_req_begin if errors
 
       else
         # Compatibility support for JSON content-type
         # Parses and validates JSON format
         new_vnf, errors = parse_json(request.body.read)
-        halt 400, errors.to_json if errors
+        json_error 400, errors, component, operation, time_req_begin if errors
     end
-
-    #Delete key "captures" if present
-    params.delete(:captures) if params.key?(:captures)
 
     # Transform 'string' params Hash into keys
     keyed_params = keyed_hash(params)
 
     # Validate VNF
-    json_error 400, 'ERROR: VNF Vendor not found' unless new_vnf.has_key?('vendor')
-    json_error 400, 'ERROR: VNF Name not found' unless new_vnf.has_key?('name')
-    json_error 400, 'ERROR: VNF Version not found' unless new_vnf.has_key?('version')
+    json_error 400, 'VNF Vendor not found', component, operation, time_req_begin unless new_vnf.has_key?('vendor')
+    json_error 400, 'VNF Name not found', component, operation, time_req_begin unless new_vnf.has_key?('name')
+    json_error 400, 'VNF Version not found', component, operation, time_req_begin unless new_vnf.has_key?('version')
 
     # Comment for file re-usage. Introduce the reference counting of package
     # Check if VNFD already exists in the catalogue by name, vendor and version
@@ -747,13 +775,16 @@ class CatalogueV2 < SonataCatalogue
                            'vnfd.version' => new_vnf['version'] })
       vnf.update_attributes(pkg_ref: vnf['pkg_ref'] + 1)
       response = ''
-      # response = {"uuid" => vnf['_id'], "referenced" => vnf['pkg_ref']}
+
+      logger.cust_info(status: 200, start_stop: 'STOP',message: "Update reference to #{vnf['pkg_ref']}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
+
       case request.content_type
         when 'application/json'
           response = vnf.to_json
         else
           response = json_to_yaml(vnf.to_json)
       end
+
       halt 200, {'Content-type' => request.content_type}, response
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
@@ -762,7 +793,7 @@ class CatalogueV2 < SonataCatalogue
     # Check if VNFD has an ID (it should not) and if it already exists in the catalogue
     begin
       vnf = Vnfd.find_by({ '_id' => new_vnf['_id'] })
-      halt 409, 'Duplicated VNF ID'
+      json_error 409, 'Duplicated VNF ID', component, operation, time_req_begin
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
     end
@@ -791,10 +822,11 @@ class CatalogueV2 < SonataCatalogue
     begin
       vnf = Vnfd.create!(new_vnfd)
     rescue Moped::Errors::OperationFailure => e
-      json_return 200, 'Duplicated VNF ID' if e.message.include? 'E11000'
+      json_return 200, 'Duplicated VNF ID', component, operation, time_req_begin if e.message.include? 'E11000'
     end
+    logger.cust_debug(component: component, operation: operation, message: 'New VNF has been added')
+    logger.cust_info(status: 201, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
-    puts 'New VNF has been added'
     response = ''
     case request.content_type
       when 'application/json'
@@ -810,19 +842,27 @@ class CatalogueV2 < SonataCatalogue
   # Update a VNF by vendor, name and version in JSON or YAML format
   ## Catalogue - UPDATE
   put '/vnfs/?' do
-    logger.info "Catalogue: entered PUT /v2/vnfs?#{query_string}"
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
 
+    # Logger details
+    operation = "PUT /v2/vnfs?#{query_string}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+
+    logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
+
+    # Return if content-type is invalid
+    json_error 415, 'Support of x-yaml and json', component, operation, time_req_begin unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+
+
     # Transform 'string' params Hash into keys
     keyed_params = keyed_hash(params)
 
-    # Return if content-type is invalid
-    json_error 415, 'Support of x-yaml and json' unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
-
     # Return if params are empty
-    json_error 400, 'Update parameters are null' if keyed_params.empty?
+    json_error 400, 'Update parameters are null', component, operation, time_req_begin if keyed_params.empty?
 
     # Compatibility support for YAML content-type
     case request.content_type
@@ -831,27 +871,27 @@ class CatalogueV2 < SonataCatalogue
         # When updating a VNFD, the json object sent to API must contain just data inside
         # of the vnfd, without the json field vnfd: before
         vnf, errors = parse_yaml(request.body.read)
-        halt 400, errors.to_json if errors
+        json_error 400, errors, component, operation, time_req_begin if errors
 
         # Translate from YAML format to JSON format
         new_vnf_json = yaml_to_json(vnf)
 
         # Validate JSON format
         new_vnf, errors = parse_json(new_vnf_json)
-        halt 400, errors.to_json if errors
+        json_error 400, errors, component, operation, time_req_begin if errors
 
       else
         # Compatibility support for JSON content-type
         # Parses and validates JSON format
         new_vnf, errors = parse_json(request.body.read)
-        halt 400, errors.to_json if errors
+        json_error 400, errors, component, operation, time_req_begin if errors
     end
 
     # Validate NS
     # Check if mandatory fields Vendor, Name, Version are included
-    json_error 400, 'ERROR: VNF Vendor not found' unless new_vnf.has_key?('vendor')
-    json_error 400, 'ERROR: VNF Name not found' unless new_vnf.has_key?('name')
-    json_error 400, 'ERROR: VNF Version not found' unless new_vnf.has_key?('version')
+    json_error 400, 'VNF Vendor not found', component, operation, time_req_begin unless new_vnf.has_key?('vendor')
+    json_error 400, 'VNF Name not found', component, operation, time_req_begin unless new_vnf.has_key?('name')
+    json_error 400, 'VNF Version not found', component, operation, time_req_begin unless new_vnf.has_key?('version')
 
     # Set headers
     case request.content_type
@@ -864,21 +904,21 @@ class CatalogueV2 < SonataCatalogue
 
     # Retrieve stored version
     if keyed_params[:vendor].nil? && keyed_params[:name].nil? && keyed_params[:version].nil?
-      json_error 400, 'Update Vendor, Name and Version parameters are null'
+      json_error 400, 'Update Vendor, Name and Version parameters are null', component, operation, time_req_begin
     else
       begin
         vnf = Vnfd.find_by({ 'vnfd.vendor' => keyed_params[:vendor], 'vnfd.name' => keyed_params[:name],
                             'vnfd.version' => keyed_params[:version] })
-        puts 'VNF is found'
+        logger.cust_debug(component: component, operation: operation, message: 'VNF is found')
       rescue Mongoid::Errors::DocumentNotFound => e
-        json_error 404, "The VNFD Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist"
+        json_error 404, "The VNFD Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist", component, operation, time_req_begin
       end
     end
     # Check if VNF already exists in the catalogue by Name, Vendor and Version
     begin
       vnf = Vnfd.find_by({ 'vnfd.name' => new_vnf['name'], 'vnfd.vendor' => new_vnf['vendor'],
                            'vnfd.version' => new_vnf['version'] })
-      json_return 200, 'Duplicated VNF Name, Vendor and Version'
+      json_return 200, 'Duplicated VNF Name, Vendor and Version', component, operation, time_req_begin
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
     end
@@ -906,9 +946,10 @@ class CatalogueV2 < SonataCatalogue
     begin
       new_vnf = Vnf.create!(new_vnfd)
     rescue Moped::Errors::OperationFailure => e
-      json_return 200, 'Duplicated VNF ID' if e.message.include? 'E11000'
+      json_return 200, 'Duplicated VNF ID', component, operation, time_req_begin if e.message.include? 'E11000'
     end
-    logger.debug "Catalogue: leaving PUT /v2/vnfs?#{query_string}\" with VNFD #{new_vnf}"
+    logger.cust_debug(component: component, operation: operation, message: "VNFD #{new_vnf}")
+    logger.cust_info(status: 201, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
     response = ''
     case request.content_type
@@ -925,12 +966,16 @@ class CatalogueV2 < SonataCatalogue
   #	Update a VNF by its ID in JSON or YAML format
   ## Catalogue - UPDATE
   put '/vnfs/:id/?' do
-    # Return if content-type is invalid
-    # Return if content-type is invalid
-    json_error 415, 'Support of x-yaml and json' unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+
+    # Logger details
+    operation = "PUT /v2/vnfs?#{params[:id]}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
+
 
     unless params[:id].nil?
-      logger.debug "Catalogue: PUT /v2/vnfs/#{params[:id]}"
 
       #Delete key "captures" if present
       params.delete(:captures) if params.key?(:captures)
@@ -941,16 +986,15 @@ class CatalogueV2 < SonataCatalogue
       # Check for special case (:status param == <new_status>)
       if keyed_params.key?(:status)
         # Do update of Descriptor status -> update_vnf_status
-        logger.info "Catalogue: entered PUT /v2/vnfs/#{query_string}"
+        logger.cust_debug(component: component, operation: operation, message: "/v2/vnfs/#{query_string}")
 
         # Validate VNF
         # Retrieve stored version
         begin
-          puts 'Searching ' + params[:id].to_s
           vnf = Vnfd.find_by({ '_id' => params[:id] })
-          puts 'VNF is found'
+          logger.cust_debug(component: component, operation: operation, message: "VNF #{params[:id]} is found")
         rescue Mongoid::Errors::DocumentNotFound => e
-          json_error 404, 'This VNFD does not exists'
+          json_error 404, 'This VNFD does not exists', component, operation, time_req_begin
         end
 
         #Validate new status
@@ -960,14 +1004,18 @@ class CatalogueV2 < SonataCatalogue
           begin
             vnf.update_attributes(status: keyed_params[:status])
           rescue Moped::Errors::OperationFailure => e
-            json_error 400, 'ERROR: Operation failed'
+            json_error 400, 'Operation failed', component, operation, time_req_begin
           end
         else
-          json_error 400, "Invalid new status #{keyed_params[:status]}"
+          json_error 400, "Invalid new status #{keyed_params[:status]}", component, operation, time_req_begin
         end
-        halt 200, "Status updated to {#{query_string}}"
+        json_return 200, "Status updated to {#{query_string}}", component, operation, time_req_begin
 
       else
+
+        # Return if content-type is invalid
+        json_error 415, 'Support of x-yaml and json', component, operation, time_req_begin unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+
         # Compatibility support for YAML content-type
         case request.content_type
           when 'application/x-yaml'
@@ -975,42 +1023,41 @@ class CatalogueV2 < SonataCatalogue
             # When updating a VNFD, the json object sent to API must contain just data inside
             # of the vnfd, without the json field vnfd: before
             vnf, errors = parse_yaml(request.body.read)
-            halt 400, errors.to_json if errors
+            json_error 400, errors, component, operation, time_req_begin if errors
 
             # Translate from YAML format to JSON format
             new_vnf_json = yaml_to_json(vnf)
 
             # Validate JSON format
             new_vnf, errors = parse_json(new_vnf_json)
-            halt 400, errors.to_json if errors
+            json_error 400, errors, component, operation, time_req_begin if errors
 
           else
             # Compatibility support for JSON content-type
             # Parses and validates JSON format
             new_vnf, errors = parse_json(request.body.read)
-            halt 400, errors.to_json if errors
+            json_error 400, errors, component, operation, time_req_begin if errors
         end
 
         # Validate VNF
         # Check if mandatory fields Vendor, Name, Version are included
-        json_error 400, 'ERROR: VNF Vendor not found' unless new_vnf.has_key?('vendor')
-        json_error 400, 'ERROR: VNF Name not found' unless new_vnf.has_key?('name')
-        json_error 400, 'ERROR: VNF Version not found' unless new_vnf.has_key?('version')
+        json_error 400, 'VNF Vendor not found', component, operation, time_req_begin unless new_vnf.has_key?('vendor')
+        json_error 400, 'VNF Name not found', component, operation, time_req_begin unless new_vnf.has_key?('name')
+        json_error 400, 'VNF Version not found', component, operation, time_req_begin unless new_vnf.has_key?('version')
 
         # Retrieve stored version
         begin
-          puts 'Searching ' + params[:id].to_s
           vnf = Vnfd.find_by({ '_id' => params[:id] })
-          puts 'VNF is found'
+          logger.cust_debug(component: component, operation: operation, message: "VNF #{params[:id]} is found")
         rescue Mongoid::Errors::DocumentNotFound => e
-          json_error 404, "The VNFD ID #{params[:id]} does not exist"
+          json_error 404, "The VNFD ID #{params[:id]} does not exist", component, operation, time_req_begin
         end
 
         # Check if VNF already exists in the catalogue by name, vendor and version
         begin
           vnf = Vnfd.find_by({ 'vnfd.name' => new_vnf['name'], 'vnfd.vendor' => new_vnf['vendor'],
                                'vnfd.version' => new_vnf['version'] })
-          json_return 200, 'Duplicated VNF Name, Vendor and Version'
+          json_return 200, 'Duplicated VNF Name, Vendor and Version', component, operation, time_req_begin
         rescue Mongoid::Errors::DocumentNotFound => e
           # Continue
         end
@@ -1038,9 +1085,10 @@ class CatalogueV2 < SonataCatalogue
         begin
           new_vnf = Vnfd.create!(new_vnfd)
         rescue Moped::Errors::OperationFailure => e
-          json_return 200, 'Duplicated VNF ID' if e.message.include? 'E11000'
+          json_return 200, 'Duplicated VNF ID', component, operation, time_req_begin if e.message.include? 'E11000'
         end
-        logger.debug "Catalogue: leaving PUT /v2/vnfs/#{params[:id]}\" with VNFD #{new_vnf}"
+        logger.cust_debug(component: component, operation: operation, message: "VNFD #{new_vnf}")
+        logger.cust_info(status: 201, message: "Ended at #{Time.now.utc}", start_stop: 'STOP', component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
         response = ''
         case request.content_type
@@ -1052,15 +1100,21 @@ class CatalogueV2 < SonataCatalogue
         halt 200, {'Content-type' => request.content_type}, response
       end
     end
-    logger.debug "Catalogue: leaving PUT /v2/vnfs/#{params[:id]} with 'No VNF ID specified'"
-    json_error 400, 'No VNF ID specified'
+    logger.cust_debug(component: component, operation: operation, message: "No VNF ID specified")
+    json_error 400, 'No VNF ID specified', component, operation, time_req_begin
   end
 
   # @method delete_vnfd_sp_vnf
   # @overload delete '/vnfs/?'
   #	Delete a VNF by vendor, name and version
   delete '/vnfs/?' do
-    logger.info "Catalogue: entered DELETE /v2/vnfs?#{query_string}"
+
+    # Logger details
+    operation = "DELETE /v2/vnfs?#{query_string}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
@@ -1072,26 +1126,25 @@ class CatalogueV2 < SonataCatalogue
       begin
         vnf = Vnfd.find_by({ 'vnfd.vendor' => keyed_params[:vendor], 'vnfd.name' => keyed_params[:name],
                             'vnfd.version' => keyed_params[:version] })
-        puts 'VNF is found'
       rescue Mongoid::Errors::DocumentNotFound => e
-        json_error 404, "The VNFD Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist"
+        json_error 404, "The VNFD Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist", component, operation, time_req_begin
       end
 
-      logger.debug "Catalogue: leaving DELETE /v2/vnfs?#{query_string}\" with VNFD #{vnf}"
+      logger.cust_debug(component: component, operation: operation, message: "VNFD found #{vnf}")
 
       if vnf['pkg_ref'] == 1
         # Delete entry in dict mapping
         del_ent_dict(vnf, :vnfd)
         vnf.destroy
-        halt 200, 'OK: VNFD removed'
+        json_return 200, 'VNFD removed', component, operation, time_req_begin
       else
         vnf.update_attributes(pkg_ref: vnf['pkg_ref'] - 1)
-        halt 200, "OK: VNFD referenced => #{vnf['pkg_ref']} "
+        json_return 200, "VNFD referenced => #{vnf['pkg_ref']}", component, operation, time_req_begin
       end
 
     end
-    logger.debug "Catalogue: leaving DELETE /v2/vnfs?#{query_string} with 'No VNFD Vendor, Name, Version specified'"
-    json_error 400, 'No VNFD Vendor, Name, Version specified'
+    logger.cust_debug(component: component, operation: operation, message: "No VNFD Vendor, Name, Version specified")
+    json_error 400, 'No VNFD Vendor, Name, Version specified', component, operation, time_req_begin
   end
 
   # @method delete_vnfd_sp_vnf_id
@@ -1100,30 +1153,36 @@ class CatalogueV2 < SonataCatalogue
   #	  @param :id [Symbol] id VNF ID
   # Delete a VNF by uuid
   delete '/vnfs/:id/?' do
+
+    # Logger details
+    operation = "DELETE /v2/vnfs?#{params[:id]}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
+
     unless params[:id].nil?
-      logger.debug "Catalogue: DELETE /v2/vnfs/#{params[:id]}"
       begin
         vnf = Vnfd.find(params[:id])
       rescue Mongoid::Errors::DocumentNotFound => e
-        logger.error e
-        json_error 404, "The VNFD ID #{params[:id]} does not exist" unless vnf
+        json_error 404, "The VNFD ID #{params[:id]} does not exist", component, operation, time_req_begin unless vnf
       end
-      logger.debug "Catalogue: leaving DELETE /v2/vnfs/#{params[:id]}\" with VNFD #{vnf}"
+      logger.cust_debug(component: component, operation: operation, message: "VNFD found #{vnf}")
 
       if vnf['pkg_ref'] == 1
         # Referenced only once. Delete in this case
         # Delete entry in dict mapping
         del_ent_dict(vnf, :vnfd)
         vnf.destroy
-        halt 200, 'OK: VNFD removed'
+        json_return 200, 'VNFD removed', component, operation, time_req_begin
       else
         # Referenced above once. Decrease counter
         vnf.update_attributes(pkg_ref: vnf['pkg_ref'] - 1)
-        halt 200, "OK: VNFD referenced => #{vnf['pkg_ref']} "
+        json_return 200, "VNFD referenced => #{vnf['pkg_ref']}", component, operation, time_req_begin
       end
 
     end
-    logger.debug "Catalogue: leaving DELETE /v2/vnfs/#{params[:id]} with 'No VNFD ID specified'"
-    json_error 400, 'No VNFD ID specified'
+    logger.cust_debug(component: component, operation: operation, message: "No VNFD ID specified")
+    json_error 400, 'No VNFD ID specified', component, operation, time_req_begin
   end
 end

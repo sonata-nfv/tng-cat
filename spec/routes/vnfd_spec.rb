@@ -268,18 +268,42 @@ RSpec.describe CatalogueV2 do
   end
 
 
+  # # Test for deleting the duplicate file referenced two times
+  # # Since pkg_ref is equal to 2, two delete methods were needed
+  # # But the Rspec needs one method
+  # describe 'DELETE /api/v2/vnfs/:uuid' do
+  #   context 'with (UU)ID given' do
+  #     before do
+  #       delete '/vnfs/' + $vnfd_id.to_s
+  #     end
+  #     subject { last_response }
+  #     its(:status) { is_expected.to eq 200 }
+  #     its(:body) { is_expected.to eq 'VNFD removed'}
+  #   end
+  # end
+
+  # Test for deleting the duplicate file referenced two times
+  # Since pkg_ref is equal to 2, two delete methods were needed
+  describe 'DELETE /api/v2/vnfs/:uuid' do
+    context 'with (UU)ID given' do
+      it 'Delete vnfd' do
+        delete '/vnfs/' + $vnfd_id.to_s
+        expect(JSON.parse(last_response.body)).to include('OK' => 'VNFD referenced => 1' )
+      end
+    end
+  end
+
   # Test for deleting the duplicate file referenced two times
   # Since pkg_ref is equal to 2, two delete methods were needed
   # But the Rspec needs one method
   describe 'DELETE /api/v2/vnfs/:uuid' do
     context 'with (UU)ID given' do
-      before do
+      it 'Delete vnfd' do
         delete '/vnfs/' + $vnfd_id.to_s
+        expect(JSON.parse(last_response.body)).to include('OK' => 'VNFD removed' )
       end
-      subject { last_response }
-      its(:status) { is_expected.to eq 200 }
-      its(:body) { is_expected.to eq 'OK: VNFD removed'}
     end
   end
+
 
 end

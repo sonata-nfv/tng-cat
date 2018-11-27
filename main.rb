@@ -127,7 +127,7 @@ before do
   logger.level = CustomLog::DEBUG
 
   log_file = File.new("#{settings.root}/log/#{settings.environment}.log", 'a+')
-  STDOUT.reopen(log_file)
+  # STDOUT.reopen(log_file)
   STDOUT.sync = true
 
   # SECURITY CHECKS

@@ -347,7 +347,7 @@ class SonataCatalogue < Sinatra::Application
       case field
         when 'pd'
           if content.empty?
-            json_error 400, 'Empty package descriptor trio'
+            json_error 400, 'Empty package descriptor trio', component, operation, time_req_begin
           else
             pkg_desc = examine_descs_hash(content, Pkgd, 'pd', 'PD Descriptor')
           end

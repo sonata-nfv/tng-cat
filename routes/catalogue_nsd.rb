@@ -601,12 +601,20 @@ class CatalogueV2 < SonataCatalogue
   #	Returns a list of NSs
   # -> List many descriptors
   get '/network-services/?' do
+
+    # Logger details
+    operation = "GET /v2/network-services?#{query_string}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
+
+    # Return if content-type is invalid
+    json_error 415, 'Support of x-yaml and json', component, operation, time_req_begin unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+
     params['page_number'] ||= DEFAULT_PAGE_NUMBER
     params['page_size'] ||= DEFAULT_PAGE_SIZE
-    logger.info "Catalogue: entered GET /v2/network-services?#{query_string}"
 
-    json_error 415, 'Support of x-yaml and json' unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
-    
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
     # Split keys in meta_data and data
@@ -631,11 +639,10 @@ class CatalogueV2 < SonataCatalogue
       keyed_params.delete(:'nsd.version')
 
       nss = Nsd.where((keyed_params)).sort({ 'nsd.version' => -1 }) #.limit(1).first()
-      logger.info "Catalogue: NSDs=#{nss}"
       # nss = nss.sort({"version" => -1})
 
       if nss && nss.size.to_i > 0
-        logger.info "Catalogue: leaving GET /v2/network-services?#{query_string} with #{nss}"
+        logger.cust_debug(component: component, operation: operation, message: "NSDs=#{nss}")
 
         nss_list = []
         checked_list = []
@@ -657,7 +664,7 @@ class CatalogueV2 < SonataCatalogue
           checked_list.push(nss_name_vendor)
         end
       else
-        logger.info "Catalogue: leaving GET /v2/network-services?#{query_string} with 'No NSDs were found'"
+        logger.cust_debug(component: component, operation: operation, message: "No NSDs were found")
         nss_list = []
       end
       nss = apply_limit_and_offset(nss_list, page_number=params[:page_number],
@@ -669,16 +676,15 @@ class CatalogueV2 < SonataCatalogue
       nss = Nsd.where(keyed_params)
       # Set total count for results
       headers 'Record-Count' => nss.count.to_s
-      logger.info "Catalogue: NSDs=#{nss}"
       if nss && nss.size.to_i > 0
-        logger.info "Catalogue: leaving GET /v2/network-services?#{query_string} with #{nss}"
+        logger.cust_debug(component: component, operation: operation, message: "NSDs=#{nss}")
         # Paginate results
         nss = nss.paginate(page_number: params[:page_number], page_size: params[:page_size])
       else
-        logger.info "Catalogue: leaving GET /v2/network-services?#{query_string} with 'No NSDs were found'"
+        logger.cust_debug(component: component, operation: operation, message: "No NSDs were found")
       end
     end
-
+    logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
     response = ''
     case request.content_type
       when 'application/json'
@@ -695,18 +701,26 @@ class CatalogueV2 < SonataCatalogue
   #	  @param :id [Symbol] unique identifier
   # Show a NS by internal ID (uuid)
   get '/network-services/:id/?' do
-    unless params[:id].nil?
-      logger.debug "Catalogue: GET /v2/network-services/#{params[:id]}"
 
-      json_error 415, 'Support of x-yaml and json' unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+    # Logger details
+    operation = "GET /v2/network-services/#{params[:id]}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
+
+    # Return if content-type is invalid
+    json_error 415, 'Support of x-yaml and json', component, operation, time_req_begin unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+
+    unless params[:id].nil?
 
       begin
         ns = Nsd.find(params[:id])
       rescue Mongoid::Errors::DocumentNotFound => e
-        logger.error e
-        json_error 404, "The NSD ID #{params[:id]} does not exist" unless ns
+        json_error 404, "The NSD ID #{params[:id]} does not exist", component, operation, time_req_begin unless ns
       end
-      logger.debug "Catalogue: leaving GET /v2/network-services/#{params[:id]}\" with NSD #{ns}"
+      logger.cust_debug(component: component, operation: operation, message: "NSDs=#{ns}")
+      logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
       response = ''
       case request.content_type
@@ -718,16 +732,24 @@ class CatalogueV2 < SonataCatalogue
       halt 200, {'Content-type' => request.content_type}, response
 
     end
-    logger.debug "Catalogue: leaving GET /v2/network-services/#{params[:id]} with 'No NSD ID specified'"
-    json_error 400, 'No NSD ID specified'
+    logger.cust_debug(component: component, operation: operation, message: "No NSD ID specified")
+    json_error 400, 'No NSD ID specified', component, operation, time_req_begin
   end
 
   # @method post_nss
   # @overload post '/catalogues/network-services'
   # Post a NS in JSON or YAML format
   post '/network-services' do
+
+    # Logger details
+    operation = "POST /v2/network-services"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
+
     # Return if content-type is invalid
-    json_error 415, 'Support of x-yaml and json' unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+    json_error 415, 'Support of x-yaml and json', component, operation, time_req_begin unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
 
     # Compatibility support for YAML content-type
     case request.content_type
@@ -736,20 +758,20 @@ class CatalogueV2 < SonataCatalogue
         # When updating a NSD, the json object sent to API must contain just data inside
         # of the nsd, without the json field nsd: before
         ns, errors = parse_yaml(request.body.read)
-        halt 400, errors.to_json if errors
+        json_error 400, errors, component, operation, time_req_begin if errors
 
         # Translate from YAML format to JSON format
         new_ns_json = yaml_to_json(ns)
 
         # Validate JSON format
         new_ns, errors = parse_json(new_ns_json)
-        halt 400, errors.to_json if errors
+        json_error 400, errors, component, operation, time_req_begin if errors
 
       else
         # Compatibility support for JSON content-type
         # Parses and validates JSON format
         new_ns, errors = parse_json(request.body.read)
-        halt 400, errors.to_json if errors
+        json_error 400, errors, component, operation, time_req_begin if errors
     end
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
@@ -758,15 +780,17 @@ class CatalogueV2 < SonataCatalogue
     keyed_params = keyed_hash(params)
 
     # Validate NS
-    json_error 400, 'ERROR: NS Vendor not found' unless new_ns.has_key?('vendor')
-    json_error 400, 'ERROR: NS Name not found' unless new_ns.has_key?('name')
-    json_error 400, 'ERROR: NS Version not found' unless new_ns.has_key?('version')
+    json_error 400, 'NS Vendor not found', component, operation, time_req_begin unless new_ns.has_key?('vendor')
+    json_error 400, 'NS Name not found', component, operation, time_req_begin unless new_ns.has_key?('name')
+    json_error 400, 'NS Version not found', component, operation, time_req_begin unless new_ns.has_key?('version')
 
     # Check if NS already exists in the catalogue by name, vendor and version
     begin
       ns = Nsd.find_by({ 'nsd.name' => new_ns['name'], 'nsd.vendor' => new_ns['vendor'],
                          'nsd.version' => new_ns['version'] })
       ns.update_attributes(pkg_ref: ns['pkg_ref'] + 1)
+      logger.cust_debug(component: component, operation: operation, message: "Pkg_ref updated to #{ns['pkg_ref']}")
+      logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
       # response = {"uuid" => ns['_id'], "referenced" => ns['pkg_ref']}
       response = ''
@@ -783,7 +807,7 @@ class CatalogueV2 < SonataCatalogue
     # Check if NSD has an ID (it should not) and if it already exists in the catalogue
     begin
       ns = Nsd.find_by({ '_id' => new_ns['_id'] })
-      halt 409, 'Duplicated NS ID'
+      json_error 409, 'Duplicated NS ID', component, operation, time_req_begin
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
     end
@@ -813,10 +837,11 @@ class CatalogueV2 < SonataCatalogue
     begin
       ns = Nsd.create!(new_nsd)
     rescue Moped::Errors::OperationFailure => e
-      json_return 200, 'Duplicated NS ID' if e.message.include? 'E11000'
+      json_return 200, 'Duplicated NS ID', component, operation, time_req_begin if e.message.include? 'E11000'
     end
+    logger.cust_debug(component: component, operation: operation, message: "New NS has been added")
+    logger.cust_info(status: 201, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
-    puts 'New NS has been added'
     response = ''
     case request.content_type
       when 'application/json'
@@ -832,18 +857,24 @@ class CatalogueV2 < SonataCatalogue
   # Update a NS by vendor, name and version in JSON or YAML format
   ## Catalogue - UPDATE
   put '/network-services/?' do
-    logger.info "Catalogue: entered PUT /v2/network-services?#{query_string}"
+
+    # Logger details
+    operation = "PUT /v2/network-services?#{query_string}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
+
+    # Return if content-type is invalid
+    json_error 415, 'Support of x-yaml and json', component, operation, time_req_begin unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+
+    # Return 400 if params are empty
+    json_error 400, 'Update parameters are null', component, operation, time_req_begin if keyed_params.empty?
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
     # Transform 'string' params Hash into keys
     keyed_params = keyed_hash(params)
-
-    # Return if content-type is invalid
-    json_error 415, 'Support of x-yaml and json' unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
-
-    # Return 400 if params are empty
-    json_error 400, 'Update parameters are null' if keyed_params.empty?
 
     # Compatibility support for YAML content-type
     case request.content_type
@@ -852,27 +883,27 @@ class CatalogueV2 < SonataCatalogue
         # When updating a NSD, the json object sent to API must contain just data inside
         # of the nsd, without the json field nsd: before
         ns, errors = parse_yaml(request.body.read)
-        halt 400, errors.to_json if errors
+        json_error 400, errors, component, operation, time_req_begin if errors
 
         # Translate from YAML format to JSON format
         new_ns_json = yaml_to_json(ns)
 
         # Validate JSON format
         new_ns, errors = parse_json(new_ns_json)
-        halt 400, errors.to_json if errors
+        json_error 400, errors, component, operation, time_req_begin if errors
 
       else
         # Compatibility support for JSON content-type
         # Parses and validates JSON format
         new_ns, errors = parse_json(request.body.read)
-        halt 400, errors.to_json if errors
+        json_error 400, errors, component, operation, time_req_begin if errors
     end
 
     # Validate NS
     # Check if mandatory fields Vendor, Name, Version are included
-    json_error 400, 'ERROR: NS Vendor not found' unless new_ns.has_key?('vendor')
-    json_error 400, 'ERROR: NS Name not found' unless new_ns.has_key?('name')
-    json_error 400, 'ERROR: NS Version not found' unless new_ns.has_key?('version')
+    json_error 400, 'NS Vendor not found', component, operation, time_req_begin unless new_ns.has_key?('vendor')
+    json_error 400, 'NS Name not found', component, operation, time_req_begin unless new_ns.has_key?('name')
+    json_error 400, 'NS Version not found', component, operation, time_req_begin unless new_ns.has_key?('version')
 
     # Set headers
     case request.content_type
@@ -885,21 +916,21 @@ class CatalogueV2 < SonataCatalogue
 
     # Retrieve stored version
     if keyed_params[:vendor].nil? && keyed_params[:name].nil? && keyed_params[:version].nil?
-      json_error 400, 'Update Vendor, Name and Version parameters are null'
+      json_error 400, 'Update Vendor, Name and Version parameters are null', component, operation, time_req_begin
     else
       begin
         ns = Nsd.find_by({ 'nsd.vendor' => keyed_params[:vendor], 'nsd.name' => keyed_params[:name],
                           'nsd.version' => keyed_params[:version] })
-        puts 'NS is found'
+        logger.cust_debug(component: component, operation: operation, message: "NS is found")
       rescue Mongoid::Errors::DocumentNotFound => e
-        json_error 404, "The NSD Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist"
+        json_error 404, "The NSD Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist", component, operation, time_req_begin
       end
     end
     # Check if NS already exists in the catalogue by Name, Vendor and Version
     begin
       ns = Nsd.find_by({ 'nsd.name' => new_ns['name'], 'nsd.vendor' => new_ns['vendor'],
                          'nsd.version' => new_ns['version'] })
-      json_return 200, 'Duplicated NS Name, Vendor and Version'
+      json_return 200, 'Duplicated NS Name, Vendor and Version', component, operation, time_req_begin
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
     end
@@ -928,9 +959,10 @@ class CatalogueV2 < SonataCatalogue
     begin
       new_ns = Nsd.create!(new_nsd)
     rescue Moped::Errors::OperationFailure => e
-      json_return 200, 'Duplicated NS ID' if e.message.include? 'E11000'
+      json_return 200, 'Duplicated NS ID', component, operation, time_req_begin if e.message.include? 'E11000'
     end
-    logger.debug "Catalogue: leaving PUT /v2/network-services?#{query_string}\" with NSD #{new_ns}"
+    logger.cust_debug(component: component, operation: operation, message: "NSD #{new_ns}")
+    logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
     response = ''
     case request.content_type
@@ -947,14 +979,21 @@ class CatalogueV2 < SonataCatalogue
   # Update a NS in JSON or YAML format
   ## Catalogue - UPDATE
   put '/network-services/:id/?' do
+
+    # Logger details
+    operation = "PUT /v2/network-services?#{params[:id]}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
+
     # Return if content-type is invalid
-    json_error 415, 'Support of x-yaml and json' unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+    json_error 415, 'Support of x-yaml and json', component, operation, time_req_begin unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
 
     unless params[:id].nil?
-      logger.debug "Catalogue: PUT /v2/network-services/#{params[:id]}"
 
       # Transform 'string' params Hash into keys
       keyed_params = keyed_hash(params)
@@ -962,16 +1001,15 @@ class CatalogueV2 < SonataCatalogue
       # Check for special case (:status param == <new_status>)
       if keyed_params.key?(:status)
         # Do update of Descriptor status -> update_ns_status
-        logger.info "Catalogue: entered PUT /v2/network-services/#{query_string}"
+        logger.cust_debug(component: component, operation: operation, message: "/v2/network-services/#{query_string}")
 
         # Validate NS
         # Retrieve stored version
         begin
-          puts 'Searching ' + params[:id].to_s
           ns = Nsd.find_by({ '_id' => params[:id] })
-          puts 'NS is found'
+          logger.cust_debug(component: component, operation: operation, message: "NS is found")
         rescue Mongoid::Errors::DocumentNotFound => e
-          json_error 404, 'This NSD does not exists'
+          json_error 404, 'This NSD does not exists', component, operation, time_req_begin
         end
 
         # Validate new status
@@ -981,12 +1019,12 @@ class CatalogueV2 < SonataCatalogue
           begin
             ns.update_attributes(status: keyed_params[:status])
           rescue Moped::Errors::OperationFailure => e
-            json_error 400, 'ERROR: Operation failed'
+            json_error 400, 'Operation failed', component, operation, time_req_begin
           end
         else
-          json_error 400, "Invalid new status #{keyed_params[:status]}"
+          json_error 400, "Invalid new status #{keyed_params[:status]}", component, operation, time_req_begin
         end
-        halt 200, "Status updated to {#{query_string}}"
+        json_return 200, "Status updated to {#{query_string}}", component, operation, time_req_begin
 
       else
         # Compatibility support for YAML content-type
@@ -996,42 +1034,41 @@ class CatalogueV2 < SonataCatalogue
             # When updating a NSD, the json object sent to API must contain just data inside
             # of the nsd, without the json field nsd: before
             ns, errors = parse_yaml(request.body.read)
-            halt 400, errors.to_json if errors
+            json_error 400, errors, component, operation, time_req_begin if errors
 
             # Translate from YAML format to JSON format
             new_ns_json = yaml_to_json(ns)
 
             # Validate JSON format
             new_ns, errors = parse_json(new_ns_json)
-            halt 400, errors.to_json if errors
+            json_error 400, errors, component, operation, time_req_begin if errors
 
           else
             # Compatibility support for JSON content-type
             # Parses and validates JSON format
             new_ns, errors = parse_json(request.body.read)
-            halt 400, errors.to_json if errors
+            json_error 400, errors, component, operation, time_req_begin if errors
         end
 
         # Validate NS
         # Check if mandatory fields Vendor, Name, Version are included
-        json_error 400, 'ERROR: NS Vendor not found' unless new_ns.has_key?('vendor')
-        json_error 400, 'ERROR: NS Name not found' unless new_ns.has_key?('name')
-        json_error 400, 'ERROR: NS Version not found' unless new_ns.has_key?('version')
+        json_error 400, 'NS Vendor not found', component, operation, time_req_begin unless new_ns.has_key?('vendor')
+        json_error 400, 'NS Name not found', component, operation, time_req_begin unless new_ns.has_key?('name')
+        json_error 400, 'NS Version not found', component, operation, time_req_begin unless new_ns.has_key?('version')
 
         # Retrieve stored version
         begin
-          puts 'Searching ' + params[:id].to_s
           ns = Nsd.find_by({ '_id' => params[:id] })
-          puts 'NS is found'
+          logger.cust_debug(component: component, operation: operation, message: "NS is found")
         rescue Mongoid::Errors::DocumentNotFound => e
-          json_error 404, "The NSD ID #{params[:id]} does not exist"
+          json_error 404, "The NSD ID #{params[:id]} does not exist", component, operation, time_req_begin
         end
 
         # Check if NS already exists in the catalogue by name, vendor and version
         begin
           ns = Nsd.find_by({ 'nsd.name' => new_ns['name'], 'nsd.vendor' => new_ns['vendor'],
                              'nsd.version' => new_ns['version'] })
-          json_return 200, 'Duplicated NS Name, Vendor and Version'
+          json_return 200, 'Duplicated NS Name, Vendor and Version', component, operation, time_req_begin
         rescue Mongoid::Errors::DocumentNotFound => e
           # Continue
         end
@@ -1060,9 +1097,10 @@ class CatalogueV2 < SonataCatalogue
         begin
           new_ns = Nsd.create!(new_nsd)
         rescue Moped::Errors::OperationFailure => e
-          json_return 200, 'Duplicated NS ID' if e.message.include? 'E11000'
+          json_return 200, 'Duplicated NS ID', component, operation, time_req_begin if e.message.include? 'E11000'
         end
-        logger.debug "Catalogue: leaving PUT /v2/network-services/#{params[:id]}\" with NSD #{new_ns}"
+        logger.cust_debug(component: component, operation: operation, message: "NSD #{new_ns}")
+        logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
         response = ''
         case request.content_type
@@ -1074,15 +1112,21 @@ class CatalogueV2 < SonataCatalogue
         halt 200, {'Content-type' => request.content_type}, response
       end
     end
-    logger.debug "Catalogue: leaving PUT /v2/network-services/#{params[:id]} with 'No NSD ID specified'"
-    json_error 400, 'No NSD ID specified'
+    logger.cust_debug(component: component, operation: operation, message: "No NSD ID specified")
+    json_error 400, 'No NSD ID specified', component, operation, time_req_begin
   end
 
   # @method delete_nsd_sp_ns
   # @overload delete '/network-services/?'
   #	Delete a NS by vendor, name and version
   delete '/network-services/?' do
-    logger.info "Catalogue: entered DELETE /v2/network-services?#{query_string}"
+
+    # Logger details
+    operation = "DELETE /v2/network-services?#{query_string}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
@@ -1094,27 +1138,27 @@ class CatalogueV2 < SonataCatalogue
       begin
         ns = Nsd.find_by({ 'nsd.vendor' => keyed_params[:vendor], 'nsd.name' => keyed_params[:name],
                           'nsd.version' => keyed_params[:version]} )
-        puts 'NS is found'
+        logger.cust_debug(component: component, operation: operation, message: "NS is found")
       rescue Mongoid::Errors::DocumentNotFound => e
-        json_error 404, "The NSD Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist"
+        json_error 404, "The NSD Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist", component, operation, time_req_begin
       end
-      logger.debug "Catalogue: leaving DELETE /v2/network-services?#{query_string}\" with NSD #{ns}"
+      logger.cust_debug(component: component, operation: operation, message: "NSD #{ns}")
 
       if ns['pkg_ref'] == 1
         # Referenced only once. Delete in this case
         # Delete entry in dict mapping
         del_ent_dict(ns, :nsd)
         ns.destroy
-        halt 200, 'OK: NSD removed'
+        json_return 200, 'NSD removed', component, operation, time_req_begin
       else
         # Referenced above once. Decrease counter
         ns.update_attributes(pkg_ref: ns['pkg_ref'] - 1)
-        halt 200, "OK: NSD referenced => #{ns['pkg_ref']}"
+        json_return 200, "NSD referenced => #{ns['pkg_ref']}", component, operation, time_req_begin
       end
 
     end
-    logger.debug "Catalogue: leaving DELETE /v2/network-services?#{query_string} with 'No NSD Vendor, Name, Version specified'"
-    json_error 400, 'No NSD Vendor, Name, Version specified'
+    logger.cust_debug(component: component, operation: operation, message: "No NSD Vendor, Name, Version specified")
+    json_error 400, 'No NSD Vendor, Name, Version specified',component, operation, time_req_begin
   end
 
   # @method delete_nsd_sp_ns_id
@@ -1123,30 +1167,36 @@ class CatalogueV2 < SonataCatalogue
   #	  @param :id [Symbol] unique identifier
   # Delete a NS by uuid
   delete '/network-services/:id/?' do
+
+    # Logger details
+    operation = "DELETE /v2/network-services/#{params[:id]}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
+
     unless params[:id].nil?
-      logger.debug "Catalogue: DELETE /v2/network-services/#{params[:id]}"
       begin
         ns = Nsd.find(params[:id])
       rescue Mongoid::Errors::DocumentNotFound => e
-        logger.error e
-        json_error 404, "The NSD ID #{params[:id]} does not exist" unless ns
+        json_error 404, "The NSD ID #{params[:id]} does not exist", component, operation, time_req_begin unless ns
       end
-      logger.debug "Catalogue: leaving DELETE /v2/network-services/#{params[:id]}\" with NSD #{ns}"
+      logger.cust_debug(component: component, operation: operation, message: "NSD #{ns}")
 
       if ns['pkg_ref'] == 1
         # Referenced only once. Delete in this case
         # Delete entry in dict mapping
         del_ent_dict(ns, :nsd)
         ns.destroy
-        halt 200, 'OK: NSD removed'
+        json_return 200, 'NSD removed', component, operation, time_req_begin
       else
         # Referenced above once. Decrease counter
         ns.update_attributes(pkg_ref: ns['pkg_ref'] - 1)
-        halt 200, "OK: NSD referenced => #{ns['pkg_ref']}"
+        json_return 200, "NSD referenced => #{ns['pkg_ref']}", component, operation, time_req_begin
       end
 
     end
-    logger.debug "Catalogue: leaving DELETE /v2/network-services/#{params[:id]} with 'No NSD ID specified'"
-    json_error 400, 'No NSD ID specified'
+    logger.cust_debug(component: component, operation: operation, message: "No NSD ID specified")
+    json_error 400, 'No NSD ID specified', component, operation, time_req_begin
   end
 end

@@ -35,8 +35,6 @@
 
 class CustomLog < Logger
 
-
-
   def cust_error(start_stop: '', component:, operation:, message:, status:'', time_elapsed:'')
     message_form(type: 'E', start_stop: start_stop, component: component, operation: operation, message: message, status: status, time_elapsed: time_elapsed)
   end

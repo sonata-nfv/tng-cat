@@ -41,13 +41,19 @@ class CatalogueV2 < SonataCatalogue
   get '/tests/?' do
     params['page_number'] ||= DEFAULT_PAGE_NUMBER
     params['page_size'] ||= DEFAULT_PAGE_SIZE
-    logger.info "Catalogue: entered GET /v2/tests?#{query_string}"
-
-    # Return if content-type is invalid
-    json_error 415, 'Support of x-yaml and json' unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
+
+    # Logger details
+    operation = "GET /v2/tests?#{query_string}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
+
+    # Return if content-type is invalid
+    json_error 415, 'Support of x-yaml and json', component, operation, time_req_begin unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
 
     # Split keys in meta_data and data
     # Then transform 'string' params Hash into keys
@@ -71,10 +77,9 @@ class CatalogueV2 < SonataCatalogue
       keyed_params.delete(:'testd.version')
 
       tests = Testd.where((keyed_params)).sort({ 'testd.version' => -1 }) #.limit(1).first()
-      logger.info "Catalogue: TESTDs=#{tests}"
 
       if tests && tests.size.to_i > 0
-        logger.info "Catalogue: leaving GET /v2/tests?#{query_string} with #{tests}"
+        logger.cust_debug(component: component, operation: operation, message: "TESTDs found #{tests}")
 
         tests_list = []
         checked_list = []
@@ -92,7 +97,7 @@ class CatalogueV2 < SonataCatalogue
           checked_list.push(tests_name_vendor)
         end
       else
-        logger.info "Catalogue: leaving GET /v2/tests?#{query_string} with 'No TESTDs were found'"
+        logger.cust_debug(component: component, operation: operation, message: "'No TESTDs were found")
         tests_list = []
 
       end
@@ -104,15 +109,15 @@ class CatalogueV2 < SonataCatalogue
       tests = Testd.where(keyed_params)
       # Set total count for results
       headers 'Record-Count' => tests.count.to_s
-      logger.info "Catalogue: TESTDs=#{tests}"
       if tests && tests.size.to_i > 0
-        logger.info "Catalogue: leaving GET /v2/tests?#{query_string} with #{tests}"
+        logger.cust_debug(component: component, operation: operation, message: "TESTDs found #{tests}")
         # Paginate results
         tests = tests.paginate(page_number: params[:page_number], page_size: params[:page_size])
       else
-        logger.info "Catalogue: leaving GET /v2/tests?#{query_string} with 'No TESTDs were found'"
+        logger.cust_debug(component: component, operation: operation, message: "'No TESTDs were found")
       end
     end
+    logger.cust_info(status: 200,start_stop:'STOP', message: "Ended at #{Time.now.utc}",  component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
     response = ''
     case request.content_type
@@ -131,19 +136,24 @@ class CatalogueV2 < SonataCatalogue
   # Show a Test Descriptor by internal ID (uuid)
   get '/tests/:id/?' do
 
+    # Logger details
+    operation = "GET /v2/tests?#{params[:id]}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
+
     # Return if content-type is invalid
-    json_error 415, 'Support of x-yaml and json' unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+    json_error 415, 'Support of x-yaml and json', component, operation, time_req_begin unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
 
     unless params[:id].nil?
-      logger.debug "Catalogue: GET /v2/tests/#{params[:id]}"
-
       begin
         test = Testd.find(params[:id])
       rescue Mongoid::Errors::DocumentNotFound => e
-        logger.error e
-        json_error 404, "The TESTD ID #{params[:id]} does not exist" unless test
+        json_error 404, "The TESTD ID #{params[:id]} does not exist", component, operation, time_req_begin unless test
       end
-      logger.debug "Catalogue: leaving GET /v2/tests/#{params[:id]}\" with TESTD #{test}"
+      logger.cust_debug(component: component, operation: operation, message: "TESTD found #{test}")
+      logger.cust_info(status: 200,start_stop:'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
       response = ''
       case request.content_type
@@ -155,16 +165,27 @@ class CatalogueV2 < SonataCatalogue
       halt 200, {'Content-type' => request.content_type}, response
 
     end
-    logger.debug "Catalogue: leaving GET /v2/tests/#{params[:id]} with 'No TESTD ID specified'"
-    json_error 400, 'No TESTD ID specified'
+    logger.cust_debug(component: component, operation: operation, message: "No TESTD ID specified")
+    json_error 400, 'No TESTD ID specified', component, operation, time_req_begin
   end
 
   # @method post_tests
   # @overload post '/catalogues/tests'
   # Post a Test Descriptor in JSON or YAML format
   post '/tests' do
+
+    #Delete key "captures" if present
+    params.delete(:captures) if params.key?(:captures)
+
+    # Logger details
+    operation = "POST /v2/tests"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
+
     # Return if content-type is invalid
-    json_error 415, 'Support of x-yaml and json' unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+    json_error 415, 'Support of x-yaml and json', component, operation, time_req_begin unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
 
     # Compatibility support for YAML content-type
     case request.content_type
@@ -173,32 +194,29 @@ class CatalogueV2 < SonataCatalogue
         # When updating a Test Descriptor, the json object sent to API must contain just data inside
         # of the test descriptor, without the json field testd: before
         test, errors = parse_yaml(request.body.read)
-        halt 400, errors.to_json if errors
+        json_error 400, errors, component, operation, time_req_begin if errors
 
         # Translate from YAML format to JSON format
         new_test_json = yaml_to_json(test)
 
         # Validate JSON format
         new_test, errors = parse_json(new_test_json)
-        halt 400, errors.to_json if errors
+        json_error 400, errors, component, operation, time_req_begin if errors
 
       else
         # Compatibility support for JSON content-type
         # Parses and validates JSON format
         new_test, errors = parse_json(request.body.read)
-        halt 400, errors.to_json if errors
+        json_error 400, errors, component, operation, time_req_begin if errors
     end
-
-    #Delete key "captures" if present
-    params.delete(:captures) if params.key?(:captures)
 
     # Transform 'string' params Hash into keys
     keyed_params = keyed_hash(params)
 
     # Validate Test Descriptor
-    json_error 400, 'ERROR: TEST Vendor not found' unless new_test.has_key?('vendor')
-    json_error 400, 'ERROR: TEST Name not found' unless new_test.has_key?('name')
-    json_error 400, 'ERROR: TEST Version not found' unless new_test.has_key?('version')
+    json_error 400, 'TEST Vendor not found', component, operation, time_req_begin unless new_test.has_key?('vendor')
+    json_error 400, 'TEST Name not found', component, operation, time_req_begin unless new_test.has_key?('name')
+    json_error 400, 'TEST Version not found', component, operation, time_req_begin unless new_test.has_key?('version')
 
     # Comment for file re-usage. Introduce the reference counting of package
     # Check if Test Descriptor already exists in the catalogue by name, vendor and version
@@ -206,12 +224,13 @@ class CatalogueV2 < SonataCatalogue
       test = Testd.find_by({ 'testd.name' => new_test['name'], 'testd.vendor' => new_test['vendor'],
                            'testd.version' => new_test['version'] })
       test.update_attributes(pkg_ref: test['pkg_ref'] + 1)
-      response = {"uuid" => test['_id'], "referenced" => test['pkg_ref']}
+      response = ''
+      logger.cust_info(status: 200, start_stop: 'STOP',message: "Update reference to #{test['pkg_ref']}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
       case request.content_type
         when 'application/json'
-          response = response.to_json
+          response = test.to_json
         else
-          response = json_to_yaml(response.to_json)
+          response = json_to_yaml(test.to_json)
       end
       halt 200, {'Content-type' => request.content_type}, response
     rescue Mongoid::Errors::DocumentNotFound => e
@@ -222,7 +241,7 @@ class CatalogueV2 < SonataCatalogue
     # Check if Test Descriptor has an ID (it should not) and if it already exists in the catalogue
     begin
       test = Testd.find_by({ '_id' => new_test['_id'] })
-      halt 409, 'Duplicated TEST ID'
+      json_error 409, 'Duplicated TEST ID', component, operation, time_req_begin
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
     end
@@ -250,10 +269,10 @@ class CatalogueV2 < SonataCatalogue
     begin
       test = Testd.create!(new_testd)
     rescue Moped::Errors::OperationFailure => e
-      json_return 200, 'Duplicated TEST ID' if e.message.include? 'E11000'
+      json_return 200, 'Duplicated TEST ID', component, operation, time_req_begin if e.message.include? 'E11000'
     end
+    logger.cust_info(status: 201, start_stop: 'STOP', message: "New TEST Descriptor has been added", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
-    puts 'New TEST Descriptor has been added'
     response = ''
     case request.content_type
       when 'application/json'
@@ -269,7 +288,13 @@ class CatalogueV2 < SonataCatalogue
   # Update a Test Descriptor by vendor, name and version in JSON or YAML format
   ## Catalogue - UPDATE
   put '/tests/?' do
-    logger.info "Catalogue: entered PUT /v2/tests?#{query_string}"
+
+    # Logger details
+    operation = "PUT /v2/tests?#{query_string}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
@@ -278,11 +303,10 @@ class CatalogueV2 < SonataCatalogue
     keyed_params = keyed_hash(params)
 
     # Return if content-type is invalid
-    # Return if content-type is invalid
-    json_error 415, 'Support of x-yaml and json' unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+    json_error 415, 'Support of x-yaml and json', component, operation, time_req_begin unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
 
     # Return if params are empty
-    json_error 400, 'Update parameters are null' if keyed_params.empty?
+    json_error 400, 'Update parameters are null', component, operation, time_req_begin if keyed_params.empty?
 
     # Compatibility support for YAML content-type
     case request.content_type
@@ -291,27 +315,27 @@ class CatalogueV2 < SonataCatalogue
         # When updating a Test Descriptor, the json object sent to API must contain just data inside
         # of the test descriptor, without the json field testd: before
         test, errors = parse_yaml(request.body.read)
-        halt 400, errors.to_json if errors
+        json_error 400, errors, component, operation, time_req_begin if errors
 
         # Translate from YAML format to JSON format
         new_test_json = yaml_to_json(test)
 
         # Validate JSON format
         new_test, errors = parse_json(new_test_json)
-        halt 400, errors.to_json if errors
+        json_error 400, errors, component, operation, time_req_begin if errors
 
       else
         # Compatibility support for JSON content-type
         # Parses and validates JSON format
         new_test, errors = parse_json(request.body.read)
-        halt 400, errors.to_json if errors
+        json_error 400, errors, component, operation, time_req_begin if errors
     end
 
     # Validate NS
     # Check if mandatory fields Vendor, Name, Version are included
-    json_error 400, 'ERROR: TEST Vendor not found' unless new_test.has_key?('vendor')
-    json_error 400, 'ERROR: TEST Name not found' unless new_test.has_key?('name')
-    json_error 400, 'ERROR: TEST Version not found' unless new_test.has_key?('version')
+    json_error 400, 'TEST Vendor not found', component, operation, time_req_begin unless new_test.has_key?('vendor')
+    json_error 400, 'TEST Name not found', component, operation, time_req_begin unless new_test.has_key?('name')
+    json_error 400, 'TEST Version not found', component, operation, time_req_begin unless new_test.has_key?('version')
 
     # Set headers
     case request.content_type
@@ -324,21 +348,21 @@ class CatalogueV2 < SonataCatalogue
 
     # Retrieve stored version
     if keyed_params[:vendor].nil? && keyed_params[:name].nil? && keyed_params[:version].nil?
-      json_error 400, 'Update Vendor, Name and Version parameters are null'
+      json_error 400, 'Update Vendor, Name and Version parameters are null', component, operation, time_req_begin
     else
       begin
         test = Testd.find_by({ 'testd.vendor' => keyed_params[:vendor], 'testd.name' => keyed_params[:name],
                             'testd.version' => keyed_params[:version] })
-        puts 'TEST Descriptor is found'
+        logger.cust_debug(component: component, operation: operation, message: "TEST Descriptor is found")
       rescue Mongoid::Errors::DocumentNotFound => e
-        json_error 404, "The TESTD Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist"
+        json_error 404, "The TESTD Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist", component, operation, time_req_begin
       end
     end
     # Check if Test Descriptor already exists in the catalogue by Name, Vendor and Version
     begin
       test = Testd.find_by({ 'testd.name' => new_test['name'], 'testd.vendor' => new_test['vendor'],
                            'testd.version' => new_test['version'] })
-      json_return 200, 'Duplicated TEST Name, Vendor and Version'
+      json_return 200, 'Duplicated TEST Name, Vendor and Version', component, operation, time_req_begin
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
     end
@@ -366,9 +390,10 @@ class CatalogueV2 < SonataCatalogue
     begin
       new_test = Testd.create!(new_testd)
     rescue Moped::Errors::OperationFailure => e
-      json_return 200, 'Duplicated TEST ID' if e.message.include? 'E11000'
+      json_return 200, 'Duplicated TEST ID', component, operation, time_req_begin if e.message.include? 'E11000'
     end
-    logger.debug "Catalogue: leaving PUT /v2/tests?#{query_string}\" with TESTD #{new_test}"
+    logger.cust_debug(component: component, operation: operation, message: "TESTD #{new_test}")
+    logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}" , component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
     response = ''
     case request.content_type
@@ -385,11 +410,18 @@ class CatalogueV2 < SonataCatalogue
   #	Update a Test Descriptor by its ID in JSON or YAML format
   ## Catalogue - UPDATE
   put '/tests/:id/?' do
+
+    # Logger details
+    operation = "PUT /v2/tests/#{params[:id]}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
+
     # Return if content-type is invalid
-    json_error 415, 'Support of x-yaml and json' unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+    json_error 415, 'Support of x-yaml and json', component, operation, time_req_begin unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
 
     unless params[:id].nil?
-      logger.debug "Catalogue: PUT /v2/tests/#{params[:id]}"
 
       #Delete key "captures" if present
       params.delete(:captures) if params.key?(:captures)
@@ -400,16 +432,15 @@ class CatalogueV2 < SonataCatalogue
       # Check for special case (:status param == <new_status>)
       if keyed_params.key?(:status)
         # Do update of Descriptor status -> update_test_status
-        logger.info "Catalogue: entered PUT /v2/tests/#{query_string}"
+        logger.cust_debug(component: component, operation: operation, message: "entered PUT /v2/tests/#{query_string}")
 
         # Validate Test
         # Retrieve stored version
         begin
-          puts 'Searching ' + params[:id].to_s
           test = Testd.find_by({ '_id' => params[:id] })
-          puts 'TESTD is found'
+          logger.cust_debug(component: component, operation: operation, message: "TESTD is found")
         rescue Mongoid::Errors::DocumentNotFound => e
-          json_error 404, 'This TESTD does not exists'
+          json_error 404, 'This TESTD does not exists', component, operation, time_req_begin
         end
 
         #Validate new status
@@ -419,12 +450,12 @@ class CatalogueV2 < SonataCatalogue
           begin
             test.update_attributes(status: keyed_params[:status])
           rescue Moped::Errors::OperationFailure => e
-            json_error 400, 'ERROR: Operation failed'
+            json_error 400, 'Operation failed', component, operation, time_req_begin
           end
         else
-          json_error 400, "Invalid new status #{keyed_params[:status]}"
+          json_error 400, "Invalid new status #{keyed_params[:status]}", component, operation, time_req_begin
         end
-        halt 200, "Status updated to {#{query_string}}"
+        json_return 200, "Status updated to {#{query_string}}", component, operation, time_req_begin
 
       else
         # Compatibility support for YAML content-type
@@ -434,42 +465,41 @@ class CatalogueV2 < SonataCatalogue
             # When updating a Test Descriptor, the json object sent to API must contain just data inside
             # of the test descriptor, without the json field testd: before
             test, errors = parse_yaml(request.body.read)
-            halt 400, errors.to_json if errors
+            json_error 400, errors, component, operation, time_req_begin if errors
 
             # Translate from YAML format to JSON format
             new_test_json = yaml_to_json(test)
 
             # Validate JSON format
             new_test, errors = parse_json(new_test_json)
-            halt 400, errors.to_json if errors
+            json_error 400, errors, component, operation, time_req_begin if errors
 
           else
             # Compatibility support for JSON content-type
             # Parses and validates JSON format
             new_test, errors = parse_json(request.body.read)
-            halt 400, errors.to_json if errors
+            json_error 400, errors, component, operation, time_req_begin if errors
         end
 
         # Validate TEST
         # Check if mandatory fields Vendor, Name, Version are included
-        json_error 400, 'ERROR: TEST Vendor not found' unless new_test.has_key?('vendor')
-        json_error 400, 'ERROR: TEST Name not found' unless new_test.has_key?('name')
-        json_error 400, 'ERROR: TEST Version not found' unless new_test.has_key?('version')
+        json_error 400, 'TEST Vendor not found', component, operation, time_req_begin unless new_test.has_key?('vendor')
+        json_error 400, 'TEST Name not found', component, operation, time_req_begin unless new_test.has_key?('name')
+        json_error 400, 'TEST Version not found', component, operation, time_req_begin unless new_test.has_key?('version')
 
         # Retrieve stored version
         begin
-          puts 'Searching ' + params[:id].to_s
           test = Testd.find_by({ '_id' => params[:id] })
-          puts 'TESTD is found'
+          logger.cust_debug(component: component, operation: operation, message: "TESTD is found")
         rescue Mongoid::Errors::DocumentNotFound => e
-          json_error 404, "The TESTD ID #{params[:id]} does not exist"
+          json_error 404, "The TESTD ID #{params[:id]} does not exist", component, operation, time_req_begin
         end
 
         # Check if Test Descriptor already exists in the catalogue by name, vendor and version
         begin
           test = Testd.find_by({ 'testd.name' => new_test['name'], 'testd.vendor' => new_test['vendor'],
                                'testd.version' => new_test['version'] })
-          json_return 200, 'Duplicated TEST Name, Vendor and Version'
+          json_return 200, 'Duplicated TEST Name, Vendor and Version', component, operation, time_req_begin
         rescue Mongoid::Errors::DocumentNotFound => e
           # Continue
         end
@@ -497,9 +527,10 @@ class CatalogueV2 < SonataCatalogue
         begin
           new_test = Testd.create!(new_testd)
         rescue Moped::Errors::OperationFailure => e
-          json_return 200, 'Duplicated TEST ID' if e.message.include? 'E11000'
+          json_return 200, 'Duplicated TEST ID', component, operation, time_req_begin if e.message.include? 'E11000'
         end
-        logger.debug "Catalogue: leaving PUT /v2/tests/#{params[:id]}\" with TESTD #{new_test}"
+
+        logger.cust_info(status: 200, start_stop: 'STOP', message:"TESTD #{new_test}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
         response = ''
         case request.content_type
@@ -511,15 +542,21 @@ class CatalogueV2 < SonataCatalogue
         halt 200, {'Content-type' => request.content_type}, response
       end
     end
-    logger.debug "Catalogue: leaving PUT /v2/tests/#{params[:id]} with 'No TEST ID specified'"
-    json_error 400, 'No TEST ID specified'
+    logger.cust_debug(component: component, operation: operation, message: "No TEST ID specified")
+    json_error 400, 'No TEST ID specified', component, operation, time_req_begin
   end
 
   # @method delete_testd_sp_test
   # @overload delete '/tests/?'
   #	Delete a TEST by vendor, name and version
   delete '/tests/?' do
-    logger.info "Catalogue: entered DELETE /v2/tests?#{query_string}"
+
+    # Logger details
+    operation = "DELETE /v2/tests?#{query_string}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
@@ -531,25 +568,26 @@ class CatalogueV2 < SonataCatalogue
       begin
         test = Testd.find_by({ 'testd.vendor' => keyed_params[:vendor], 'testd.name' => keyed_params[:name],
                             'testd.version' => keyed_params[:version] })
-        puts 'TEST is found'
+        logger.cust_debug(component: component, operation: operation, message: "TEST is found")
       rescue Mongoid::Errors::DocumentNotFound => e
-        json_error 404, "The TESTD Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist"
+        json_error 404, "The TESTD Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist", component, operation, time_req_begin
       end
-      logger.debug "Catalogue: leaving DELETE /v2/tests?#{query_string}\" with TESTD #{test}"
+      logger.cust_debug(component: component, operation: operation, message: "TESTD #{test}")
+
       if test['pkg_ref'] == 1
         # Referenced only once. Delete in this case
         # Delete entry in dict mapping
         del_ent_dict(test, :testd)
         test.destroy
-        halt 200, 'OK: TESTD removed'
+        json_result 200, 'TESTD removed', component, operation, time_req_begin
       else
         # Referenced above once. Decrease counter
         test.update_attributes(pkg_ref: test['pkg_ref'] - 1)
-        halt 200, "OK: TESTD referenced => #{test['pkg_ref']}"
+        json_result 200, "TESTD referenced => #{test['pkg_ref']}", component, operation, time_req_begin
       end
     end
-    logger.debug "Catalogue: leaving DELETE /v2/tests?#{query_string} with 'No TESTD Vendor, Name, Version specified'"
-    json_error 400, 'No TESTD Vendor, Name, Version specified'
+    logger.cust_debug(component: component, operation: operation, message: "No TESTD Vendor, Name, Version specified")
+    json_error 400, 'No TESTD Vendor, Name, Version specified', component, operation, time_req_begin
   end
 
   # @method delete_testd_sp_test_id
@@ -558,26 +596,32 @@ class CatalogueV2 < SonataCatalogue
   #	  @param :id [Symbol] id TEST ID
   # Delete a TEST by uuid
   delete '/tests/:id/?' do
+
+    # Logger details
+    operation = "DELETE /v2/tests/#{params[:id]}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
+
     unless params[:id].nil?
-      logger.debug "Catalogue: DELETE /v2/tests/#{params[:id]}"
       begin
         test = Testd.find(params[:id])
       rescue Mongoid::Errors::DocumentNotFound => e
-        logger.error e
-        json_error 404, "The TESTD ID #{params[:id]} does not exist" unless test
+        json_error 404, "The TESTD ID #{params[:id]} does not exist", component, operation, time_req_begin unless test
       end
-      logger.debug "Catalogue: leaving DELETE /v2/tests/#{params[:id]}\" with TESTD #{test}"
+      logger.cust_debug(component: component, operation: operation, message: "TESTD #{test}")
 
       if test['pkg_ref'] == 1
         # Referenced only once. Delete in this case
         # Delete entry in dict mapping
         del_ent_dict(test, :testd)
         test.destroy
-        halt 200, 'OK: TESTD removed'
+        json_return 200, 'TESTD removed', component, operation, time_req_begin
       else
         # Referenced above once. Decrease counter
         test.update_attributes(pkg_ref: test['pkg_ref'] - 1)
-        halt 200, "OK: TESTD referenced => #{test['pkg_ref']}"
+        json_return 200, "TESTD referenced => #{test['pkg_ref']}", component, operation, time_req_begin
       end
 
     end

@@ -75,7 +75,7 @@ RSpec.describe CatalogueV2 do
         headers = { 'CONTENT_TYPE' => 'application/json' }
         post '/tests', test_descriptor, headers
         expect(last_response.status).to eq(200)
-        expect(last_response.body.to_s).to include('referenced','2')
+        expect(last_response.body.to_s).to include('pkg_ref','2')
         expect(last_response.body.to_s).to include($testd_id.to_s)
       end
     end
@@ -148,17 +148,38 @@ RSpec.describe CatalogueV2 do
     end
   end
 
+  # # Test for deleting the duplicate file referenced two times
+  # # Since pkg_ref is equal to 2, two delete methods were needed
+  # # But the Rspec needs one method
+  # describe 'DELETE /api/v2/tests/:uuid' do
+  #   context 'with (UU)ID given' do
+  #     before do
+  #       delete '/tests/' + $testd_id.to_s
+  #     end
+  #     subject { last_response }
+  #     its(:status) { is_expected.to eq 200 }
+  #     its(:body) { is_expected.to eq 'TESTD removed'}
+  #   end
+  # end
+
   # Test for deleting the duplicate file referenced two times
   # Since pkg_ref is equal to 2, two delete methods were needed
-  # But the Rspec needs one method
-  describe 'DELETE /api/v2/tests/:uuid' do
+  describe 'DELETE /api/v2/test/:uuid' do
     context 'with (UU)ID given' do
-      before do
+      it 'Delete testd' do
         delete '/tests/' + $testd_id.to_s
+        expect(JSON.parse(last_response.body)).to include('OK' => 'TESTD referenced => 1')
       end
-      subject { last_response }
-      its(:status) { is_expected.to eq 200 }
-      its(:body) { is_expected.to eq 'OK: TESTD removed'}
+    end
+  end
+  # Test for deleting the duplicate file referenced two times
+  # Since pkg_ref is equal to 2, two delete methods were needed
+  describe 'DELETE /api/v2/test/:uuid' do
+    context 'with (UU)ID given' do
+      it 'Delete testd' do
+        delete '/tests/' + $testd_id.to_s
+        expect(JSON.parse(last_response.body)).to include('OK' => 'TESTD removed')
+      end
     end
   end
 end

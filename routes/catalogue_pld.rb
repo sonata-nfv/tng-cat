@@ -39,9 +39,19 @@ class CatalogueV2 < SonataCatalogue
   #	Returns a list of policies
   # -> List many descriptors
   get '/policies/?' do
+
+    # Logger details
+    operation = "GET v2/policies?#{query_string}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
+
+    # Return if content-type is invalid
+    json_error 415, 'Support of x-yaml and json', component, operation, time_req_begin unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+
     params['page_number'] ||= DEFAULT_PAGE_NUMBER
     params['page_size'] ||= DEFAULT_PAGE_SIZE
-    logger.info "Catalogue: entered GET v2/policies?#{query_string}"
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
@@ -68,10 +78,9 @@ class CatalogueV2 < SonataCatalogue
       keyed_params.delete(:'pld.version')
 
       policies = Pld.where((keyed_params)).sort({ 'pld.version' => -1 }) #.limit(1).first()
-      logger.info "Catalogue: PLDs=#{policies}"
 
       if policies && policies.size.to_i > 0
-        logger.info "Catalogue: leaving GET /api/v2/policies?#{query_string} with #{policies}"
+        logger.cust_debug(component: component, operation: operation, message: "PLDs=#{policies}")
 
         policies_list = []
         checked_list = []
@@ -89,7 +98,7 @@ class CatalogueV2 < SonataCatalogue
           checked_list.push(policies_name_vendor)
         end
       else
-        logger.info "Catalogue: leaving GET /api/v2/policies?#{query_string} with 'No PLDs were found'"
+        logger.cust_debug(component: component, operation: operation, message: "No PLDs were found")
         policies_list = []
 
       end
@@ -102,14 +111,16 @@ class CatalogueV2 < SonataCatalogue
       policies = Pld.where(keyed_params)
       # Set total count for results
       headers 'Record-Count' => policies.count.to_s
-      logger.info "Catalogue: PLDs=#{policies}"
       if policies && policies.size.to_i > 0
-        logger.info "Catalogue: leaving GET v2/policies?#{query_string} with #{policies}"
+        logger.cust_debug(component: component, operation: operation, message: "PLDs=#{policies}")
+
         # Paginate results
         policies = policies.paginate(page_number: params[:page_number], page_size: params[:page_size])
       else
-        logger.info "Catalogue: leaving GET v2/policies?#{query_string} with 'No PLDs were found'"
+        logger.cust_debug(component: component, operation: operation, message: "No PLDs were found")
       end
+
+      logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
       response = ''
       case request.content_type
@@ -117,8 +128,6 @@ class CatalogueV2 < SonataCatalogue
           response = policies.to_json
         when 'application/x-yaml'
           response = json_to_yaml(policies.to_json)
-        else
-          halt 415
       end
       halt 200, {'Content-type' => request.content_type}, response
     end
@@ -130,16 +139,25 @@ class CatalogueV2 < SonataCatalogue
   #	  @param :id [Symbol] id Policy ID
   # Show a Policy by internal ID (uuid)
   get '/policies/:id/?' do
+
+    # Logger details
+    operation = "GET v2/policies/#{params[:id]}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
+
+    # Return if content-type is invalid
+    json_error 415, 'Support of x-yaml and json', component, operation, time_req_begin unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+
     unless params[:id].nil?
-      logger.debug "Catalogue: GET v2/policies/#{params[:id]}"
 
       begin
         pl = Pld.find(params[:id])
       rescue Mongoid::Errors::DocumentNotFound => e
-        logger.error e
-        json_error 404, "The PLD ID #{params[:id]} does not exist" unless pl
+        json_error 404, "The PLD ID #{params[:id]} does not exist", component, operation, time_req_begin unless pl
       end
-      logger.debug "Catalogue: leaving GET v2/policies/#{params[:id]}\" with PLD #{pl}"
+      logger.cust_debug(component: component, operation: operation, message: "PLD #{pl}")
 
       response = ''
       case request.content_type
@@ -147,22 +165,30 @@ class CatalogueV2 < SonataCatalogue
           response = pl.to_json
         when 'application/x-yaml'
           response = json_to_yaml(pl.to_json)
-        else
-          halt 415
       end
+      logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
       halt 200, {'Content-type' => request.content_type}, response
 
     end
-    logger.debug "Catalogue: leaving GET v2/policies/#{params[:id]} with 'No PLD ID specified'"
-    json_error 400, 'No PLD ID specified'
+    logger.cust_debug(component: component, operation: operation, message: "No PLD ID specified")
+
+    json_error 400, 'No PLD ID specified', component, operation, time_req_begin
   end
 
   # @method post_policies
   # @overload post '/catalogues/policies'
   # Post a Policy in JSON or YAML format
   post '/policies' do
+
+    # Logger details
+    operation = "POST v2/policies/"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
+
     # Return if content-type is invalid
-    halt 415 unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+    json_error 415, 'Support of x-yaml and json', component, operation, time_req_begin unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
 
     # Compatibility support for YAML content-type
     case request.content_type
@@ -171,20 +197,20 @@ class CatalogueV2 < SonataCatalogue
         # When updating a PLD, the json object sent to API must contain just data inside
         # of the pld, without the json field pld: before
         pl, errors = parse_yaml(request.body.read)
-        halt 400, errors.to_json if errors
+        json_error 400, errors, component, operation, time_req_begin if errors
 
         # Translate from YAML format to JSON format
         new_pl_json = yaml_to_json(pl)
 
         # Validate JSON format
         new_pl, errors = parse_json(new_pl_json)
-        halt 400, errors.to_json if errors
+        json_error 400, errors, component, operation, time_req_begin if errors
 
       else
         # Compatibility support for JSON content-type
         # Parses and validates JSON format
         new_pl, errors = parse_json(request.body.read)
-        halt 400, errors.to_json if errors
+        json_error 400, errors, component, operation, time_req_begin if errors
     end
 
     #Delete key "captures" if present
@@ -194,21 +220,21 @@ class CatalogueV2 < SonataCatalogue
     keyed_params = keyed_hash(params)
 
     # Validate Policy
-    json_error 400, 'ERROR: Policy Vendor not found' unless new_pl.has_key?('vendor')
-    json_error 400, 'ERROR: Policy Name not found' unless new_pl.has_key?('name')
-    json_error 400, 'ERROR: Policy Version not found' unless new_pl.has_key?('version')
+    json_error 400, 'Policy Vendor not found', component, operation, time_req_begin unless new_pl.has_key?('vendor')
+    json_error 400, 'Policy Name not found', component, operation, time_req_begin unless new_pl.has_key?('name')
+    json_error 400, 'Policy Version not found', component, operation, time_req_begin unless new_pl.has_key?('version')
     # Check if PLD already exists in the catalogue by name, vendor and version
     begin
       pl = Pld.find_by({ 'pld.name' => new_pl['name'], 'pld.vendor' => new_pl['vendor'],
                            'pld.version' => new_pl['version'] })
-      halt 409, "Duplicate with PD ID => #{pl['_id']}"
+      json_error 409, "Duplicate with PD ID => #{pl['_id']}", component, operation, time_req_begin
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
     end
     # Check if PLD has an ID (it should not) and if it already exists in the catalogue
     begin
       pl = Pld.find_by({ '_id' => new_pl['_id'] })
-      halt 409, 'Duplicated Policy ID'
+      json_error 409, 'Duplicated Policy ID', component, operation, time_req_begin
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
     end
@@ -235,18 +261,17 @@ class CatalogueV2 < SonataCatalogue
     begin
       pl = Pld.create!(new_pld)
     rescue Moped::Errors::OperationFailure => e
-      json_return 200, 'Duplicated Policy ID' if e.message.include? 'E11000'
+      json_return 200, 'Duplicated Policy ID', component, operation, time_req_begin if e.message.include? 'E11000'
     end
+    logger.cust_debug(component: component, operation: operation, message: "New Policy has been added")
 
-    puts 'New Policy has been added'
+    logger.cust_info(status: 201, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
     response = ''
     case request.content_type
       when 'application/json'
         response = pl.to_json
       when 'application/x-yaml'
         response = json_to_yaml(pl.to_json)
-      else
-        halt 415
     end
     halt 201, {'Content-type' => request.content_type}, response
   end
@@ -256,7 +281,13 @@ class CatalogueV2 < SonataCatalogue
   # Update a Policy by name in JSON or YAML format
   ## Catalogue - UPDATE
   put '/policies/?' do
-    logger.info "Catalogue: entered PUT v2/policies?#{query_string}"
+
+    # Logger details
+    operation = "PUT v2/policies?#{query_string}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
@@ -265,10 +296,10 @@ class CatalogueV2 < SonataCatalogue
     keyed_params = keyed_hash(params)
 
     # Return if content-type is invalid
-    halt 415 unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+    json_error 415, 'Support of x-yaml and json', component, operation, time_req_begin unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
 
     # Return if params are empty
-    json_error 400, 'Update parameters are null' if keyed_params.empty?
+    json_error 400, 'Update parameters are null', component, operation, time_req_begin if keyed_params.empty?
 
     # Compatibility support for YAML content-type
     case request.content_type
@@ -277,27 +308,27 @@ class CatalogueV2 < SonataCatalogue
         # When updating a PLD, the json object sent to API must contain just data inside
         # of the pld, without the json field pld: before
         pl, errors = parse_yaml(request.body.read)
-        halt 400, errors.to_json if errors
+        json_error 400, errors, component, operation, time_req_begin if errors
 
         # Translate from YAML format to JSON format
         new_pl_json = yaml_to_json(pl)
 
         # Validate JSON format
         new_pl, errors = parse_json(new_pl_json)
-        halt 400, errors.to_json if errors
+        json_error 400, errors, component, operation, time_req_begin if errors
 
       else
         # Compatibility support for JSON content-type
         # Parses and validates JSON format
         new_pl, errors = parse_json(request.body.read)
-        halt 400, errors.to_json if errors
+        json_error 400, errors, component, operation, time_req_begin if errors
     end
 
     # Validate Policy
     # Check if mandatory field Vendor, Name, Version are included
-    json_error 400, 'ERROR: Policy Vendor not found' unless new_pl.has_key?('vendor')
-    json_error 400, 'ERROR: Policy Name not found' unless new_pl.has_key?('name')
-    json_error 400, 'ERROR: Policy Version not found' unless new_pl.has_key?('version')
+    json_error 400, 'Policy Vendor not found', component, operation, time_req_begin unless new_pl.has_key?('vendor')
+    json_error 400, 'Policy Name not found', component, operation, time_req_begin unless new_pl.has_key?('name')
+    json_error 400, 'Policy Version not found', component, operation, time_req_begin unless new_pl.has_key?('version')
 
     # Set headers
     case request.content_type
@@ -310,21 +341,21 @@ class CatalogueV2 < SonataCatalogue
 
     # Retrieve stored version
     if keyed_params[:vendor].nil? && keyed_params[:name].nil? && keyed_params[:version].nil?
-      json_error 400, 'Update Vendor, Name and Version parameters are null'
+      json_error 400, 'Update Vendor, Name and Version parameters are null', component, operation, time_req_begin
     else
       begin
         pl = Pld.find_by({ 'pld.vendor' => keyed_params[:vendor], 'pld.name' => keyed_params[:name],
                             'pld.version' => keyed_params[:version] })
-        puts 'Policy is found'
+        logger.cust_debug(component: component, operation: operation, message: "Policy is found")
       rescue Mongoid::Errors::DocumentNotFound => e
-        json_error 404, "The PLD Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist"
+        json_error 404, "The PLD Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist", component, operation, time_req_begin
       end
     end
     # Check if Policy already exists in the catalogue by Name
     begin
       pl = Pld.find_by({ 'pld.name' => new_pl['name'], 'pld.vendor' => new_pl['vendor'],
                            'pld.version' => new_pl['version'] })
-      json_return 200, 'Duplicated Policy Name, Vendor and Version'
+      json_return 200, 'Duplicated Policy Name, Vendor and Version', component, operation, time_req_begin
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
     end
@@ -351,9 +382,10 @@ class CatalogueV2 < SonataCatalogue
     begin
       new_pl = Pld.create!(new_pld)
     rescue Moped::Errors::OperationFailure => e
-      json_return 200, 'Duplicated Policy ID' if e.message.include? 'E11000'
+      json_return 200, 'Duplicated Policy ID', component, operation, time_req_begin if e.message.include? 'E11000'
     end
-    logger.debug "Catalogue: leaving PUT v2/policies?#{query_string}\" with PLD #{new_pl}"
+    logger.cust_debug(component: component, operation: operation, message: "PLD #{new_pl}")
+    logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
     response = ''
     case request.content_type
@@ -361,9 +393,8 @@ class CatalogueV2 < SonataCatalogue
         response = new_pl.to_json
       when 'application/x-yaml'
         response = json_to_yaml(new_pl.to_json)
-      else
-        halt 415
     end
+
     halt 200, {'Content-type' => request.content_type}, response
   end
 
@@ -372,11 +403,18 @@ class CatalogueV2 < SonataCatalogue
   #	Update a Policy by its ID in JSON or YAML format
   ## Catalogue - UPDATE
   put '/policies/:id/?' do
+
+    # Logger details
+    operation = "PUT v2/policies/#{params[:id]}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
+
     # Return if content-type is invalid
-    halt 415 unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+    json_error 415, 'Support of x-yaml and json', component, operation, time_req_begin unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
 
     unless params[:id].nil?
-      logger.debug "Catalogue: PUT v2/policies/#{params[:id]}"
 
       #Delete key "captures" if present
       params.delete(:captures) if params.key?(:captures)
@@ -387,16 +425,15 @@ class CatalogueV2 < SonataCatalogue
       # Check for special case (:status param == <new_status>)
       if keyed_params.key?(:status)
         # Do update of Descriptor status -> update_policy_status
-        logger.info "Catalogue: entered PUT v2/policies/#{query_string}"
+        logger.cust_debug(component: component, operation: operation, message: "v2/policies/#{query_string}")
 
         # Validate Policy
         # Retrieve stored version
         begin
-          puts 'Searching ' + params[:id].to_s
           pl = Pld.find_by({ '_id' => params[:id] })
-          puts 'Policy is found'
+          logger.cust_debug(component: component, operation: operation, message: "Policy is found")
         rescue Mongoid::Errors::DocumentNotFound => e
-          json_error 404, 'This PLD does not exists'
+          json_error 404, 'This PLD does not exists', component, operation, time_req_begin
         end
 
         #Validate new status
@@ -406,12 +443,12 @@ class CatalogueV2 < SonataCatalogue
           begin
             pl.update_attributes(status: keyed_params[:status])
           rescue Moped::Errors::OperationFailure => e
-            json_error 400, 'ERROR: Operation failed'
+            json_error 400, 'Operation failed', component, operation, time_req_begin
           end
         else
-          json_error 400, "Invalid new status #{keyed_params[:status]}"
+          json_error 400, "Invalid new status #{keyed_params[:status]}", component, operation, time_req_begin
         end
-        halt 200, "Status updated to {#{query_string}}"
+        json_return 200, "Status updated to {#{query_string}}", component, operation, time_req_begin
 
       else
         # Compatibility support for YAML content-type
@@ -421,42 +458,41 @@ class CatalogueV2 < SonataCatalogue
             # When updating a PLD, the json object sent to API must contain just data inside
             # of the pld, without the json field pld: before
             pl, errors = parse_yaml(request.body.read)
-            halt 400, errors.to_json if errors
+            json_error 400, errors, component, operation, time_req_begin if errors
 
             # Translate from YAML format to JSON format
             new_pl_json = yaml_to_json(pl)
 
             # Validate JSON format
             new_pl, errors = parse_json(new_pl_json)
-            halt 400, errors.to_json if errors
+            json_error 400, errors, component, operation, time_req_begin if errors
 
           else
             # Compatibility support for JSON content-type
             # Parses and validates JSON format
             new_pl, errors = parse_json(request.body.read)
-            halt 400, errors.to_json if errors
+            json_error 400, errors, component, operation, time_req_begin if errors
         end
 
         # Validate Policy Descriptor
         # Check if mandatory field Name is included
-        json_error 400, 'ERROR: Policy Vendor not found' unless new_pl.has_key?('vendor')
-        json_error 400, 'ERROR: Policy Name not found' unless new_pl.has_key?('name')
-        json_error 400, 'ERROR: Policy Version not found' unless new_pl.has_key?('version')
+        json_error 400, 'Policy Vendor not found', component, operation, time_req_begin unless new_pl.has_key?('vendor')
+        json_error 400, 'Policy Name not found', component, operation, time_req_begin unless new_pl.has_key?('name')
+        json_error 400, 'Policy Version not found', component, operation, time_req_begin unless new_pl.has_key?('version')
 
         # Retrieve stored version
         begin
-          puts 'Searching ' + params[:id].to_s
           pl = Pld.find_by({ '_id' => params[:id] })
-          puts 'Policy is found'
+          logger.cust_debug(component: component, operation: operation, message: "Policy is found")
         rescue Mongoid::Errors::DocumentNotFound => e
-          json_error 404, "The PLD ID #{params[:id]} does not exist"
+          json_error 404, "The PLD ID #{params[:id]} does not exist", component, operation, time_req_begin
         end
 
         # Check if PLD already exists in the catalogue by name
         begin
           pl = Pld.find_by({ 'pld.name' => new_pl['name'], 'pld.vendor' => new_pl['vendor'],
                                'pld.version' => new_pl['version']})
-          json_return 200, 'Duplicated Policy Name, Vendor and Version'
+          json_return 200, 'Duplicated Policy Name, Vendor and Version', component, operation, time_req_begin
         rescue Mongoid::Errors::DocumentNotFound => e
           # Continue
         end
@@ -483,31 +519,35 @@ class CatalogueV2 < SonataCatalogue
         begin
           new_pl = Pld.create!(new_pld)
         rescue Moped::Errors::OperationFailure => e
-          json_return 200, 'Duplicated Policy ID' if e.message.include? 'E11000'
+          json_return 200, 'Duplicated Policy ID', component, operation, time_req_begin if e.message.include? 'E11000'
         end
-        logger.debug "Catalogue: leaving PUT v2/policies/#{params[:id]}\" with PLD #{new_pl}"
-
+        logger.cust_debug(component: component, operation: operation, message: "PLD #{new_pl}")
         response = ''
         case request.content_type
           when 'application/json'
             response = new_pl.to_json
           when 'application/x-yaml'
             response = json_to_yaml(new_pl.to_json)
-          else
-            halt 415
         end
+        logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
         halt 200, {'Content-type' => request.content_type}, response
       end
     end
-    logger.debug "Catalogue: leaving PUT v2/policies/#{params[:id]} with 'No Policy ID specified'"
-    json_error 400, 'No Policy ID specified'
+    logger.cust_debug(component: component, operation: operation, message: "No Policy ID specified")
+    json_error 400, 'No Policy ID specified', component, operation, time_req_begin
   end
 
   # @method delete_pld_sp_policy
   # @overload delete '/policies/?'
   #	Delete a policy by name, vendor and version
   delete '/policies/?' do
-    logger.info "Catalogue: entered DELETE /v2/policies?#{query_string}"
+
+    # Logger details
+    operation = "DELETE /v2/policies?#{query_string}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
@@ -519,19 +559,18 @@ class CatalogueV2 < SonataCatalogue
       begin
         pl = Pld.find_by({ 'pld.vendor' => keyed_params[:vendor], 'pld.name' => keyed_params[:name],
                             'pld.version' => keyed_params[:version] })
-
-        puts 'Policy is found'
+        logger.cust_debug(component: component, operation: operation, message: "Policy is found")
       rescue Mongoid::Errors::DocumentNotFound => e
-        json_error 404, "The PLD Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist"
+        json_error 404, "The PLD Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist", component, operation, time_req_begin
       end
-      logger.debug "Catalogue: leaving DELETE /v2/policies?#{query_string}\" with PLD #{pl}"
+      logger.cust_debug(component: component, operation: operation, message: "PLD #{pl}")
       # Delete entry in dict mapping
       del_ent_dict(pl, :pld)
       pl.destroy
-      halt 200, 'OK: PLD removed'
+      json_return 200, 'PLD removed', component, operation, time_req_begin
     end
-    logger.debug "Catalogue: leaving DELETE /v2/policies?#{query_string} with 'No PLD Name specified'"
-    json_error 400, 'No PLD Vendor, Name, Version specified'
+    logger.cust_debug(component: component, operation: operation, message: "No PLD Name specified")
+    json_error 400, 'No PLD Vendor, Name, Version specified', component, operation, time_req_begin
   end
 
   # @method delete_pld_sp_pl_id
@@ -540,21 +579,28 @@ class CatalogueV2 < SonataCatalogue
   #	  @param :id [Symbol] id Policy ID
   # Delete a Policy by uuid
   delete '/policies/:id/?' do
+
+    # Logger details
+    operation = "DELETE v2/policies/#{params[:id]}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
+
     unless params[:id].nil?
-      logger.debug "Catalogue: DELETE /v2/policies/#{params[:id]}"
       begin
         pl = Pld.find(params[:id])
       rescue Mongoid::Errors::DocumentNotFound => e
-        logger.error e
-        json_error 404, "The PLD ID #{params[:id]} does not exist" unless pl
+        json_error 404, "The PLD ID #{params[:id]} does not exist", component, operation, time_req_begin unless pl
       end
-      logger.debug "Catalogue: leaving DELETE /v2/policies/#{params[:id]}\" with PLD #{pl}"
+      logger.cust_debug(component: component, operation: operation, message: "PLD #{pl}")
+
       # Delete entry in dict mapping
       del_ent_dict(pl, :pld)
       pl.destroy
-      halt 200, 'OK: PLD removed'
+      json_return 200, 'PLD removed', component, operation, time_req_begin
     end
-    logger.debug "Catalogue: leaving DELETE /v2/policies/#{params[:id]} with 'No PLD ID specified'"
-    json_error 400, 'No PLD ID specified'
+    logger.cust_debug(component: component, operation: operation, message: "No PLD ID specified")
+    json_error 400, 'No PLD ID specified', component, operation, time_req_begin
   end
 end

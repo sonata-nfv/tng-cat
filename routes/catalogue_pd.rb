@@ -686,7 +686,7 @@ class CatalogueV2 < SonataCatalogue
         logger.cust_info(status: 200, start_stop: 'STOP', component: component, operation: operation, message: "Ended at #{Time.now.utc}", time_elapsed: "#{Time.now.utc - time_req_begin }")
 
       else
-        logger.cust_info(status: 200, component: component, operation: operation, message: "'No PDs were found'", time_elapsed: "#{Time.now.utc - time_req_begin }")
+        logger.cust_info(status: 200, start_stop:'STOP', component: component, operation: operation, message: "'No PDs were found'", time_elapsed: "#{Time.now.utc - time_req_begin }")
         pks_list = []
       end
       pks = apply_limit_and_offset(pks_list, page_number=params[:page_number],
@@ -701,11 +701,11 @@ class CatalogueV2 < SonataCatalogue
       headers 'Record-Count' => pks.count.to_s
 
       if pks && pks.size.to_i > 0
-        logger.cust_info(status: 200, component: component, operation: operation, message: "PDs found #{pks}", time_elapsed: "#{Time.now.utc - time_req_begin }")
+        logger.cust_info(status: 200, start_stop:'STOP', component: component, operation: operation, message: "PDs found #{pks}", time_elapsed: "#{Time.now.utc - time_req_begin }")
         # Paginate results
         pks = pks.paginate(page_number: params[:page_number], page_size: params[:page_size])
       else
-        logger.cust_info(status: 200, component: component, operation: operation, message: 'No PDs were found', time_elapsed: "#{Time.now.utc - time_req_begin }")
+        logger.cust_info(status: 200,start_stop:'STOP',  component: component, operation: operation, message: 'No PDs were found', time_elapsed: "#{Time.now.utc - time_req_begin }")
       end
     end
 
@@ -751,7 +751,7 @@ class CatalogueV2 < SonataCatalogue
         when 'application/x-yaml'
           response = json_to_yaml(pks.to_json)
       end
-      logger.cust_info(start_stop:'STOP', component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
+      logger.cust_info(start_stop:'STOP', component: component, message: "Ended at #{Time.now.utc}", operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
       halt 200, {'Content-type' => request.content_type}, response
 
@@ -790,7 +790,7 @@ class CatalogueV2 < SonataCatalogue
         when 'application/x-yaml'
           response = json_to_yaml(pks['pd']['package_content'].to_json)
       end
-      logger.cust_info(start_stop:'STOP', component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
+      logger.cust_info(start_stop:'STOP', component: component, message: "Ended at #{Time.now.utc}", operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
       halt 200, {'Content-type' => request.content_type}, response
     end
@@ -839,7 +839,7 @@ class CatalogueV2 < SonataCatalogue
       # Set custom header with Filename
       headers 'Filename' => (file['file_name'].to_s)
 
-      logger.cust_info(start_stop:'STOP', component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
+      logger.cust_info(start_stop:'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
       halt 200, {'Content-type' => content_type}, grid_file.data
 
     end
@@ -851,7 +851,6 @@ class CatalogueV2 < SonataCatalogue
   # @overload post '/catalogues/packages'
   # Post a Package in JSON or YAML format
   post '/packages' do
-
 
     # Logger details
     operation = 'POST /v2/packages/'
@@ -869,20 +868,20 @@ class CatalogueV2 < SonataCatalogue
         # When updating a PD, the json object sent to API must contain just data inside
         # of the pd, without the json field pd: before
         pks, errors = parse_yaml(request.body.read)
-        json_error 400, errors.to_json , component, operation, time_req_begin if errors
+        json_error 400, errors , component, operation, time_req_begin if errors
 
         # Translate from YAML format to JSON format
         new_pks_json = yaml_to_json(pks)
 
         # Validate JSON format
         new_pks, errors = parse_json(new_pks_json)
-        json_error 400, errors.to_json , component, operation, time_req_begin if errors
+        json_error 400, errors , component, operation, time_req_begin if errors
 
       else
         # Compatibility support for JSON content-type
         # Parses and validates JSON format
         new_pks, errors = parse_json(request.body.read)
-        json_error 400, errors.to_json , component, operation, time_req_begin if errors
+        json_error 400, errors , component, operation, time_req_begin if errors
     end
 
     logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
@@ -939,7 +938,7 @@ class CatalogueV2 < SonataCatalogue
 
     begin
       pks = Pkgd.create!(new_pd)
-      logger.cust_info(status: 201, start_stop:'STOP', component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
+      logger.cust_info(status: 201, start_stop:'STOP', component: component, message: "Ended at #{Time.now.utc}", operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
     rescue Moped::Errors::OperationFailure => e
       json_return 200, 'Duplicated Package ID', component, operation, time_req_begin if e.message.include? 'E11000'
     end
@@ -990,20 +989,20 @@ class CatalogueV2 < SonataCatalogue
         # When updating a PD, the json object sent to API must contain just data inside
         # of the pd, without the json field pd: before
         pks, errors = parse_yaml(request.body.read)
-        json_error 400, errors.to_json , component, operation, time_req_begin if errors
+        json_error 400, errors , component, operation, time_req_begin if errors
 
         # Translate from YAML format to JSON format
         new_pks_json = yaml_to_json(pks)
 
         # Validate JSON format
         new_pks, errors = parse_json(new_pks_json)
-        json_error 400, errors.to_json , component, operation, time_req_begin if errors
+        json_error 400, errors , component, operation, time_req_begin if errors
 
       else
         # Compatibility support for JSON content-type
         # Parses and validates JSON format
         new_pks, errors = parse_json(request.body.read)
-        json_error 400, errors.to_json , component, operation, time_req_begin if errors
+        json_error 400, errors , component, operation, time_req_begin if errors
     end
 
     # Validate Package
@@ -1071,7 +1070,7 @@ class CatalogueV2 < SonataCatalogue
       json_return 200, 'Duplicated Package ID', component, operation, time_req_begin if e.message.include? 'E11000'
     end
     logger.cust_debug(component: component, operation: operation, message: "PD #{new_pks}")
-    logger.cust_info(status: 200, start_stop:'STOP', component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
+    logger.cust_info(status: 200, start_stop:'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
     response = ''
     case request.content_type
@@ -1180,20 +1179,20 @@ class CatalogueV2 < SonataCatalogue
             # When updating a PD, the json object sent to API must contain just data inside
             # of the pd, without the json field pd: before
             pks, errors = parse_yaml(request.body.read)
-            json_error 400, errors.to_json , component, operation, time_req_begin if errors
+            json_error 400, errors , component, operation, time_req_begin if errors
 
             # Translate from YAML format to JSON format
             new_ns_json = yaml_to_json(pks)
 
             # Validate JSON format
             new_pks, errors = parse_json(new_ns_json)
-            json_error 400, errors.to_json , component, operation, time_req_begin if errors
+            json_error 400, errors , component, operation, time_req_begin if errors
 
           else
             # Compatibility support for JSON content-type
             # Parses and validates JSON format
             new_pks, errors = parse_json(request.body.read)
-            json_error 400, errors.to_json , component, operation, time_req_begin if errors
+            json_error 400, errors , component, operation, time_req_begin if errors
         end
 
         # Validate Package
@@ -1246,7 +1245,7 @@ class CatalogueV2 < SonataCatalogue
         end
 
         logger.cust_debug(component: component, operation: operation, message: "PD #{new_pks}")
-        logger.cust_info(status: 200, start_stop:'STOP', component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
+        logger.cust_info(status: 200, start_stop:'STOP', component: component, message: "Ended at #{Time.now.utc}", operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
         response = ''
         case request.content_type
@@ -1269,50 +1268,67 @@ class CatalogueV2 < SonataCatalogue
   #	Update a Package status in JSON or YAML format
   ## Catalogue - UPDATE
   put '/packages/:id/status' do
+
+    # Logger details
+    operation = "PUT /v2/packages/#{params[:id]}/status"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
     # Return if content-type is invalid
-    halt 415 unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+    json_error 415, 'Support of x-yaml and json', component, operation, time_req_begin unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+
+    logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
+
     case request.content_type
     when 'application/x-yaml'
       # Validate YAML format
       # When updating a PD, the json object sent to API must contain just data inside
       # of the pd, without the json field pd: before
-      status_info, errors = prake ci:allarse_yaml(request.body.read)
-      halt 400, errors.to_json if errors
+      status_info, errors = parse_yaml(request.body.read)
+      json_error 400, errors , component, operation, time_req_begin if errors
     else
       # Compatibility support for JSON content-type
       # Parses and validates JSON format
       status_info, errors = parse_json(request.body.read)
-      halt 400, errors.to_json if errors
+      json_error 400, errors , component, operation, time_req_begin if errors
     end
     if status_info['status'].nil?
-      halt 400, JSON.generate(error: 'Status not specified')
+      json_error 400, 'Status not specified', component, operation, time_req_begin
     end
     unless status_info['status'].upcase.in?(['ACTIVE', 'INACTIVE'])
-      halt 400, JSON.generate(error: 'Status should be active/inactive')
+      json_error 400, 'Status should be active/inactive', component, operation, time_req_begin
     end
     begin
       pks = Pkgd.find_by('id' => params[:id])
     rescue Mongoid::Errors::DocumentNotFound => e
-      json_error 404, "The PD with id #{params[:id]} does not exist"
+      json_error 400, "The PD with id #{params[:id]} does not exist", component, operation, time_req_begin
     end
     if status_info['status'].casecmp('INACTIVE') == 0
-      logger.info "Setting pd #{params[:id]} status to inactive"
+      logger.cust_info(status: 200, start_stop:'STOP', component: component, message: "Setting pd #{params[:id]} status to inactive",
+                       operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
       # intelligent_disable(pks)
       pks.update('status' => 'inactive')
     else
-      logger.info "Setting pd #{params[:id]} status to active"
+      logger.cust_info(status: 200, start_stop:'STOP', component: component, message: "Setting pd #{params[:id]} status to active",
+                       operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
       # intelligent_enable_all(pks)
       pks.update('status' => 'active')
     end
-    logger.debug "Catalogue: leaving PUT /v2/packages/#{params[:id]}/status with 'No PD ID specified'"
-    json_error 400, 'No PD ID specified'
+    logger.cust_debug(component: component, operation: operation, message: 'No PD ID specified')
+    json_error 400, 'No PD ID specified', component, operation, time_req_begin
   end
 
   # @method delete_pd_package_group_name_version
   # @overload delete '/catalogues/packages/vendor/:package_group/name/:package_name/version/:package_version'
   #	Delete a PD by group, name and version
   delete '/packages/?' do
-    logger.info "Catalogue: entered DELETE /v2/packages?#{query_string}"
+
+    # Logger details
+    operation = "DELETE /v2/packages?#{query_string}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
+    logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
@@ -1325,19 +1341,19 @@ class CatalogueV2 < SonataCatalogue
       begin
         pks = Pkgd.find_by('pd.vendor' => keyed_params[:vendor], 'pd.name' => keyed_params[:name],
                                 'pd.version' => keyed_params[:version])
-        puts 'Package is found'
+        logger.cust_debug(component: component, operation: operation, message: 'Package is found')
       rescue Mongoid::Errors::DocumentNotFound => e
-        json_error 404, "The PD Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist"
+        json_error 404, "The PD Vendor #{keyed_params[:vendor]}, Name #{keyed_params[:name]}, Version #{keyed_params[:version]} does not exist", component, operation, time_req_begin
       end
       # Delete entry in dict mapping
       del_ent_dict(pks, :pd)
       intelligent_delete(pks)
 
-      logger.debug "Catalogue: leaving DELETE v2/packages?#{query_string}\" with PD #{pks}"
-      halt 200, 'OK: PD ID Removed'
+      logger.cust_debug(component: component, operation: operation, message: "PD #{pks}")
+      json_return 200, 'PD ID Removed', component, operation, time_req_begin
     end
-    logger.debug "Catalogue: leaving DELETE /v2/packages?#{query_string} with 'No PD Vendor, Name, Version specified'"
-    json_error 400, 'No PD Vendor, Name, Version specified'
+    logger.cust_debug(component: component, operation: operation, message: 'No PD Vendor, Name, Version specified')
+    json_error 400, 'No PD Vendor, Name, Version specified', component, operation, time_req_begin
   end
 
   # @method delete_pd_package_id
@@ -1346,23 +1362,28 @@ class CatalogueV2 < SonataCatalogue
   #	  @param :id [Symbol] identifier for PD
   # Delete a PD by uuid
   delete '/packages/:id/?' do
+
+    # Logger details
+    operation = "DELETE /v2/packages/#{params[:id]}"
+    component = __method__.to_s
+    time_req_begin = Time.now.utc
+
     unless params[:id].nil?
-      logger.debug "Catalogue: DELETE /v2/packages/#{params[:id]}"
+      logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
       begin
         pks = Pkgd.find(params[:id])
       rescue Mongoid::Errors::DocumentNotFound => e
-        logger.error e
-        json_error 404, "The PD ID #{params[:id]} does not exist" unless pks
+        json_error 404, "The PD ID #{params[:id]} does not exist", component, operation, time_req_begin unless pks
       end
       # Delete entry in dict mapping
 
       intelligent_delete(pks)
+      logger.cust_debug(component: component, operation: operation, message: "PD #{pks}")
 
-      logger.debug "Catalogue: leaving DELETE v2/packages?#{query_string}\" with PD #{pks}"
-      halt 200, 'OK: PD ID Removed'
+      json_return 200, 'PD ID Removed', component, operation, time_req_begin
     end
-    logger.debug "Catalogue: leaving DELETE /v2/packages/#{params[:id]} with 'No PD ID specified'"
-    json_error 400, 'No PD ID specified'
+    logger.cust_debug(component: component, operation: operation, message:'No PD ID specified')
+    json_error 400, 'No PD ID specified', component, operation, time_req_begin
   end
 
   delete '/packages_debug/:id/?' do

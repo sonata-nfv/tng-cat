@@ -35,6 +35,7 @@
 
 class CustomLog < Logger
 
+  # logfile = ENV.fetch('LOGFILE', STDOUT)
   def cust_error(start_stop: '', component:, operation:, message:, status:'', time_elapsed:'')
     message_form(type: 'E', start_stop: start_stop, component: component, operation: operation, message: message, status: status, time_elapsed: time_elapsed)
   end
@@ -53,9 +54,9 @@ class CustomLog < Logger
   def cust_unknown(start_stop: '', component:, operation: , message:, status:'', time_elapsed:'')
     message_form(type: 'U', start_stop: start_stop, component:  component, operation: operation, message: message, status: status, time_elapsed: time_elapsed)
   end
-  
+
   private
-  def message_form(type:, start_stop:, component:, operation:, message:, status:, time_elapsed:)
+  def message_form(type:, start_stop:, component:, operation:, message:, status:, time_elapsed: )
     message = {
       type: type, # mandatory, can be I(nfo), W(arning), D(ebug), E(rror), F(atal) or U(nknown)
       timestamp: Time.now.utc, # mandatory
@@ -67,7 +68,7 @@ class CustomLog < Logger
       time_elapsed: time_elapsed # optional, makes sense for start_stop='END'
     }
 
-    puts message.to_json
+    STDOUT.puts "#{message.to_json}"
 
   end
 

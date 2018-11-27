@@ -140,7 +140,7 @@ before do
     settings.access_token = access_token unless access_token.nil?
     end
   end
-  STDOUT.sync = false
+  # STDOUT.sync = false
 
   # ALTERNATIVE SECURITY FUNCTIONS CAN BE TEMPORARY DISABLED!
   # Get authorization token

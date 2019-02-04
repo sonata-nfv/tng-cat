@@ -189,6 +189,8 @@ class CatalogueV1 < SonataCatalogue
   # @overload post '/catalogues/network-services'
   # Post a NS in JSON or YAML format
   post '/network-services' do
+
+
     # Return if content-type is invalid
     halt 415 unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
 
@@ -617,6 +619,8 @@ class CatalogueV2 < SonataCatalogue
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
+
+
     # Split keys in meta_data and data
     # Then transform 'string' params Hash into keys
     keyed_params = add_descriptor_level('nsd', params)
@@ -674,6 +678,7 @@ class CatalogueV2 < SonataCatalogue
       # Do the query
       keyed_params = parse_keys_dict(:nsd, keyed_params)
       nss = Nsd.where(keyed_params)
+
       # Set total count for results
       headers 'Record-Count' => nss.count.to_s
       if nss && nss.size.to_i > 0
@@ -684,14 +689,30 @@ class CatalogueV2 < SonataCatalogue
         logger.cust_debug(component: component, operation: operation, message: "No NSDs were found")
       end
     end
+
+
+    arr = []
+    JSON.parse(nss.to_json).each do |desc|
+      if desc['platform'] != '5gtango'
+        header = desc.delete('header')
+        content = desc.delete('nsd')
+        # arr << content
+        desc['nsd'] = {header => {'nsd': content} }
+        # arr << desc
+      end
+      arr << desc
+    end
+
     logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
     response = ''
-    case request.content_type
+
+    response = case request.content_type
       when 'application/json'
-        response = nss.to_json
+        arr.any? ? arr.to_json : nss.to_json
       else
-        response = json_to_yaml(nss.to_json)
-    end
+        arr.any? ? json_to_yaml(arr.to_json) : json_to_yaml(nss.to_json)
+               end
+
     halt 200, {'Content-type' => request.content_type}, response
   end
 
@@ -722,13 +743,20 @@ class CatalogueV2 < SonataCatalogue
       logger.cust_debug(component: component, operation: operation, message: "NSDs=#{ns}")
       logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
-      response = ''
-      case request.content_type
-        when 'application/json'
-          response = ns.to_json
-        else
-          response = json_to_yaml(ns.to_json)
+      if ns['platform'] != '5gtango'
+        ns = JSON.parse(ns.to_json)
+        header = ns.delete('header')
+        content = ns.delete('nsd')
+        ns['nsd'] = {header => {'nsd': content} }
       end
+
+      response = ''
+      response = case request.content_type
+        when 'application/json'
+          ns.to_json
+        else
+          json_to_yaml(ns.to_json)
+                 end
       halt 200, {'Content-type' => request.content_type}, response
 
     end
@@ -779,7 +807,19 @@ class CatalogueV2 < SonataCatalogue
     # Transform 'string' params Hash into keys
     keyed_params = keyed_hash(params)
 
+    # Test platform
+    platform = if keyed_params.key?(:platform)
+      keyed_params[:platform].downcase
+    else
+      '5gtango'
+               end
+    if platform == 'osm'
+      header, new_ns = new_ns.first
+      new_ns = new_ns.values[0][0]
+    end
+
     # Validate NS
+
     json_error 400, 'NS Vendor not found', component, operation, time_req_begin unless new_ns.has_key?('vendor')
     json_error 400, 'NS Name not found', component, operation, time_req_begin unless new_ns.has_key?('name')
     json_error 400, 'NS Version not found', component, operation, time_req_begin unless new_ns.has_key?('version')
@@ -787,19 +827,19 @@ class CatalogueV2 < SonataCatalogue
     # Check if NS already exists in the catalogue by name, vendor and version
     begin
       ns = Nsd.find_by({ 'nsd.name' => new_ns['name'], 'nsd.vendor' => new_ns['vendor'],
-                         'nsd.version' => new_ns['version'] })
+                         'nsd.version' => new_ns['version'], 'platform' => platform  })
       ns.update_attributes(pkg_ref: ns['pkg_ref'] + 1)
       logger.cust_debug(component: component, operation: operation, message: "Pkg_ref updated to #{ns['pkg_ref']}")
       logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
       # response = {"uuid" => ns['_id'], "referenced" => ns['pkg_ref']}
       response = ''
-      case request.content_type
+      response = case request.content_type
         when 'application/json'
-          response = ns.to_json
+          ns.to_json
         else
-          response = json_to_yaml(ns.to_json)
-      end
+          json_to_yaml(ns.to_json)
+                 end
       halt 200, {'Content-type' => request.content_type}, response
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
@@ -812,17 +852,19 @@ class CatalogueV2 < SonataCatalogue
       # Continue
     end
 
-    if keyed_params.key?(:username)
-      username = keyed_params[:username]
+    username = if keyed_params.key?(:username)
+      keyed_params[:username]
     else
-      username = nil
-    end
+      nil
+               end
 
     # Save to DB
     new_nsd = {}
     new_nsd['nsd'] = new_ns
     # Generate the UUID for the descriptor
     new_nsd['_id'] = SecureRandom.uuid
+    new_nsd['platform'] = platform
+    new_nsd['header'] = header if platform == 'osm'
     new_nsd['status'] = 'active'
     new_nsd['pkg_ref'] = 1
     # Signature will be supported
@@ -843,12 +885,12 @@ class CatalogueV2 < SonataCatalogue
     logger.cust_info(status: 201, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
     response = ''
-    case request.content_type
+    response = case request.content_type
       when 'application/json'
-        response = ns.to_json
+        ns.to_json
       else
-        response = json_to_yaml(ns.to_json)
-    end
+        json_to_yaml(ns.to_json)
+               end
     halt 201, {'Content-type' => request.content_type}, response
   end
 
@@ -899,6 +941,19 @@ class CatalogueV2 < SonataCatalogue
         json_error 400, errors, component, operation, time_req_begin if errors
     end
 
+
+    # Test platform
+    platform = if keyed_params.key?(:platform)
+                 keyed_params[:platform].downcase
+               else
+                 '5gtango'
+               end
+    if platform == 'osm'
+      header, new_ns = new_ns.first
+      new_ns = new_ns.values[0][0]
+    end
+
+
     # Validate NS
     # Check if mandatory fields Vendor, Name, Version are included
     json_error 400, 'NS Vendor not found', component, operation, time_req_begin unless new_ns.has_key?('vendor')
@@ -935,17 +990,19 @@ class CatalogueV2 < SonataCatalogue
       # Continue
     end
 
-    if keyed_params.key?(:username)
-      username = keyed_params[:username]
+    username = if keyed_params.key?(:username)
+      keyed_params[:username]
     else
-      username = nil
-    end
+      nil
+               end
 
     # Update to new version
     puts 'Updating...'
     new_nsd = {}
     new_nsd['_id'] = SecureRandom.uuid # Unique UUIDs per NSD entries
     new_nsd['nsd'] = new_ns
+    new_nsd['platform'] = platform
+    new_nsd['header'] = header if platform == 'osm'
     new_nsd['status'] = 'active'
     new_nsd['pkg_ref'] = 1
     new_nsd['signature'] = nil
@@ -965,12 +1022,12 @@ class CatalogueV2 < SonataCatalogue
     logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
     response = ''
-    case request.content_type
+    response = case request.content_type
       when 'application/json'
-        response = new_ns.to_json
+        new_ns.to_json
       else
-        response = json_to_yaml(new_ns.to_json)
-    end
+        json_to_yaml(new_ns.to_json)
+               end
     halt 200, {'Content-type' => request.content_type}, response
   end
 
@@ -997,6 +1054,7 @@ class CatalogueV2 < SonataCatalogue
 
       # Transform 'string' params Hash into keys
       keyed_params = keyed_hash(params)
+
 
       # Check for special case (:status param == <new_status>)
       if keyed_params.key?(:status)
@@ -1050,6 +1108,17 @@ class CatalogueV2 < SonataCatalogue
             json_error 400, errors, component, operation, time_req_begin if errors
         end
 
+        # Test platform
+        platform = if keyed_params.key?(:platform)
+                     keyed_params[:platform].downcase
+                   else
+                     '5gtango'
+                   end
+        if platform == 'osm'
+          header, new_ns = new_ns.first
+          new_ns = new_ns.values[0][0]
+        end
+
         # Validate NS
         # Check if mandatory fields Vendor, Name, Version are included
         json_error 400, 'NS Vendor not found', component, operation, time_req_begin unless new_ns.has_key?('vendor')
@@ -1073,11 +1142,11 @@ class CatalogueV2 < SonataCatalogue
           # Continue
         end
 
-        if keyed_params.key?(:username)
-          username = keyed_params[:username]
+        username = if keyed_params.key?(:username)
+          keyed_params[:username]
         else
-          username = nil
-        end
+          nil
+                   end
 
         # Update to new version
         puts 'Updating...'
@@ -1085,6 +1154,8 @@ class CatalogueV2 < SonataCatalogue
         new_nsd['_id'] = SecureRandom.uuid # Unique UUIDs per NSD entries
         new_nsd['nsd'] = new_ns
         new_nsd['status'] = 'active'
+        new_nsd['platform'] = platform
+        new_nsd['header'] = header if platform == 'osm'
         new_nsd['pkg_ref'] = 1
         new_nsd['signature'] = nil
         new_nsd['md5'] = checksum new_ns.to_s
@@ -1103,12 +1174,12 @@ class CatalogueV2 < SonataCatalogue
         logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
         response = ''
-        case request.content_type
+        response = case request.content_type
           when 'application/json'
-            response = new_ns.to_json
+            new_ns.to_json
           else
-            response = json_to_yaml(new_ns.to_json)
-        end
+            json_to_yaml(new_ns.to_json)
+                   end
         halt 200, {'Content-type' => request.content_type}, response
       end
     end
@@ -1199,4 +1270,5 @@ class CatalogueV2 < SonataCatalogue
     logger.cust_debug(component: component, operation: operation, message: "No NSD ID specified")
     json_error 400, 'No NSD ID specified', component, operation, time_req_begin
   end
+
 end

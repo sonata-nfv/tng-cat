@@ -662,18 +662,32 @@ class CatalogueV2 < SonataCatalogue
     end
 
 
-    logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
-    response = ''
-    case request.content_type
-      when 'application/json'
-        response = vnfs.to_json
-      else
-        response = json_to_yaml(vnfs.to_json)
+
+    arr = []
+    JSON.parse(vnfs.to_json).each do |desc|
+      if desc['platform'] != '5gtango'
+        header = desc.delete('header')
+        content = desc.delete('vnfd')
+        # arr << content
+        desc['vnfd'] = {header => {'vnfd': content} }
+        # arr << desc
+      end
+      arr << desc
     end
 
+    logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
+    response = ''
+
+    response = case request.content_type
+                 when 'application/json'
+                   arr.any? ? arr.to_json : vnfs.to_json
+                 else
+                   arr.any? ? json_to_yaml(arr.to_json) : json_to_yaml(vnfs.to_json)
+               end
 
     halt 200, {'Content-type' => request.content_type}, response
+
   end
 
   # @method get_vnfs_id
@@ -703,6 +717,14 @@ class CatalogueV2 < SonataCatalogue
       end
 
       logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
+
+
+      if vnf['platform'] != '5gtango'
+        vnf = JSON.parse(vnf.to_json)
+        header = vnf.delete('header')
+        content = vnf.delete('vnfd')
+        vnf['nsd'] = {header => {'vnfd': content} }
+      end
 
       response = ''
       case request.content_type
@@ -763,6 +785,18 @@ class CatalogueV2 < SonataCatalogue
     # Transform 'string' params Hash into keys
     keyed_params = keyed_hash(params)
 
+
+    # Test platform
+    platform = if keyed_params.key?(:platform)
+                 keyed_params[:platform].downcase
+               else
+                 '5gtango'
+               end
+    if platform == 'osm'
+      header, new_vnf = new_vnf.first
+      new_vnf = new_vnf.values[0][0]
+    end
+
     # Validate VNF
     json_error 400, 'VNF Vendor not found', component, operation, time_req_begin unless new_vnf.has_key?('vendor')
     json_error 400, 'VNF Name not found', component, operation, time_req_begin unless new_vnf.has_key?('name')
@@ -809,6 +843,8 @@ class CatalogueV2 < SonataCatalogue
     new_vnfd['vnfd'] = new_vnf
     # Generate the UUID for the descriptor
     new_vnfd['_id'] = SecureRandom.uuid
+    new_vnfd['platform'] = platform
+    new_vnfd['header'] = header if platform == 'osm'
     new_vnfd['status'] = 'active'
     new_vnfd['pkg_ref'] = 1
     new_vnfd['signature'] = nil
@@ -887,6 +923,18 @@ class CatalogueV2 < SonataCatalogue
         json_error 400, errors, component, operation, time_req_begin if errors
     end
 
+
+    # Test platform
+    platform = if keyed_params.key?(:platform)
+                 keyed_params[:platform].downcase
+               else
+                 '5gtango'
+               end
+    if platform == 'osm'
+      header, new_vnf = new_ns.first
+      new_vnf = new_vnf.values[0][0]
+    end
+
     # Validate NS
     # Check if mandatory fields Vendor, Name, Version are included
     json_error 400, 'VNF Vendor not found', component, operation, time_req_begin unless new_vnf.has_key?('vendor')
@@ -934,6 +982,8 @@ class CatalogueV2 < SonataCatalogue
     new_vnfd = {}
     new_vnfd['_id'] = SecureRandom.uuid # Unique UUIDs per VNFD entries
     new_vnfd['vnfd'] = new_vnf
+    new_vnfd['platform'] = platform
+    new_vnfd['header'] = header if platform == 'osm'
     new_vnfd['status'] = 'active'
     new_vnfd['pkg_ref'] = 1
     new_vnfd['signature'] = nil
@@ -1039,6 +1089,17 @@ class CatalogueV2 < SonataCatalogue
             json_error 400, errors, component, operation, time_req_begin if errors
         end
 
+        # Test platform
+        platform = if keyed_params.key?(:platform)
+                     keyed_params[:platform].downcase
+                   else
+                     '5gtango'
+                   end
+        if platform == 'osm'
+          header, new_vnf = new_ns.first
+          new_vnf = new_vnf.values[0][0]
+        end
+
         # Validate VNF
         # Check if mandatory fields Vendor, Name, Version are included
         json_error 400, 'VNF Vendor not found', component, operation, time_req_begin unless new_vnf.has_key?('vendor')
@@ -1074,6 +1135,8 @@ class CatalogueV2 < SonataCatalogue
         new_vnfd['_id'] = SecureRandom.uuid # Unique UUIDs per VNFD entries
         new_vnfd['vnfd'] = new_vnf
         new_vnfd['status'] = 'active'
+        new_vnfd['platform'] = platform
+        new_vnfd['header'] = header if platform == 'osm'
         new_vnfd['pkg_ref'] = 1
         new_vnfd['signature'] = nil
         new_vnfd['md5'] = checksum new_vnf.to_s

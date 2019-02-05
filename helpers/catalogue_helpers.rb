@@ -89,6 +89,7 @@ class SonataCatalogue < Sinatra::Application
     [parsed_message, nil]
   end
 
+
   # Translates a message from YAML to JSON
   # @param [YAML] input_yml some YAML message
   # @return [Hash, nil] if the input message is a valid YAML
@@ -100,6 +101,18 @@ class SonataCatalogue < Sinatra::Application
       logger.error 'Error parsing from YAML to JSON'
     end
     output_json
+  end
+
+  # Transform descriptor to its initial value
+  # @param [Hash] desc the descriptor
+  # @param [String] type_of_desc vnfd or nsd
+  # @return [Hash] desc the descriptor
+  def transform_descriptor(desc, type_of_desc='vnfd')
+      desc = JSON.parse(desc.to_json)
+      header = desc.delete('header')
+      content = desc.delete(type_of_desc)
+      desc[type_of_desc] = {header => { type_of_desc => content} }
+      desc
   end
 
   # Translates a message from JSON to YAML
@@ -230,7 +243,7 @@ class SonataCatalogue < Sinatra::Application
 
   def add_descriptor_level(descriptor_type, parameters)
     new_parameters = {}
-    meta_data = %w(page_number page_size _id uuid status state signature username md5 updated_at created_at)
+    meta_data = %w(page_number page_size _id uuid status state signature username md5 updated_at created_at pkg_ref platform)
     operators = %w(eq gt gte lt lte ne nin in)
     begin
       parameters.each { |k, v|

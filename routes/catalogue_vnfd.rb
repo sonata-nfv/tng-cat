@@ -664,7 +664,7 @@ class CatalogueV2 < SonataCatalogue
     # Transform in unified format
     arr = []
     JSON.parse(vnfs.to_json).each do |desc|
-      if desc['platform'] != '5gtango'
+      if desc['platform'] == 'osm'
         header = desc.delete('header')
         content = desc.delete('vnfd')
         desc['vnfd'] = {header => {'vnfd': content} }

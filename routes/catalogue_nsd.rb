@@ -693,7 +693,7 @@ class CatalogueV2 < SonataCatalogue
     # Format descriptors in unified format (either 5gtango, osm and onap)
     arr = []
     JSON.parse(nss.to_json).each do |desc|
-      if desc['platform'] != '5gtango'
+      if desc['platform'] == 'osm'
         header = desc.delete('header')
         content = desc.delete('nsd')
         desc['nsd'] = {header => {'nsd': content} }

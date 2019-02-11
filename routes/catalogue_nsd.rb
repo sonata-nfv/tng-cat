@@ -189,6 +189,8 @@ class CatalogueV1 < SonataCatalogue
   # @overload post '/catalogues/network-services'
   # Post a NS in JSON or YAML format
   post '/network-services' do
+
+
     # Return if content-type is invalid
     halt 415 unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
 
@@ -617,6 +619,8 @@ class CatalogueV2 < SonataCatalogue
 
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
+
+
     # Split keys in meta_data and data
     # Then transform 'string' params Hash into keys
     keyed_params = add_descriptor_level('nsd', params)
@@ -674,6 +678,7 @@ class CatalogueV2 < SonataCatalogue
       # Do the query
       keyed_params = parse_keys_dict(:nsd, keyed_params)
       nss = Nsd.where(keyed_params)
+
       # Set total count for results
       headers 'Record-Count' => nss.count.to_s
       if nss && nss.size.to_i > 0
@@ -684,14 +689,28 @@ class CatalogueV2 < SonataCatalogue
         logger.cust_debug(component: component, operation: operation, message: "No NSDs were found")
       end
     end
+
+    # Format descriptors in unified format (either 5gtango, osm and onap)
+    arr = []
+    JSON.parse(nss.to_json).each do |desc|
+      if desc['platform'] == 'osm'
+        header = desc.delete('header')
+        content = desc.delete('nsd')
+        desc['nsd'] = {header => {'nsd': content} }
+      end
+      arr << desc
+    end
+
     logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
     response = ''
-    case request.content_type
+
+    response = case request.content_type
       when 'application/json'
-        response = nss.to_json
+        arr.any? ? arr.to_json : nss.to_json
       else
-        response = json_to_yaml(nss.to_json)
-    end
+        arr.any? ? json_to_yaml(arr.to_json) : json_to_yaml(nss.to_json)
+               end
+
     halt 200, {'Content-type' => request.content_type}, response
   end
 
@@ -722,13 +741,15 @@ class CatalogueV2 < SonataCatalogue
       logger.cust_debug(component: component, operation: operation, message: "NSDs=#{ns}")
       logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
-      response = ''
-      case request.content_type
+      # Transform descriptor in its initial form
+      ns = transform_descriptor(ns, type_of_desc='nsd') if ns['platform'] == 'osm'
+
+      response = case request.content_type
         when 'application/json'
-          response = ns.to_json
+          ns.to_json
         else
-          response = json_to_yaml(ns.to_json)
-      end
+          json_to_yaml(ns.to_json)
+                 end
       halt 200, {'Content-type' => request.content_type}, response
 
     end
@@ -751,13 +772,20 @@ class CatalogueV2 < SonataCatalogue
     # Return if content-type is invalid
     json_error 415, 'Support of x-yaml and json', component, operation, time_req_begin unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
 
+    # Fetch body request and platform parameter
+    body_request = request.body.read
+    ns_body = body_request.split('&platform=')[0]
+    body_params = body_request.split('&platform=')[1..-1]
+    json_error 400, "Empty body request", component, operation, time_req_begin if body_request.blank?
+
+
     # Compatibility support for YAML content-type
     case request.content_type
       when 'application/x-yaml'
         # Validate YAML format
         # When updating a NSD, the json object sent to API must contain just data inside
         # of the nsd, without the json field nsd: before
-        ns, errors = parse_yaml(request.body.read)
+        ns, errors = parse_yaml(ns_body)
         json_error 400, errors, component, operation, time_req_begin if errors
 
         # Translate from YAML format to JSON format
@@ -770,14 +798,27 @@ class CatalogueV2 < SonataCatalogue
       else
         # Compatibility support for JSON content-type
         # Parses and validates JSON format
-        new_ns, errors = parse_json(request.body.read)
+        new_ns, errors = parse_json(ns_body)
         json_error 400, errors, component, operation, time_req_begin if errors
     end
+
     #Delete key "captures" if present
     params.delete(:captures) if params.key?(:captures)
 
     # Transform 'string' params Hash into keys
     keyed_params = keyed_hash(params)
+
+
+    # Retrieve plaform and place as metadata
+    platform = if body_params.count == 1
+                 body_params[0].downcase
+              else
+                '5gtango'
+               end
+    if platform == 'osm'
+      header, new_ns = new_ns.first
+      new_ns = new_ns.values[0][0]
+    end
 
     # Validate NS
     json_error 400, 'NS Vendor not found', component, operation, time_req_begin unless new_ns.has_key?('vendor')
@@ -787,23 +828,26 @@ class CatalogueV2 < SonataCatalogue
     # Check if NS already exists in the catalogue by name, vendor and version
     begin
       ns = Nsd.find_by({ 'nsd.name' => new_ns['name'], 'nsd.vendor' => new_ns['vendor'],
-                         'nsd.version' => new_ns['version'] })
+                         'nsd.version' => new_ns['version'], 'platform' => platform  })
       ns.update_attributes(pkg_ref: ns['pkg_ref'] + 1)
       logger.cust_debug(component: component, operation: operation, message: "Pkg_ref updated to #{ns['pkg_ref']}")
       logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
-      # response = {"uuid" => ns['_id'], "referenced" => ns['pkg_ref']}
+      # Transform descriptor in its initial form
+      ns = transform_descriptor(ns, type_of_desc='nsd') if ns['platform'] == 'osm'
+
       response = ''
-      case request.content_type
+      response = case request.content_type
         when 'application/json'
-          response = ns.to_json
+          ns.to_json
         else
-          response = json_to_yaml(ns.to_json)
-      end
+          json_to_yaml(ns.to_json)
+                 end
       halt 200, {'Content-type' => request.content_type}, response
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
     end
+
     # Check if NSD has an ID (it should not) and if it already exists in the catalogue
     begin
       ns = Nsd.find_by({ '_id' => new_ns['_id'] })
@@ -812,17 +856,19 @@ class CatalogueV2 < SonataCatalogue
       # Continue
     end
 
-    if keyed_params.key?(:username)
-      username = keyed_params[:username]
+    username = if keyed_params.key?(:username)
+      keyed_params[:username]
     else
-      username = nil
-    end
+      nil
+               end
 
     # Save to DB
     new_nsd = {}
     new_nsd['nsd'] = new_ns
     # Generate the UUID for the descriptor
     new_nsd['_id'] = SecureRandom.uuid
+    new_nsd['platform'] = platform
+    new_nsd['header'] = header if platform == 'osm'
     new_nsd['status'] = 'active'
     new_nsd['pkg_ref'] = 1
     # Signature will be supported
@@ -842,13 +888,15 @@ class CatalogueV2 < SonataCatalogue
     logger.cust_debug(component: component, operation: operation, message: "New NS has been added")
     logger.cust_info(status: 201, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
-    response = ''
-    case request.content_type
+    # Transform descriptor to its initial form
+    ns = transform_descriptor(ns, type_of_desc='nsd') if ns['platform'] == 'osm'
+
+    response = case request.content_type
       when 'application/json'
-        response = ns.to_json
+        ns.to_json
       else
-        response = json_to_yaml(ns.to_json)
-    end
+        json_to_yaml(ns.to_json)
+               end
     halt 201, {'Content-type' => request.content_type}, response
   end
 
@@ -876,13 +924,20 @@ class CatalogueV2 < SonataCatalogue
     # Transform 'string' params Hash into keys
     keyed_params = keyed_hash(params)
 
+    # Retrieve body request and platform parameter
+    body_request = request.body.read
+    ns_body = body_request.split('&platform=')[0]
+    body_params = body_request.split('&platform=')[1..-1]
+    json_error 400, "Empty body request", component, operation, time_req_begin if body_request.blank?
+
+
     # Compatibility support for YAML content-type
     case request.content_type
       when 'application/x-yaml'
         # Validate YAML format
         # When updating a NSD, the json object sent to API must contain just data inside
         # of the nsd, without the json field nsd: before
-        ns, errors = parse_yaml(request.body.read)
+        ns, errors = parse_yaml(ns_body)
         json_error 400, errors, component, operation, time_req_begin if errors
 
         # Translate from YAML format to JSON format
@@ -895,9 +950,24 @@ class CatalogueV2 < SonataCatalogue
       else
         # Compatibility support for JSON content-type
         # Parses and validates JSON format
-        new_ns, errors = parse_json(request.body.read)
+        new_ns, errors = parse_json(ns_body)
         json_error 400, errors, component, operation, time_req_begin if errors
     end
+
+
+    # Fetch platform from body request
+    platform = if body_params.count == 1
+                 body_params[0].downcase
+               else
+                 '5gtango'
+               end
+
+    # Transfer unified format in the DB
+    if platform == 'osm'
+      header, new_ns = new_ns.first
+      new_ns = new_ns.values[0][0]
+    end
+
 
     # Validate NS
     # Check if mandatory fields Vendor, Name, Version are included
@@ -935,17 +1005,19 @@ class CatalogueV2 < SonataCatalogue
       # Continue
     end
 
-    if keyed_params.key?(:username)
-      username = keyed_params[:username]
+    username = if keyed_params.key?(:username)
+      keyed_params[:username]
     else
-      username = nil
-    end
+      nil
+               end
 
     # Update to new version
     puts 'Updating...'
     new_nsd = {}
     new_nsd['_id'] = SecureRandom.uuid # Unique UUIDs per NSD entries
     new_nsd['nsd'] = new_ns
+    new_nsd['platform'] = platform
+    new_nsd['header'] = header if platform == 'osm'
     new_nsd['status'] = 'active'
     new_nsd['pkg_ref'] = 1
     new_nsd['signature'] = nil
@@ -964,13 +1036,15 @@ class CatalogueV2 < SonataCatalogue
     logger.cust_debug(component: component, operation: operation, message: "NSD #{new_ns}")
     logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
-    response = ''
-    case request.content_type
+    # Transform descriptor to appear as OSM body
+    new_ns = transform_descriptor(new_ns, type_of_desc='nsd') if new_ns['platform'] == 'osm'
+
+    response = case request.content_type
       when 'application/json'
-        response = new_ns.to_json
+        new_ns.to_json
       else
-        response = json_to_yaml(new_ns.to_json)
-    end
+        json_to_yaml(new_ns.to_json)
+               end
     halt 200, {'Content-type' => request.content_type}, response
   end
 
@@ -997,6 +1071,7 @@ class CatalogueV2 < SonataCatalogue
 
       # Transform 'string' params Hash into keys
       keyed_params = keyed_hash(params)
+
 
       # Check for special case (:status param == <new_status>)
       if keyed_params.key?(:status)
@@ -1027,13 +1102,20 @@ class CatalogueV2 < SonataCatalogue
         json_return 200, "Status updated to {#{query_string}}", component, operation, time_req_begin
 
       else
+
+        # Retrieve body request
+        body_request = request.body.read
+        ns_body = body_request.split('&platform=')[0]
+        body_params = body_request.split('&platform=')[1..-1]
+        json_error 400, "Empty body request", component, operation, time_req_begin if body_request.blank?
+
         # Compatibility support for YAML content-type
         case request.content_type
           when 'application/x-yaml'
             # Validate YAML format
             # When updating a NSD, the json object sent to API must contain just data inside
             # of the nsd, without the json field nsd: before
-            ns, errors = parse_yaml(request.body.read)
+            ns, errors = parse_yaml(ns_body)
             json_error 400, errors, component, operation, time_req_begin if errors
 
             # Translate from YAML format to JSON format
@@ -1046,8 +1128,19 @@ class CatalogueV2 < SonataCatalogue
           else
             # Compatibility support for JSON content-type
             # Parses and validates JSON format
-            new_ns, errors = parse_json(request.body.read)
+            new_ns, errors = parse_json(ns_body)
             json_error 400, errors, component, operation, time_req_begin if errors
+        end
+
+        # Retrieve platform from body request
+        platform = if body_params.count == 1
+                     body_params[0].downcase
+                   else
+                     '5gtango'
+                   end
+        if platform == 'osm'
+          header, new_ns = new_ns.first
+          new_ns = new_ns.values[0][0]
         end
 
         # Validate NS
@@ -1073,11 +1166,11 @@ class CatalogueV2 < SonataCatalogue
           # Continue
         end
 
-        if keyed_params.key?(:username)
-          username = keyed_params[:username]
+        username = if keyed_params.key?(:username)
+          keyed_params[:username]
         else
-          username = nil
-        end
+          nil
+                   end
 
         # Update to new version
         puts 'Updating...'
@@ -1085,6 +1178,8 @@ class CatalogueV2 < SonataCatalogue
         new_nsd['_id'] = SecureRandom.uuid # Unique UUIDs per NSD entries
         new_nsd['nsd'] = new_ns
         new_nsd['status'] = 'active'
+        new_nsd['platform'] = platform
+        new_nsd['header'] = header if platform == 'osm'
         new_nsd['pkg_ref'] = 1
         new_nsd['signature'] = nil
         new_nsd['md5'] = checksum new_ns.to_s
@@ -1102,13 +1197,15 @@ class CatalogueV2 < SonataCatalogue
         logger.cust_debug(component: component, operation: operation, message: "NSD #{new_ns}")
         logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
-        response = ''
-        case request.content_type
+        # Transform descriptor in its initial form
+        new_ns = transform_descriptor(new_ns, type_of_desc='nsd') if new_ns['platform'] == 'osm'
+
+        response = case request.content_type
           when 'application/json'
-            response = new_ns.to_json
+            new_ns.to_json
           else
-            response = json_to_yaml(new_ns.to_json)
-        end
+            json_to_yaml(new_ns.to_json)
+                   end
         halt 200, {'Content-type' => request.content_type}, response
       end
     end
@@ -1199,4 +1296,5 @@ class CatalogueV2 < SonataCatalogue
     logger.cust_debug(component: component, operation: operation, message: "No NSD ID specified")
     json_error 400, 'No NSD ID specified', component, operation, time_req_begin
   end
+
 end

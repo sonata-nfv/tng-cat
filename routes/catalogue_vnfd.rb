@@ -661,19 +661,28 @@ class CatalogueV2 < SonataCatalogue
       end
     end
 
+    # Transform in unified format
+    arr = []
+    JSON.parse(vnfs.to_json).each do |desc|
+      if desc['platform'] == 'osm'
+        header = desc.delete('header')
+        content = desc.delete('vnfd')
+        desc['vnfd'] = {header => {'vnfd': content} }
+      end
+      arr << desc
+    end
 
     logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
-    response = ''
-    case request.content_type
-      when 'application/json'
-        response = vnfs.to_json
-      else
-        response = json_to_yaml(vnfs.to_json)
-    end
-
+    response = case request.content_type
+                 when 'application/json'
+                   arr.any? ? arr.to_json : vnfs.to_json
+                 else
+                   arr.any? ? json_to_yaml(arr.to_json) : json_to_yaml(vnfs.to_json)
+               end
 
     halt 200, {'Content-type' => request.content_type}, response
+
   end
 
   # @method get_vnfs_id
@@ -704,7 +713,10 @@ class CatalogueV2 < SonataCatalogue
 
       logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
-      response = ''
+      # Transform descriptor in its initial form
+      vnf = transform_descriptor(vnf, type_of_desc='vnfd') if vnf['platform'] == 'osm'
+
+
       case request.content_type
         when 'application/json'
           response = vnf.to_json
@@ -722,20 +734,24 @@ class CatalogueV2 < SonataCatalogue
   # Post a VNF in JSON or YAML format
   post '/vnfs' do
 
-
-    #Delete key "captures" if present
-    params.delete(:captures) if params.key?(:captures)
-
     # Logger details
     operation = "POST /v2/vnfs"
     component = __method__.to_s
     time_req_begin = Time.now.utc
 
+    #Delete key "captures" if present
+    params.delete(:captures) if params.key?(:captures)
 
     logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
 
     # Return if content-type is invalid
     json_error 415, 'Support of x-yaml and json', component, operation, time_req_begin unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
+
+    # Retrieve body request and platform
+    body_request = request.body.read
+    vnf_body = body_request.split('&platform=')[0]
+    body_params = body_request.split('&platform=')[1..-1]
+    json_error 400, "Empty body request", component, operation, time_req_begin if body_request.blank?
 
     # Compatibility support for YAML content-type
     case request.content_type
@@ -743,7 +759,7 @@ class CatalogueV2 < SonataCatalogue
         # Validate YAML format
         # When updating a VNFD, the json object sent to API must contain just data inside
         # of the vnfd, without the json field vnfd: before
-        vnf, errors = parse_yaml(request.body.read)
+        vnf, errors = parse_yaml(vnf_body)
         json_error 400, errors, component, operation, time_req_begin if errors
 
         # Translate from YAML format to JSON format
@@ -756,12 +772,23 @@ class CatalogueV2 < SonataCatalogue
       else
         # Compatibility support for JSON content-type
         # Parses and validates JSON format
-        new_vnf, errors = parse_json(request.body.read)
+        new_vnf, errors = parse_json(vnf_body)
         json_error 400, errors, component, operation, time_req_begin if errors
     end
 
     # Transform 'string' params Hash into keys
     keyed_params = keyed_hash(params)
+
+    # Retrieve platform parameter
+    platform = if body_params.count == 1
+                 body_params[0].downcase
+               else
+                 '5gtango'
+               end
+    if platform == 'osm'
+      header, new_vnf = new_vnf.first
+      new_vnf = new_vnf.values[0][0]
+    end
 
     # Validate VNF
     json_error 400, 'VNF Vendor not found', component, operation, time_req_begin unless new_vnf.has_key?('vendor')
@@ -772,11 +799,14 @@ class CatalogueV2 < SonataCatalogue
     # Check if VNFD already exists in the catalogue by name, vendor and version
     begin
       vnf = Vnfd.find_by({ 'vnfd.name' => new_vnf['name'], 'vnfd.vendor' => new_vnf['vendor'],
-                           'vnfd.version' => new_vnf['version'] })
+                           'vnfd.version' => new_vnf['version'], 'platform' => platform  })
       vnf.update_attributes(pkg_ref: vnf['pkg_ref'] + 1)
       response = ''
 
       logger.cust_info(status: 200, start_stop: 'STOP',message: "Update reference to #{vnf['pkg_ref']}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
+
+      # Transform descriptor in its initial form
+      vnf = transform_descriptor(vnf, type_of_desc='vnfd') if vnf['platform'] == 'osm'
 
       case request.content_type
         when 'application/json'
@@ -809,6 +839,8 @@ class CatalogueV2 < SonataCatalogue
     new_vnfd['vnfd'] = new_vnf
     # Generate the UUID for the descriptor
     new_vnfd['_id'] = SecureRandom.uuid
+    new_vnfd['platform'] = platform
+    new_vnfd['header'] = header if platform == 'osm'
     new_vnfd['status'] = 'active'
     new_vnfd['pkg_ref'] = 1
     new_vnfd['signature'] = nil
@@ -827,7 +859,9 @@ class CatalogueV2 < SonataCatalogue
     logger.cust_debug(component: component, operation: operation, message: 'New VNF has been added')
     logger.cust_info(status: 201, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
-    response = ''
+    # Transform descriptor in its initial form
+    vnf = transform_descriptor(vnf, type_of_desc='vnfd') if vnf['platform'] == 'osm'
+
     case request.content_type
       when 'application/json'
         response = vnf.to_json
@@ -864,13 +898,19 @@ class CatalogueV2 < SonataCatalogue
     # Return if params are empty
     json_error 400, 'Update parameters are null', component, operation, time_req_begin if keyed_params.empty?
 
+    # Retrieve body request and platform
+    body_request = request.body.read
+    vnf_body = body_request.split('&platform=')[0]
+    body_params = body_request.split('&platform=')[1..-1]
+    json_error 400, "Empty body request", component, operation, time_req_begin if body_request.blank?
+
     # Compatibility support for YAML content-type
     case request.content_type
       when 'application/x-yaml'
         # Validate YAML format
         # When updating a VNFD, the json object sent to API must contain just data inside
         # of the vnfd, without the json field vnfd: before
-        vnf, errors = parse_yaml(request.body.read)
+        vnf, errors = parse_yaml(vnf_body)
         json_error 400, errors, component, operation, time_req_begin if errors
 
         # Translate from YAML format to JSON format
@@ -883,8 +923,20 @@ class CatalogueV2 < SonataCatalogue
       else
         # Compatibility support for JSON content-type
         # Parses and validates JSON format
-        new_vnf, errors = parse_json(request.body.read)
+        new_vnf, errors = parse_json(vnf_body)
         json_error 400, errors, component, operation, time_req_begin if errors
+    end
+
+
+    # Retrieve platform parameter
+    platform = if body_params.count == 1
+                 body_params[0].downcase
+               else
+                 '5gtango'
+               end
+    if platform == 'osm'
+      header, new_vnf = new_vnf.first
+      new_vnf = new_vnf.values[0][0]
     end
 
     # Validate NS
@@ -934,6 +986,8 @@ class CatalogueV2 < SonataCatalogue
     new_vnfd = {}
     new_vnfd['_id'] = SecureRandom.uuid # Unique UUIDs per VNFD entries
     new_vnfd['vnfd'] = new_vnf
+    new_vnfd['platform'] = platform
+    new_vnfd['header'] = header if platform == 'osm'
     new_vnfd['status'] = 'active'
     new_vnfd['pkg_ref'] = 1
     new_vnfd['signature'] = nil
@@ -951,7 +1005,9 @@ class CatalogueV2 < SonataCatalogue
     logger.cust_debug(component: component, operation: operation, message: "VNFD #{new_vnf}")
     logger.cust_info(status: 201, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
-    response = ''
+    # Transform descriptor in its initial form
+    new_vnf = transform_descriptor(new_vnf, type_of_desc='vnfd') if new_vnf['platform'] == 'osm'
+
     case request.content_type
       when 'application/json'
         response = new_vnf.to_json
@@ -1016,13 +1072,20 @@ class CatalogueV2 < SonataCatalogue
         # Return if content-type is invalid
         json_error 415, 'Support of x-yaml and json', component, operation, time_req_begin unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
 
+
+        # Retrieve body request and platform
+        body_request = request.body.read
+        vnf_body = body_request.split('&platform=')[0]
+        body_params = body_request.split('&platform=')[1..-1]
+        json_error 400, "Empty body request", component, operation, time_req_begin if body_request.blank?
+
         # Compatibility support for YAML content-type
         case request.content_type
           when 'application/x-yaml'
             # Validate YAML format
             # When updating a VNFD, the json object sent to API must contain just data inside
             # of the vnfd, without the json field vnfd: before
-            vnf, errors = parse_yaml(request.body.read)
+            vnf, errors = parse_yaml(vnf_body)
             json_error 400, errors, component, operation, time_req_begin if errors
 
             # Translate from YAML format to JSON format
@@ -1035,8 +1098,19 @@ class CatalogueV2 < SonataCatalogue
           else
             # Compatibility support for JSON content-type
             # Parses and validates JSON format
-            new_vnf, errors = parse_json(request.body.read)
+            new_vnf, errors = parse_json(vnf_body)
             json_error 400, errors, component, operation, time_req_begin if errors
+        end
+
+        # Retrieve platform parameter
+        platform = if body_params.count == 1
+                     body_params[0].downcase
+                   else
+                     '5gtango'
+                   end
+        if platform == 'osm'
+          header, new_vnf = new_vnf.first
+          new_vnf = new_vnf.values[0][0]
         end
 
         # Validate VNF
@@ -1074,6 +1148,8 @@ class CatalogueV2 < SonataCatalogue
         new_vnfd['_id'] = SecureRandom.uuid # Unique UUIDs per VNFD entries
         new_vnfd['vnfd'] = new_vnf
         new_vnfd['status'] = 'active'
+        new_vnfd['platform'] = platform
+        new_vnfd['header'] = header if platform == 'osm'
         new_vnfd['pkg_ref'] = 1
         new_vnfd['signature'] = nil
         new_vnfd['md5'] = checksum new_vnf.to_s
@@ -1090,13 +1166,16 @@ class CatalogueV2 < SonataCatalogue
         logger.cust_debug(component: component, operation: operation, message: "VNFD #{new_vnf}")
         logger.cust_info(status: 201, message: "Ended at #{Time.now.utc}", start_stop: 'STOP', component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
-        response = ''
+        # Transform descriptor in its initial form
+        new_vnf = transform_descriptor(new_vnf, type_of_desc='vnfd') if new_vnf['platform'] == 'osm'
+
         case request.content_type
           when 'application/json'
             response = new_vnf.to_json
           else
             response = json_to_yaml(new_vnf.to_json)
         end
+
         halt 200, {'Content-type' => request.content_type}, response
       end
     end

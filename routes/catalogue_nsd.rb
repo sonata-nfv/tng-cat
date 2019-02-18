@@ -220,9 +220,9 @@ class CatalogueV1 < SonataCatalogue
     end
 
     # Validate NS
-    json_error 400, 'ERROR: NS Vendor not found' unless new_ns.has_key?('vendor')
-    json_error 400, 'ERROR: NS Name not found' unless new_ns.has_key?('name')
-    json_error 400, 'ERROR: NS Version not found' unless new_ns.has_key?('version')
+    json_error 400, 'ERROR: NS Vendor not found' unless new_ns.key?('vendor')
+    json_error 400, 'ERROR: NS Name not found' unless new_ns.key?('name')
+    json_error 400, 'ERROR: NS Version not found' unless new_ns.key?('version')
 
     # --> Validation disabled
     # Validate NSD
@@ -322,9 +322,9 @@ class CatalogueV1 < SonataCatalogue
 
     # Validate NS
     # Check if same vendor, Name, Version do already exists in the database
-    json_error 400, 'ERROR: NS Vendor not found' unless new_ns.has_key?('vendor')
-    json_error 400, 'ERROR: NS Name not found' unless new_ns.has_key?('name')
-    json_error 400, 'ERROR: NS Version not found' unless new_ns.has_key?('version')
+    json_error 400, 'ERROR: NS Vendor not found' unless new_ns.key?('vendor')
+    json_error 400, 'ERROR: NS Name not found' unless new_ns.key?('name')
+    json_error 400, 'ERROR: NS Version not found' unless new_ns.key?('version')
 
     # Set headers
     case request.content_type
@@ -484,9 +484,9 @@ class CatalogueV1 < SonataCatalogue
 
         # Validate NS
         # Check if same vendor, Name, Version do already exists in the database
-        json_error 400, 'ERROR: NS Vendor not found' unless new_ns.has_key?('vendor')
-        json_error 400, 'ERROR: NS Name not found' unless new_ns.has_key?('name')
-        json_error 400, 'ERROR: NS Version not found' unless new_ns.has_key?('version')
+        json_error 400, 'ERROR: NS Vendor not found' unless new_ns.key?('vendor')
+        json_error 400, 'ERROR: NS Name not found' unless new_ns.key?('name')
+        json_error 400, 'ERROR: NS Version not found' unless new_ns.key?('version')
 
         # Retrieve stored version
         begin
@@ -693,16 +693,10 @@ class CatalogueV2 < SonataCatalogue
     # Format descriptors in unified format (either 5gtango, osm and onap)
     arr = []
     JSON.parse(nss.to_json).each do |desc|
-      if desc['platform'] == 'osm'
-        header = desc.delete('header')
-        content = desc.delete('nsd')
-        desc['nsd'] = {header => {'nsd': content} }
-      end
-      arr << desc
+      arr << transform_descriptor(desc, type_of_desc='nsd', platform = desc['platform'])
     end
 
     logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
-    response = ''
 
     response = case request.content_type
       when 'application/json'
@@ -742,7 +736,7 @@ class CatalogueV2 < SonataCatalogue
       logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
       # Transform descriptor in its initial form
-      ns = transform_descriptor(ns, type_of_desc='nsd') if ns['platform'] == 'osm'
+      ns = transform_descriptor(ns, type_of_desc='nsd', platform=ns['platform'])
 
       response = case request.content_type
         when 'application/json'
@@ -772,11 +766,8 @@ class CatalogueV2 < SonataCatalogue
     # Return if content-type is invalid
     json_error 415, 'Support of x-yaml and json', component, operation, time_req_begin unless (request.content_type == 'application/x-yaml' or request.content_type == 'application/json')
 
-    # Fetch body request and platform parameter
-    body_request = request.body.read
-    ns_body = body_request.split('&platform=')[0]
-    body_params = body_request.split('&platform=')[1..-1]
-    json_error 400, "Empty body request", component, operation, time_req_begin if body_request.blank?
+    # # Fetch body request and check if blank
+    # json_error 400, "Empty body request", component, operation, time_req_begin if request.body.read.blank?
 
 
     # Compatibility support for YAML content-type
@@ -785,7 +776,7 @@ class CatalogueV2 < SonataCatalogue
         # Validate YAML format
         # When updating a NSD, the json object sent to API must contain just data inside
         # of the nsd, without the json field nsd: before
-        ns, errors = parse_yaml(ns_body)
+        ns, errors = parse_yaml(request.body.read)
         json_error 400, errors, component, operation, time_req_begin if errors
 
         # Translate from YAML format to JSON format
@@ -798,7 +789,7 @@ class CatalogueV2 < SonataCatalogue
       else
         # Compatibility support for JSON content-type
         # Parses and validates JSON format
-        new_ns, errors = parse_json(ns_body)
+        new_ns, errors = parse_json(request.body.read)
         json_error 400, errors, component, operation, time_req_begin if errors
     end
 
@@ -809,21 +800,25 @@ class CatalogueV2 < SonataCatalogue
     keyed_params = keyed_hash(params)
 
 
-    # Retrieve plaform and place as metadata
-    platform = if body_params.count == 1
-                 body_params[0].downcase
-              else
-                '5gtango'
-               end
-    if platform == 'osm'
-      header, new_ns = new_ns.first
-      new_ns = new_ns.values[0][0]
-    end
+    # Retrieve platform and place as metadata
+    #
+    platform = if keyed_params.key?(:platform)
+      keyed_params[:platform].downcase
+        else
+          '5gtango'
+        end
+
+    bool_cond = (platform.eql?('osm') | platform.eql?('onap')) & new_ns.key?('name')
+    json_error 400, 'Platform not aligned with format of descriptor', component, operation, time_req_begin if bool_cond
+
+
+    new_ns, heads = extract_osm_onap(new_ns, platform)
 
     # Validate NS
-    json_error 400, 'NS Vendor not found', component, operation, time_req_begin unless new_ns.has_key?('vendor')
-    json_error 400, 'NS Name not found', component, operation, time_req_begin unless new_ns.has_key?('name')
-    json_error 400, 'NS Version not found', component, operation, time_req_begin unless new_ns.has_key?('version')
+    json_error 400, 'NS Vendor not found', component, operation, time_req_begin unless new_ns.key?('vendor')
+    json_error 400, 'NS Name not found', component, operation, time_req_begin unless new_ns.key?('name')
+    json_error 400, 'NS Version not found', component, operation, time_req_begin unless new_ns.key?('version')
+
 
     # Check if NS already exists in the catalogue by name, vendor and version
     begin
@@ -834,9 +829,8 @@ class CatalogueV2 < SonataCatalogue
       logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
       # Transform descriptor in its initial form
-      ns = transform_descriptor(ns, type_of_desc='nsd') if ns['platform'] == 'osm'
+      ns = transform_descriptor(ns, type_of_desc = 'nsd', platform=platform)
 
-      response = ''
       response = case request.content_type
         when 'application/json'
           ns.to_json
@@ -868,7 +862,7 @@ class CatalogueV2 < SonataCatalogue
     # Generate the UUID for the descriptor
     new_nsd['_id'] = SecureRandom.uuid
     new_nsd['platform'] = platform
-    new_nsd['header'] = header if platform == 'osm'
+    new_nsd['header'] = heads if platform.eql?('osm') | platform.eql?('onap')
     new_nsd['status'] = 'active'
     new_nsd['pkg_ref'] = 1
     # Signature will be supported
@@ -889,7 +883,7 @@ class CatalogueV2 < SonataCatalogue
     logger.cust_info(status: 201, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
     # Transform descriptor to its initial form
-    ns = transform_descriptor(ns, type_of_desc='nsd') if ns['platform'] == 'osm'
+    ns = transform_descriptor(ns, type_of_desc='nsd', platform=platform)
 
     response = case request.content_type
       when 'application/json'
@@ -924,11 +918,8 @@ class CatalogueV2 < SonataCatalogue
     # Transform 'string' params Hash into keys
     keyed_params = keyed_hash(params)
 
-    # Retrieve body request and platform parameter
-    body_request = request.body.read
-    ns_body = body_request.split('&platform=')[0]
-    body_params = body_request.split('&platform=')[1..-1]
-    json_error 400, "Empty body request", component, operation, time_req_begin if body_request.blank?
+    # # Retrieve body request
+    # json_error 400, "Empty body request", component, operation, time_req_begin if request.body.read.blank?
 
 
     # Compatibility support for YAML content-type
@@ -937,7 +928,7 @@ class CatalogueV2 < SonataCatalogue
         # Validate YAML format
         # When updating a NSD, the json object sent to API must contain just data inside
         # of the nsd, without the json field nsd: before
-        ns, errors = parse_yaml(ns_body)
+        ns, errors = parse_yaml(request.body.read)
         json_error 400, errors, component, operation, time_req_begin if errors
 
         # Translate from YAML format to JSON format
@@ -950,30 +941,28 @@ class CatalogueV2 < SonataCatalogue
       else
         # Compatibility support for JSON content-type
         # Parses and validates JSON format
-        new_ns, errors = parse_json(ns_body)
+        new_ns, errors = parse_json(request.body.read)
         json_error 400, errors, component, operation, time_req_begin if errors
     end
 
 
-    # Fetch platform from body request
-    platform = if body_params.count == 1
-                 body_params[0].downcase
+    platform = if keyed_params.key?(:platform)
+                 keyed_params[:platform].downcase
                else
                  '5gtango'
                end
 
-    # Transfer unified format in the DB
-    if platform == 'osm'
-      header, new_ns = new_ns.first
-      new_ns = new_ns.values[0][0]
-    end
+    bool_cond = (platform.eql?('osm') | platform.eql?('onap')) & new_ns.key?('name')
+    json_error 400, 'Platform not aligned with format of descriptor', component, operation, time_req_begin if bool_cond
 
+
+    new_ns, heads = extract_osm_onap(new_ns, platform)
 
     # Validate NS
     # Check if mandatory fields Vendor, Name, Version are included
-    json_error 400, 'NS Vendor not found', component, operation, time_req_begin unless new_ns.has_key?('vendor')
-    json_error 400, 'NS Name not found', component, operation, time_req_begin unless new_ns.has_key?('name')
-    json_error 400, 'NS Version not found', component, operation, time_req_begin unless new_ns.has_key?('version')
+    json_error 400, 'NS Vendor not found', component, operation, time_req_begin unless new_ns.key?('vendor')
+    json_error 400, 'NS Name not found', component, operation, time_req_begin unless new_ns.key?('name')
+    json_error 400, 'NS Version not found', component, operation, time_req_begin unless new_ns.key?('version')
 
     # Set headers
     case request.content_type
@@ -1017,7 +1006,7 @@ class CatalogueV2 < SonataCatalogue
     new_nsd['_id'] = SecureRandom.uuid # Unique UUIDs per NSD entries
     new_nsd['nsd'] = new_ns
     new_nsd['platform'] = platform
-    new_nsd['header'] = header if platform == 'osm'
+    new_nsd['header'] = heads if platform.eql?('osm') | platform.eql?('onap')
     new_nsd['status'] = 'active'
     new_nsd['pkg_ref'] = 1
     new_nsd['signature'] = nil
@@ -1037,7 +1026,7 @@ class CatalogueV2 < SonataCatalogue
     logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
     # Transform descriptor to appear as OSM body
-    new_ns = transform_descriptor(new_ns, type_of_desc='nsd') if new_ns['platform'] == 'osm'
+    new_ns = transform_descriptor(new_ns, type_of_desc='nsd', platform = platform)
 
     response = case request.content_type
       when 'application/json'
@@ -1103,11 +1092,8 @@ class CatalogueV2 < SonataCatalogue
 
       else
 
-        # Retrieve body request
-        body_request = request.body.read
-        ns_body = body_request.split('&platform=')[0]
-        body_params = body_request.split('&platform=')[1..-1]
-        json_error 400, "Empty body request", component, operation, time_req_begin if body_request.blank?
+        # # Retrieve body request
+        # json_error 400, "Empty body request", component, operation, time_req_begin if request.body.read.blank?
 
         # Compatibility support for YAML content-type
         case request.content_type
@@ -1115,7 +1101,7 @@ class CatalogueV2 < SonataCatalogue
             # Validate YAML format
             # When updating a NSD, the json object sent to API must contain just data inside
             # of the nsd, without the json field nsd: before
-            ns, errors = parse_yaml(ns_body)
+            ns, errors = parse_yaml(request.body.read)
             json_error 400, errors, component, operation, time_req_begin if errors
 
             # Translate from YAML format to JSON format
@@ -1128,26 +1114,28 @@ class CatalogueV2 < SonataCatalogue
           else
             # Compatibility support for JSON content-type
             # Parses and validates JSON format
-            new_ns, errors = parse_json(ns_body)
+            new_ns, errors = parse_json(request.body.read)
             json_error 400, errors, component, operation, time_req_begin if errors
         end
 
-        # Retrieve platform from body request
-        platform = if body_params.count == 1
-                     body_params[0].downcase
+        # Retrieve platform from optional parameter
+        platform = if keyed_params.key?(:platform)
+                     keyed_params[:platform].downcase
                    else
                      '5gtango'
                    end
-        if platform == 'osm'
-          header, new_ns = new_ns.first
-          new_ns = new_ns.values[0][0]
-        end
+
+        bool_cond = (platform.eql?('osm') | platform.eql?('onap')) & new_ns.key?('name')
+        json_error 400, 'Platform not aligned with format of descriptor', component, operation, time_req_begin if bool_cond
+
+
+        new_ns, heads = extract_osm_onap(new_ns, platform )
 
         # Validate NS
         # Check if mandatory fields Vendor, Name, Version are included
-        json_error 400, 'NS Vendor not found', component, operation, time_req_begin unless new_ns.has_key?('vendor')
-        json_error 400, 'NS Name not found', component, operation, time_req_begin unless new_ns.has_key?('name')
-        json_error 400, 'NS Version not found', component, operation, time_req_begin unless new_ns.has_key?('version')
+        json_error 400, 'NS Vendor not found', component, operation, time_req_begin unless new_ns.key?('vendor')
+        json_error 400, 'NS Name not found', component, operation, time_req_begin unless new_ns.key?('name')
+        json_error 400, 'NS Version not found', component, operation, time_req_begin unless new_ns.key?('version')
 
         # Retrieve stored version
         begin
@@ -1179,7 +1167,7 @@ class CatalogueV2 < SonataCatalogue
         new_nsd['nsd'] = new_ns
         new_nsd['status'] = 'active'
         new_nsd['platform'] = platform
-        new_nsd['header'] = header if platform == 'osm'
+        new_nsd['header'] = heads if platform.eql?('osm') | platform.eql?('onap')
         new_nsd['pkg_ref'] = 1
         new_nsd['signature'] = nil
         new_nsd['md5'] = checksum new_ns.to_s
@@ -1198,7 +1186,7 @@ class CatalogueV2 < SonataCatalogue
         logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
         # Transform descriptor in its initial form
-        new_ns = transform_descriptor(new_ns, type_of_desc='nsd') if new_ns['platform'] == 'osm'
+        new_ns = transform_descriptor(new_ns, type_of_desc='nsd', platform=platform)
 
         response = case request.content_type
           when 'application/json'

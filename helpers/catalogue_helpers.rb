@@ -103,16 +103,59 @@ class SonataCatalogue < Sinatra::Application
     output_json
   end
 
+  # Transform descriptor to the unified format
+  # @param [Hash]
+  # desc the descriptor
+  # @param [String] platform the platform of the descriptor
+  # @return [Array] array of descriptor and heads
+  def extract_osm_onap(desc, platform ='osm')
+    case platform
+      when 'osm'
+        header, desc = desc.first
+        header_in = desc.keys[0]
+        desc = desc.values[0][0]
+        return desc, [header, header_in]
+      when 'onap'
+        metadata = desc.delete('metadata')
+        metadata_keys = metadata.keys
+        desc['name'] = metadata[metadata_keys.grep(/name/)[0]]
+        desc['vendor'] = metadata[metadata_keys.grep(/designer/)[0]]
+        desc['version'] = metadata[metadata_keys.grep(/version/)[0]]
+        desc['invariant_id'] = metadata[metadata_keys.grep(/id/)[0]]
+        desc['release_date_time'] = metadata[metadata_keys.grep(/date_time/)[0]]
+        return desc, metadata_keys
+    end
+    [desc, nil]
+  end
+
   # Transform descriptor to its initial value
   # @param [Hash] desc the descriptor
   # @param [String] type_of_desc vnfd or nsd
   # @return [Hash] desc the descriptor
-  def transform_descriptor(desc, type_of_desc='vnfd')
-      desc = JSON.parse(desc.to_json)
-      header = desc.delete('header')
-      content = desc.delete(type_of_desc)
-      desc[type_of_desc] = {header => { type_of_desc => content} }
-      desc
+  def transform_descriptor(desc, type_of_desc='vnfd', platform ='osm')
+    desc = JSON.parse(desc.to_json)
+    case platform
+      when 'osm'
+        header = desc.delete('header')
+        content = desc.delete(type_of_desc)
+        desc[type_of_desc] = { header[0] => { header[1] => content } }
+      when 'onap'
+        fields = %w[name version invariant_id release_date_time]
+        content = desc.delete('header')
+        desc[type_of_desc]['metadata'] = {}
+        fields.each do |item|
+          content.each do |field|
+            if !field.index(/#{item}/i).nil?
+              desc[type_of_desc]['metadata'][field] = desc[type_of_desc][item]
+              desc[type_of_desc].delete(item)
+              break
+            end
+          end
+        end
+        desc[type_of_desc]['metadata']['nsd_designer'] = desc[type_of_desc]['vendor']
+        desc[type_of_desc].delete('vendor')
+    end
+    desc
   end
 
   # Translates a message from JSON to YAML
@@ -234,7 +277,7 @@ class SonataCatalogue < Sinatra::Application
 
   def modify_operators(key_partitioned, value)
     key = key_partitioned[0]
-    if %w(in nin).include? key_partitioned[-1]
+    if %w[in nin].include? key_partitioned[-1]
       value = clean_brack(value)
     end
     value = {'$' + key_partitioned[-1] => value}
@@ -243,8 +286,8 @@ class SonataCatalogue < Sinatra::Application
 
   def add_descriptor_level(descriptor_type, parameters)
     new_parameters = {}
-    meta_data = %w(page_number page_size _id uuid status state signature username md5 updated_at created_at pkg_ref platform)
-    operators = %w(eq gt gte lt lte ne nin in)
+    meta_data = %w[page_number page_size _id uuid status state signature username md5 updated_at created_at pkg_ref platform]
+    operators = %w[eq gt gte lt lte ne nin in]
     begin
       parameters.each { |k, v|
         if k == 'uuid'

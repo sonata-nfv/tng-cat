@@ -71,7 +71,7 @@ class CatalogueV2 < SonataCatalogue
 
     # Get rid of :page_number and :page_size
     [:page_number, :page_size].each { |k| keyed_params.delete(k) }
-
+    policies = []
     # Check for special case (:version param == last)
     if keyed_params.key?(:'pld.version') && keyed_params[:'pld.version'] == 'last'
       # Do query for last version -> get_pld_pl_vendor_last_version
@@ -108,7 +108,8 @@ class CatalogueV2 < SonataCatalogue
 
       #Do the query
       keyed_params = parse_keys_dict(:pld, keyed_params)
-      policies = Pld.where(keyed_params)
+      policies = Pld.where(keyed_params) unless keyed_params.empty?
+
       # Set total count for results
       headers 'Record-Count' => policies.count.to_s
       if policies && policies.size.to_i > 0

@@ -982,7 +982,7 @@ class SonataCatalogue < Sinatra::Application
       if paths_dict.key? keys.to_sym
         keyed_params.delete((type_of_descriptor.to_s + '.' + keys).to_sym)
         value.class == String ?
-            Dict.all.each {|field_of_dict| cur_array_id += field_of_dict[keys][value] unless field_of_dict[keys][value].empty?}:
+            Dict.all.each {|field_of_dict| cur_array_id += field_of_dict[keys][value] unless field_of_dict[keys][value].nil?}:
             Dict.all.each do |field_of_dict|
               field_of_dict.as_document[keys].keys.each do |key_field_dict|
                 value.each {|key, value| cur_bool &= compare_objects(key.split('$')[-1], key_field_dict, value)}

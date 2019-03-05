@@ -636,7 +636,7 @@ class CatalogueV2 < SonataCatalogue
 
     # Get rid of :page_number and :page_size
     [:page_number, :page_size].each { |k| keyed_params.delete(k) }
-
+    nss = []
     # Check for special case (:version param == last)
     if keyed_params.key?(:'nsd.version') && keyed_params[:'nsd.version'] == 'last'
       # Do query for last version -> get_nsd_ns_vendor_last_version

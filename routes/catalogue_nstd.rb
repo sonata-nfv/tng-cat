@@ -72,7 +72,7 @@ class CatalogueV2 < SonataCatalogue
 
     # Get rid of :page_number and :page_size
     [:page_number, :page_size].each { |k| keyed_params.delete(k) }
-
+    nsts = []
     # Check for special case (:version param == last)
     if keyed_params.key?(:'nstd.version') && keyed_params[:'nstd.version'] == 'last'
       # Do query for last version -> get_nstd_nst_vendor_last_version
@@ -109,6 +109,7 @@ class CatalogueV2 < SonataCatalogue
       # Do the query
       keyed_params = parse_keys_dict(:nstd, keyed_params)
       nsts = Nstd.where(keyed_params)
+
       # Set total count for results
       headers 'Record-Count' => nsts.count.to_s
       if nsts && nsts.size.to_i > 0

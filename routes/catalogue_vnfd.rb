@@ -613,6 +613,7 @@ class CatalogueV2 < SonataCatalogue
     # Get rid of :page_number and :page_size
     [:page_number, :page_size].each { |k| keyed_params.delete(k) }
 
+    vnfs = []
     # Check for special case (:version param == last)
     if keyed_params.key?(:'vnfd.version') && keyed_params[:'vnfd.version'] == 'last'
       # Do query for last version -> get_vnfd_vnf_vendor_last_version

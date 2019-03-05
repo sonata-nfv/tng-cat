@@ -70,7 +70,7 @@ class CatalogueV2 < SonataCatalogue
 
     # Get rid of :page_number and :page_number
     [:page_number, :page_size].each { |k| keyed_params.delete(k) }
-
+    tests = []
     # Check for special case (:version param == last)
     if keyed_params.key?(:'testd.version') && keyed_params[:'testd.version'] == 'last'
       # Do query for last version -> get_testd_test_vendor_last_version
@@ -107,6 +107,7 @@ class CatalogueV2 < SonataCatalogue
       # Do the query
       keyed_params = parse_keys_dict(:testd, keyed_params)
       tests = Testd.where(keyed_params)
+
       # Set total count for results
       headers 'Record-Count' => tests.count.to_s
       if tests && tests.size.to_i > 0

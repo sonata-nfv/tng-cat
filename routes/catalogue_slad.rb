@@ -72,7 +72,7 @@ class CatalogueV2 < SonataCatalogue
 
     # Get rid of :page_number and :page_size
     [:page_number, :page_size].each { |k| keyed_params.delete(k) }
-
+    slas = []
     # Check for special case (:version param == last)
     if keyed_params.key?(:'slad.version') && keyed_params[:'slad.version'] == 'last'
       # Do query for last version -> get_slad_sla_vendor_last_version

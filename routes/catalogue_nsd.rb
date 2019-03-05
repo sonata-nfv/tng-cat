@@ -677,7 +677,7 @@ class CatalogueV2 < SonataCatalogue
     else
       # Do the query
       keyed_params = parse_keys_dict(:nsd, keyed_params)
-      nss = Nsd.where(keyed_params) unless keyed_params.empty?
+      nss = Nsd.where(keyed_params)
 
       # Set total count for results
       headers 'Record-Count' => nss.count.to_s

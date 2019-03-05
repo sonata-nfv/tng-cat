@@ -108,7 +108,7 @@ class CatalogueV2 < SonataCatalogue
 
       #Do the query
       keyed_params = parse_keys_dict(:pld, keyed_params)
-      policies = Pld.where(keyed_params) unless keyed_params.empty?
+      policies = Pld.where(keyed_params)
 
       # Set total count for results
       headers 'Record-Count' => policies.count.to_s

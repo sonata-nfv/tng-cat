@@ -106,7 +106,7 @@ class CatalogueV2 < SonataCatalogue
     else
       # Do the query
       keyed_params = parse_keys_dict(:testd, keyed_params)
-      tests = Testd.where(keyed_params) unless keyed_params.empty?
+      tests = Testd.where(keyed_params)
 
       # Set total count for results
       headers 'Record-Count' => tests.count.to_s

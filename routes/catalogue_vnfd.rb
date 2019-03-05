@@ -650,7 +650,7 @@ class CatalogueV2 < SonataCatalogue
     else
       # Do the query
       keyed_params = parse_keys_dict(:vnfd, keyed_params)
-      vnfs = Vnfd.where(keyed_params) unless keyed_params.empty?
+      vnfs = Vnfd.where(keyed_params)
       # Set total count for results
       headers 'Record-Count' => vnfs.count.to_s
       if vnfs && vnfs.size.to_i > 0

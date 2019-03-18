@@ -33,6 +33,10 @@
 
 class CatalogueV2 < SonataCatalogue
   ### TESTD API METHODS ###
+  require 'unirest'
+
+  # Fetch Decision Support URL
+  tngVnvDsm = ENV.fetch('tngVnvDsmUrl','http://localhost:4010/api')
 
   # @method get_test_descriptors
   # @overload get '/catalogues/tests/?'
@@ -121,12 +125,12 @@ class CatalogueV2 < SonataCatalogue
     logger.cust_info(status: 200,start_stop:'STOP', message: "Ended at #{Time.now.utc}",  component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
     response = ''
-    case request.content_type
+    response = case request.content_type
       when 'application/json'
-        response = tests.to_json
+        tests.to_json
       else
-        response = json_to_yaml(tests.to_json)
-    end
+        json_to_yaml(tests.to_json)
+               end
     halt 200, {'Content-type' => request.content_type}, response
   end
 
@@ -157,12 +161,12 @@ class CatalogueV2 < SonataCatalogue
       logger.cust_info(status: 200,start_stop:'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
       response = ''
-      case request.content_type
+      response = case request.content_type
         when 'application/json'
-          response = test.to_json
+          test.to_json
         else
-          response = json_to_yaml(test.to_json)
-      end
+          json_to_yaml(test.to_json)
+                 end
       halt 200, {'Content-type' => request.content_type}, response
 
     end
@@ -227,12 +231,12 @@ class CatalogueV2 < SonataCatalogue
       test.update_attributes(pkg_ref: test['pkg_ref'] + 1)
       response = ''
       logger.cust_info(status: 200, start_stop: 'STOP',message: "Update reference to #{test['pkg_ref']}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
-      case request.content_type
+      response = case request.content_type
         when 'application/json'
-          response = test.to_json
+          test.to_json
         else
-          response = json_to_yaml(test.to_json)
-      end
+          json_to_yaml(test.to_json)
+                 end
       halt 200, {'Content-type' => request.content_type}, response
     rescue Mongoid::Errors::DocumentNotFound => e
       # Continue
@@ -247,11 +251,11 @@ class CatalogueV2 < SonataCatalogue
       # Continue
     end
 
-    if keyed_params.key?(:username)
-      username = keyed_params[:username]
+    username = if keyed_params.key?(:username)
+      keyed_params[:username]
     else
-      username = nil
-    end
+      nil
+               end
 
     # Save to DB
     new_testd = {}
@@ -267,6 +271,18 @@ class CatalogueV2 < SonataCatalogue
     # First, Refresh dictionary about the new entry
     update_entr_dict(new_testd, :testd)
 
+    # Send an asynchronous HTTP request to Decision Support Microservice
+    unless username.nil?
+      response = Unirest.post tngVnvDsm + "/tests/#{username}/#{new_testd['_id']}",
+                            headers: { "Content-type" => "application/json" } { |response|
+      response.code # Status code
+      response.headers # Response headers
+      response.body # Parsed body
+      response.raw_body # Unparsed body
+      }
+    end
+
+    logger.cust_debug(component: component, operation: operation, message: "Sent POST request to #{tngVnvDsm}/tests/#{username}/#{new_testd['_id']}")
     begin
       test = Testd.create!(new_testd)
     rescue Moped::Errors::OperationFailure => e
@@ -275,12 +291,12 @@ class CatalogueV2 < SonataCatalogue
     logger.cust_info(status: 201, start_stop: 'STOP', message: "New TEST Descriptor has been added", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
     response = ''
-    case request.content_type
+    response = case request.content_type
       when 'application/json'
-        response = test.to_json
+        test.to_json
       else
-        response = json_to_yaml(test.to_json)
-    end
+        json_to_yaml(test.to_json)
+               end
     halt 201, {'Content-type' => request.content_type}, response
   end
 
@@ -368,11 +384,11 @@ class CatalogueV2 < SonataCatalogue
       # Continue
     end
 
-    if keyed_params.key?(:username)
-      username = keyed_params[:username]
+    username = if keyed_params.key?(:username)
+      keyed_params[:username]
     else
-      username = nil
-    end
+      nil
+               end
 
     # Update to new version
     puts 'Updating...'
@@ -397,12 +413,12 @@ class CatalogueV2 < SonataCatalogue
     logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}" , component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
     response = ''
-    case request.content_type
+    response = case request.content_type
       when 'application/json'
-        response = new_test.to_json
+        new_test.to_json
       else
-        response = json_to_yaml(new_test.to_json)
-    end
+        json_to_yaml(new_test.to_json)
+               end
     halt 200, {'Content-type' => request.content_type}, response
   end
 
@@ -505,11 +521,11 @@ class CatalogueV2 < SonataCatalogue
           # Continue
         end
 
-        if keyed_params.key?(:username)
-          username = keyed_params[:username]
+        username = if keyed_params.key?(:username)
+          keyed_params[:username]
         else
-          username = nil
-        end
+          nil
+                   end
 
         # Update to new version
         puts 'Updating...'
@@ -534,12 +550,12 @@ class CatalogueV2 < SonataCatalogue
         logger.cust_info(status: 200, start_stop: 'STOP', message:"TESTD #{new_test}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
         response = ''
-        case request.content_type
+        response = case request.content_type
           when 'application/json'
-            response = new_test.to_json
+            new_test.to_json
           else
-            response = json_to_yaml(new_test.to_json)
-        end
+            json_to_yaml(new_test.to_json)
+                   end
         halt 200, {'Content-type' => request.content_type}, response
       end
     end
@@ -618,6 +634,15 @@ class CatalogueV2 < SonataCatalogue
         # Delete entry in dict mapping
         del_ent_dict(test, :testd)
         test.destroy
+        # Send an asynchronous HTTP request to Decision Support Microservice
+        response = Unirest.delete tngVnvDsm + "/tests/#{test['_id']}",
+                                  headers: { "Content-type" => "application/json" } { |response|
+          response.code # Status code
+          response.headers # Response headers
+          response.body # Parsed body
+          response.raw_body # Unparsed body
+        }
+        logger.cust_debug(component: component, operation: operation, message: "Sent DELETE request to #{tngVnvDsm}/tests/#{test['_id']}")
         json_return 200, 'TESTD removed', component, operation, time_req_begin
       else
         # Referenced above once. Decrease counter

@@ -57,6 +57,7 @@ In this repository, the following libraries are used (also referenced in the [`G
 * [Yard](https://github.com/lsegal/yard) (`v.0.9.12`) - Documentation generator tool
 * [Json](https://github.com/flori/json) (`v.1.8`) - JSON specification  
 * [JSON-schema](https://github.com/ruby-json-schema/json-schema) (`v.2.5`) - JSON schema validator  
+* [Unirest](https://github.com/Kong/unirest-ruby) (`v.1.1`) - Used merely for rapid asynchronous HTTP Requets
 
 Below, the gems are used for the MongoDB functionalities:
 

@@ -36,7 +36,7 @@ class CatalogueV2 < SonataCatalogue
   require 'unirest'
 
   # Fetch Decision Support URL
-  tngVnvDsm = ENV.fetch('tngVnvDsmUrl','http://localhost:4010/api')
+  tngVnvDsm = ENV.fetch('TNG_VNV_DSM_URL','http://localhost:4010/api')
 
   # @method get_test_descriptors
   # @overload get '/catalogues/tests/?'

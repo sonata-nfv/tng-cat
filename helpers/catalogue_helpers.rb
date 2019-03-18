@@ -44,7 +44,7 @@ class SonataCatalogue < Sinatra::Application
   require 'unirest'
 
   # Fetch Decision Support URL
-  tngVnvDsm = ENV.fetch('tngVnvDsmUrl','http://localhost:4010/api')
+  tngVnvDsm = ENV.fetch('TNG_VNV_DSM_URL','http://localhost:4010/api')
 
   # Read config settings from config file
   # @return [String, Integer] the address and port of the API

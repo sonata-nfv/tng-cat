@@ -41,7 +41,7 @@ COPY Gemfile /app/
 WORKDIR /app
 RUN bundle install
 
-ENV tngVnvDsmUrl = http://tng-vnv-dsm:4010/api
+ENV tngVnvDsmUrl=http://tng-vnv-dsm:4010/api
 FROM ruby:2.4.3-slim-stretch
 COPY --from=0 /usr/local/bundle /usr/local/bundle
 RUN apt-get update && \

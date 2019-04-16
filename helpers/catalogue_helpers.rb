@@ -41,10 +41,6 @@ class SonataCatalogue < Sinatra::Application
   require 'pathname'
   require 'httparty'
   require 'mongoid-grid_fs'
-  require 'unirest'
-
-  # Fetch Decision Support URL
-  tngVnvDsm = ENV.fetch('tngVnvDsmUrl','http://localhost:4010/api')
 
   # Read config settings from config file
   # @return [String, Integer] the address and port of the API
@@ -699,14 +695,6 @@ class SonataCatalogue < Sinatra::Application
         not_found << testd_td
       else
         if descriptor['pkg_ref'] == 1
-          # Send an asynchronous HTTP request to Decision Support Microservice
-          response = Unirest.delete tngVnvDsm + "/tests/#{descriptor['_id']}",
-                                  headers: { "Content-type" => "application/json" } { |response|
-            response.code # Status code
-            response.headers # Response headers
-            response.body # Parsed body
-            response.raw_body # Unparsed body
-            }
           descriptor.destroy
           del_ent_dict(descriptor, :testd)
         else descriptor.update_attributes(pkg_ref: descriptor['pkg_ref'] - 1)

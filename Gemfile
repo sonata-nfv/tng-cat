@@ -44,7 +44,7 @@ gem 'ci_reporter_rspec', '~> 1.0'
 gem 'jwt', '~> 1.5.5' # Json Web Token gem
 gem 'rubyzip', '~> 1.2'
 gem 'jsonpath', '~> 0.5.8'
-gem 'unirest', '~> 1.1', '>= 1.1.2'
+
 
 
 group :development, :test do

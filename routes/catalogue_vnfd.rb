@@ -779,7 +779,7 @@ class CatalogueV2 < SonataCatalogue
                  '5gtango'
                end
 
-    bool_cond = (platform.eql?('osm') | platform.eql?('onap')) & new_vnf.key?('name')
+    bool_cond = (platform.eql?('osm') || platform.eql?('onap')) && new_vnf.key?('name')
     json_error 400, 'Platform not aligned with format of descriptor', component, operation, time_req_begin if bool_cond
 
 

@@ -771,7 +771,9 @@ class CatalogueV2 < SonataCatalogue
 
     # Transform 'string' params Hash into keys
     keyed_params = keyed_hash(params)
-
+    logger.info "KEYD PARAMS=#{keyed_params}"
+	
+	
     # Retrieve platform parameter
     platform = if keyed_params.key?(:platform)
                  keyed_params[:platform].downcase
@@ -779,12 +781,19 @@ class CatalogueV2 < SonataCatalogue
                  '5gtango'
                end
 
+    logger.info "PLATFORM=#{platform}"
+	
+	
     bool_cond = (platform.eql?('osm') || platform.eql?('onap')) && new_vnf.key?('name')
+	
+    logger.info "bool_cond=#{bool_cond}"
     json_error 400, 'Platform not aligned with format of descriptor', component, operation, time_req_begin if bool_cond
 
 
     new_vnf, heads = extract_osm_onap(new_vnf, platform)
-
+    logger.info "NEW VNF=#{new_vnf}"
+	
+	
     # Validate VNF
     json_error 400, 'VNF Vendor not found', component, operation, time_req_begin unless new_vnf.has_key?('vendor')
     json_error 400, 'VNF Name not found', component, operation, time_req_begin unless new_vnf.has_key?('name')

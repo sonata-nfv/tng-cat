@@ -410,7 +410,9 @@ class CatalogueV2 < SonataCatalogue
     filename = att.match(/filename=(\"?)(.+)\1/)[2]
 
     # Reads body data
-    file, errors = request.body
+    file, errors = request.body	
+	#Debug Log
+	logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Request.body Data: #{file}")
     json_error 400, errors, component, operation, time_req_begin if errors
 
     if keyed_params.key?(:username)
@@ -443,6 +445,8 @@ class CatalogueV2 < SonataCatalogue
     # Check if file is already in the Catalogues by md5, means same content.
     # If yes, increase ++ the pkg_ref
     file_in = FileContainer.where('md5' => checksum(file.string))
+	#Debug Log
+	logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Same file Found aldready in Catalogue")
     if file_in.size.to_i > 0
       file_same = file_in.select {|ii| ii['package_name'] == filename}
       if file_same.empty?
@@ -482,6 +486,8 @@ class CatalogueV2 < SonataCatalogue
 
     grid_fs = Mongoid::GridFs
 
+	#Debug Log
+	logger.cust_info(start_stop:'START', component: component, operation: operation, message: "File to Be stored in Mongo: #{file} , #{filename}")
     grid_file = grid_fs.put(file,
                             filename: filename,
                             content_type: 'application/zip',

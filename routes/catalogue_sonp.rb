@@ -388,6 +388,7 @@ class CatalogueV2 < SonataCatalogue
     json_error 415, 'Support of x-yaml and json', component, operation, time_req_begin unless request.content_type == 'application/zip'
 
     att = request.env['HTTP_CONTENT_DISPOSITION']
+	logger.cust_info(start_stop:'START', component: component, operation: operation, message: "ATT: #{att}")
     # tgop_vendor = request.env['HTTP_VENDOR']
     # tgop_name = request.env['HTTP_NAME']
     # tgop_version = request.env['HTTP_VERSION']
@@ -407,10 +408,12 @@ class CatalogueV2 < SonataCatalogue
 
     # Transform 'string' params Hash into keys
     keyed_params = keyed_hash(params)
+	logger.cust_info(start_stop:'START', component: component, operation: operation, message: "keyed_params: #{keyed_params}")
     filename = att.match(/filename=(\"?)(.+)\1/)[2]
-
+	logger.cust_info(start_stop:'START', component: component, operation: operation, message: "filename: #{filename}")
     # Reads body data
     file, errors = request.body	
+	logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Error: #{errors}")
 	#Debug Log
 	logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Request.body Data: #{file}")
     json_error 400, errors, component, operation, time_req_begin if errors

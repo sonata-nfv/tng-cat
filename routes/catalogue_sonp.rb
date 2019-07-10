@@ -388,7 +388,6 @@ class CatalogueV2 < SonataCatalogue
     json_error 415, 'Support of x-yaml and json', component, operation, time_req_begin unless request.content_type == 'application/zip'
 
     att = request.env['HTTP_CONTENT_DISPOSITION']
-	logger.cust_info(start_stop:'START', component: component, operation: operation, message: "ATT: #{att}")
     # tgop_vendor = request.env['HTTP_VENDOR']
     # tgop_name = request.env['HTTP_NAME']
     # tgop_version = request.env['HTTP_VERSION']
@@ -408,12 +407,10 @@ class CatalogueV2 < SonataCatalogue
 
     # Transform 'string' params Hash into keys
     keyed_params = keyed_hash(params)
-	logger.cust_info(start_stop:'START', component: component, operation: operation, message: "keyed_params: #{keyed_params}")
     filename = att.match(/filename=(\"?)(.+)\1/)[2]
-	logger.cust_info(start_stop:'START', component: component, operation: operation, message: "filename: #{filename}")
+
     # Reads body data
     file, errors = request.body	
-	logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Error: #{errorss}")
 	#Debug Log
 	logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Request.body Data: #{file}")
     json_error 400, errors, component, operation, time_req_begin if errors
@@ -447,9 +444,6 @@ class CatalogueV2 < SonataCatalogue
 
     # Check if file is already in the Catalogues by md5, means same content.
     # If yes, increase ++ the pkg_ref
-	file_checksum = checksum(file.string)
-	logger.cust_debug(component: component, operation: operation, message: "Checksum #{file_checksum}")
-		
     file_in = FileContainer.where('md5' => checksum(file.string))
 	#Debug Log
 	logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Same file Found aldready in Catalogue")

@@ -413,7 +413,7 @@ class CatalogueV2 < SonataCatalogue
 	logger.cust_info(start_stop:'START', component: component, operation: operation, message: "filename: #{filename}")
     # Reads body data
     file, errors = request.body	
-	logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Error: #{errors}")
+	logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Error: #{errorss}")
 	#Debug Log
 	logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Request.body Data: #{file}")
     json_error 400, errors, component, operation, time_req_begin if errors
@@ -447,7 +447,7 @@ class CatalogueV2 < SonataCatalogue
 
     # Check if file is already in the Catalogues by md5, means same content.
     # If yes, increase ++ the pkg_ref
-    file_in = FileContainer.where('md5' => checksum(file.string))
+    file_in = FileContainer.where('md5' => checksum(file.read))
 	#Debug Log
 	logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Same file Found aldready in Catalogue")
     if file_in.size.to_i > 0
@@ -460,18 +460,18 @@ class CatalogueV2 < SonataCatalogue
           # file_container.mapping = nil
           file_container.package_name = filename
           file_container.pkg_ref = 1
-          file_container.md5 = checksum(file.string)
+          file_container.md5 = checksum(file.read)
           file_container.username = username
           file_container.signature = signature
           file_container.save
         end
-        logger.cust_debug(component: component, operation: operation, message: "id #{tgop_id} mapped to existing md5 #{checksum(file.string)}")
+        logger.cust_debug(component: component, operation: operation, message: "id #{tgop_id} mapped to existing md5 #{checksum(file.read)}")
       elsif file_same.count == 1
         file_same.first.update_attributes(pkg_ref: file_same.first['pkg_ref'] + 1)
         tgop_id = file_same.first['_id']
         logger.cust_debug(component: component, operation: operation, message: "id #{tgop_id} increased pkg_ref at #{file_same.first['pkg_ref']}")
       else
-        logger.cust_debug(component: component, operation: operation, message: "md5 #{checksum(file.string)} as more than one file has same filename")
+        logger.cust_debug(component: component, operation: operation, message: "md5 #{checksum(file.read)} as more than one file has same filename")
         json_error 500, "More than one tgo-package has same filename. Packages are unique per one class metadata", component, operation, time_req_begin
       end
       logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")

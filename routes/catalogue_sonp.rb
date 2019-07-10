@@ -448,10 +448,9 @@ class CatalogueV2 < SonataCatalogue
     # Check if file is already in the Catalogues by md5, means same content.
     # If yes, increase ++ the pkg_ref
 	file_checksum = checksum(file.string)
-	logger.cust_info(start_stop:'START', component: component, operation: operation, message: "file_checksum: #{file_checksum}"
-	
+	logger.cust_debug(component: component, operation: operation, message: "Checksum #{file_checksum}")
+		
     file_in = FileContainer.where('md5' => checksum(file.string))
-	logger.cust_info(start_stop:'START', component: component, operation: operation, message: "file_in: #{file_in}")
 	#Debug Log
 	logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Same file Found aldready in Catalogue")
     if file_in.size.to_i > 0

@@ -445,8 +445,8 @@ class CatalogueV2 < SonataCatalogue
     # Check if file is already in the Catalogues by md5, means same content.
     # If yes, increase ++ the pkg_ref
 	
-	file_checksum = Digest::MD5.hexdigest(file.string)
-	logger.cust_info(start_stop:'START', component: component, operation: operation, message: "FILE CHECKSUM #{file_checksum}")
+	file_to_string = file.string
+	logger.cust_info(start_stop:'START', component: component, operation: operation, message: "FILE CHECKSUM #{file_to_string}")
 	
     file_in = FileContainer.where('md5' => checksum(file.string))
 	#Debug Log

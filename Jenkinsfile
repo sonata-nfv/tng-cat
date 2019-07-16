@@ -15,6 +15,7 @@ pipeline {
         }
       }
     }
+	/*
     stage('Unit Test') {
       parallel {
         stage('Unit Tests') {
@@ -33,6 +34,7 @@ pipeline {
         }
       }
     }
+	*/
     stage('Containers Publication') {
       parallel {
         stage('Containers Publication') {

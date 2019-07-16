@@ -446,7 +446,7 @@ class CatalogueV2 < SonataCatalogue
     # If yes, increase ++ the pkg_ref
 	
 	file_checksum = checksum(file.string)
-	logger.cust_info(start_stop:'START', component: component, operation: operation, message: "FILE STRING #{file.string}")
+	logger.cust_info(start_stop:'START', component: component, operation: operation, message: "FILE CHECKSUM #{file_checksum}")
 	
     file_in = FileContainer.where('md5' => checksum(file.string))
 	#Debug Log

@@ -444,10 +444,8 @@ class CatalogueV2 < SonataCatalogue
 
     # Check if file is already in the Catalogues by md5, means same content.
     # If yes, increase ++ the pkg_ref
-	
-	file_checksum = checksum(file.string)
-	logger.cust_info(start_stop:'START', component: component, operation: operation, message: "FILE CHECKSUM #{file_checksum}")
-	
+
+=begin		
     file_in = FileContainer.where('md5' => checksum(file.string))
 	#Debug Log
 	logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Same file Found aldready in Catalogue")
@@ -487,6 +485,7 @@ class CatalogueV2 < SonataCatalogue
     # rescue Mongoid::Errors::DocumentNotFound => e
     #   # Continue
     # end
+=end
 
     grid_fs = Mongoid::GridFs
 

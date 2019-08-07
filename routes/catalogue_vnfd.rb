@@ -646,7 +646,12 @@ class CatalogueV2 < SonataCatalogue
 
       end
       vnfs = apply_limit_and_offset(vnfs_list, page_number=params[:page_number], page_size=params[:page_size])
-
+    elsif keyed_params.key?(:'vnfd.count')
+      [:'vnfd.count'].each { |k| keyed_params.delete(k) }
+      vnfs = Vnfd.where(keyed_params).count()
+      number = {}
+      number['count'] = vnfs.to_s
+      vnfs = number
     else
       # Do the query
       keyed_params = parse_keys_dict(:vnfd, keyed_params)
@@ -665,7 +670,11 @@ class CatalogueV2 < SonataCatalogue
     # Transform in unified format
     arr = []
     JSON.parse(vnfs.to_json).each do |desc|
-      arr << transform_descriptor(desc, type_of_desc='vnfd', platform = desc['platform'])
+      if number
+        arr = vnfs
+      else
+        arr << transform_descriptor(desc, type_of_desc='vnfd', platform = desc['platform'])
+      end
     end
 
     logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")

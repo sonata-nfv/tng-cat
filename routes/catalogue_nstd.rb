@@ -104,6 +104,13 @@ class CatalogueV2 < SonataCatalogue
 
       end
       nsts = apply_limit_and_offset(nsts_list, page_number=params[:page_number], page_size=params[:page_size])
+    
+    elsif keyed_params.key?(:'nstd.count')
+      [:'nstd.count'].each { |k| keyed_params.delete(k) }
+      nss = Nsd.where(keyed_params).count()
+      number = {}
+      number['count'] = nss.to_s
+      nss = number
 
     else
       # Do the query

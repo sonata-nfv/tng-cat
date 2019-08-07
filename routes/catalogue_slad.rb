@@ -103,6 +103,13 @@ class CatalogueV2 < SonataCatalogue
 
       end
       slas = apply_limit_and_offset(slas_list, page_number=params[:page_number], page_size=params[:page_size])
+    
+    elsif keyed_params.key?(:'slad.count')
+      [:'slad.count'].each { |k| keyed_params.delete(k) }
+      slas = Slad.where(keyed_params).count()
+      number = {}
+      number['count'] = slas.to_s
+      slas = number
 
     else
       # Do the query

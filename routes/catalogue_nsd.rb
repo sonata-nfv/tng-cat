@@ -608,7 +608,6 @@ class CatalogueV2 < SonataCatalogue
     operation = "GET /v2/network-services?#{query_string}"
     component = __method__.to_s
     time_req_begin = Time.now.utc
-
     logger.cust_info(start_stop:'START', component: component, operation: operation, message: "Started at #{time_req_begin}")
 
     # Return if content-type is invalid
@@ -673,7 +672,12 @@ class CatalogueV2 < SonataCatalogue
       end
       nss = apply_limit_and_offset(nss_list, page_number=params[:page_number],
                                    page_size=params[:page_size])
-
+    elsif keyed_params.key?(:'nsd.count')
+      [:'nsd.count'].each { |k| keyed_params.delete(k) }
+      nss = Nsd.where(keyed_params).count()
+      number = {}
+      number['count'] = nss.to_s
+      nss = number
     else
       # Do the query
       keyed_params = parse_keys_dict(:nsd, keyed_params)
@@ -693,9 +697,13 @@ class CatalogueV2 < SonataCatalogue
     # Format descriptors in unified format (either 5gtango, osm and onap)
     arr = []
     JSON.parse(nss.to_json).each do |desc|
-      arr << transform_descriptor(desc, type_of_desc='nsd', platform = desc['platform'])
-    end
+      if number
+        arr = nss
+      else
+        arr << transform_descriptor(desc, type_of_desc='nsd', platform = desc['platform'])
+      end
 
+    end
     logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
 
     response = case request.content_type

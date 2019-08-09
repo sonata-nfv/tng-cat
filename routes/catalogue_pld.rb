@@ -103,7 +103,13 @@ class CatalogueV2 < SonataCatalogue
 
       end
       policies = apply_limit_and_offset(policies_list, page_number=params[:page_number], page_size=params[:page_size])
-
+   
+    elsif keyed_params.key?(:'pld.count')
+      [:'pld.count'].each { |k| keyed_params.delete(k) }
+      number = {}
+      number['count'] = Pld.where(keyed_params).count().to_s
+      policies = number
+      logger.cust_debug(component: component, operation: operation, message: "PLDs=#{policies}")
     else
 
       #Do the query
@@ -121,17 +127,18 @@ class CatalogueV2 < SonataCatalogue
         logger.cust_debug(component: component, operation: operation, message: "No PLDs were found")
       end
 
-      logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
-
-      response = ''
-      case request.content_type
-        when 'application/json'
-          response = policies.to_json
-        when 'application/x-yaml'
-          response = json_to_yaml(policies.to_json)
-      end
-      halt 200, {'Content-type' => request.content_type}, response
+    logger.cust_info(status: 200, start_stop: 'STOP', message: "Ended at #{Time.now.utc}", component: component, operation: operation, time_elapsed: "#{Time.now.utc - time_req_begin }")
     end
+    
+    response = ''
+    case request.content_type
+      when 'application/json'
+        response = policies.to_json
+      when 'application/x-yaml'
+        response = json_to_yaml(policies.to_json)
+    end
+    halt 200, {'Content-type' => request.content_type}, response
+    
   end
 
   # @method get_policies_id

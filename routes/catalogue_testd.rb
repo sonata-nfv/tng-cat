@@ -99,10 +99,15 @@ class CatalogueV2 < SonataCatalogue
       else
         logger.cust_debug(component: component, operation: operation, message: "'No TESTDs were found")
         tests_list = []
-
       end
       tests = apply_limit_and_offset(tests_list, page_number=params[:page_number], page_size=params[:page_size])
-
+    
+    elsif keyed_params.key?(:'testd.count')
+      [:'testd.count'].each { |k| keyed_params.delete(k) }
+      tests = Testd.where(keyed_params).count()
+      number = {}
+      number['count'] = tests.to_s
+      tests = number
     else
       # Do the query
       keyed_params = parse_keys_dict(:testd, keyed_params)

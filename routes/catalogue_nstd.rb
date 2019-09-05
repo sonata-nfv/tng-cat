@@ -107,10 +107,10 @@ class CatalogueV2 < SonataCatalogue
     
     elsif keyed_params.key?(:'nstd.count')
       [:'nstd.count'].each { |k| keyed_params.delete(k) }
-      nss = Nsd.where(keyed_params).count()
+      nsts = Nstd.where(keyed_params).count()
       number = {}
-      number['count'] = nss.to_s
-      nss = number
+      number['count'] = nsts.to_s
+      nsts = number
 
     else
       # Do the query

@@ -195,4 +195,5 @@ The following lead developers are responsible for this repository and have admin
   
 ## Feedback-Channel  
   
-Please use the GitHub issues and the 5GTANGO development mailing list tango-5g@lists.atosresearch.eu for feedback.
+* You may use the mailing list [sonata-dev-list](mailto:sonata-dev@lists.atosresearch.eu)
+* Gitter room [![Gitter](https://badges.gitter.im/sonata-nfv/Lobby.svg)](https://gitter.im/sonata-nfv/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)

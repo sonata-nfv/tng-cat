@@ -335,7 +335,9 @@ class CatalogueV2 < SonataCatalogue
         new_sla, errors = parse_json(request.body.read)
         json_error 400, errors, component, operation, time_req_begin if errors
     end
-
+    
+    puts "DEBUG " << String(new_sla)
+    
     # Validate SLA
     # Check if mandatory fields Vendor, Name, Version are included
     json_error 400, 'SLA Vendor not found', component, operation, time_req_begin unless new_sla.has_key?('vendor')

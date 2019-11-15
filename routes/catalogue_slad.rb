@@ -336,7 +336,7 @@ class CatalogueV2 < SonataCatalogue
         json_error 400, errors, component, operation, time_req_begin if errors
     end
     
-    puts "DEBUG " << String(new_sla)
+    logger.cust_debug(component: component, operation: operation, message: "DEBUG PUT METHOD #{new_sla}")
     
     # Validate SLA
     # Check if mandatory fields Vendor, Name, Version are included

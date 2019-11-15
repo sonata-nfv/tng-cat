@@ -336,11 +336,9 @@ class CatalogueV2 < SonataCatalogue
         json_error 400, errors, component, operation, time_req_begin if errors
     end
     
-    logger.cust_debug(component: component, operation: operation, message: "DEBUG PUT METHOD #{new_sla}")
-    
     # Validate SLA
     # Check if mandatory fields Vendor, Name, Version are included
-    json_error 400, 'SLA Vendor not found', component, operation, time_req_begin unless new_sla.has_key?('vendor')
+    json_error 400, 'SLA Vendor not found, NEW SLA:', new_sla, component, operation, time_req_begin unless new_sla.has_key?('vendor')
     json_error 400, 'SLA Name not found', component, operation, time_req_begin unless new_sla.has_key?('name')
     json_error 400, 'SLA Version not found', component, operation, time_req_begin unless new_sla.has_key?('version')
 
